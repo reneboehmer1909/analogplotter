@@ -45,6 +45,11 @@
             --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter', 'Roboto', sans-serif;
             --font-mono: ui-monospace, 'SF Mono', 'Menlo', monospace;
         }
+        html {
+            /* always show the scrollbar track so centered content
+               doesn't shift when switching between tall and short tabs */
+            overflow-y: scroll;
+        }
         body {
             font-family: var(--font-sans);
             background-color: var(--bg-page);
@@ -515,9 +520,9 @@
             transition: color 0.15s, background-color 0.15s, box-shadow 0.15s;
         }
         .tab-btn:hover { color: var(--text-primary); }
+        /* Active state must not change font-weight — bold text widens the pill and shifts its neighbors */
         .tab-btn.tab-active {
             color: var(--text-primary);
-            font-weight: 600;
             background: #ffffff;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
         }
