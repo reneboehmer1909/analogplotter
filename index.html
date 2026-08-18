@@ -366,6 +366,7 @@
             overscroll-behavior: contain;
         }
         .app-content { min-width: 0; }
+        .app-grid.single-col { grid-template-columns: minmax(0, 1fr); }
         @media (max-width: 1023px) {
             .app-grid { grid-template-columns: minmax(0, 1fr); }
             .app-sidebar { position: static; height: auto; overflow: visible; margin-top: 0; padding: 0; }
@@ -7724,9 +7725,12 @@
                 if (panels[tab]) panels[tab].style.display = '';
                 btns[tab].classList.add('tab-active');
                 const leftTR = document.getElementById('leftPanelTR');
-                leftFilm.style.display = (tab === 'paper' || tab === 'tonerepro') ? 'none' : '';
+                leftFilm.style.display = tab === 'curves' ? '' : 'none';
                 leftPaper.style.display = tab === 'paper' ? '' : 'none';
                 leftTR.style.display = tab === 'tonerepro' ? '' : 'none';
+                // Analysis Plots needs no settings — drop the sidebar column entirely
+                document.querySelector('.app-sidebar').style.display = tab === 'analysis' ? 'none' : '';
+                document.querySelector('.app-grid').classList.toggle('single-col', tab === 'analysis');
                 // Film Characteristics, Exposure & Scene, etc. belong to the Curves tab only
                 filmBelow.style.display = tab === 'curves' ? '' : 'none';
 
