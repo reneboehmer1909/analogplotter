@@ -396,12 +396,51 @@
             margin-right: auto;
         }
 
-        /* Jones diagram: square overall, centered, scales to viewport */
+        /* Jones diagram: square overall, scales to viewport, info panel beside it */
+        .tr-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            align-items: flex-start;
+            justify-content: center;
+        }
         .tr-frame {
             width: min(100%, calc(100vh - 110px));
-            margin-left: auto;
-            margin-right: auto;
+            flex: 0 1 auto;
+            min-width: 320px;
         }
+        .tr-info-panel {
+            flex: 1 1 230px;
+            min-width: 210px;
+            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .tr-info-block {
+            background: var(--bg-card-alt);
+            border-radius: 12px;
+            padding: 10px 14px;
+        }
+        .ti-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .ti-lines {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            line-height: 1.55;
+            color: var(--text-secondary);
+        }
+        .ti-sub {
+            font-family: var(--font-sans);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 2px;
+        }
+        .ti-gap { height: 6px; }
         .tr-frame .tr-grid-wrapper {
             aspect-ratio: 1 / 1;
             height: auto;
@@ -728,7 +767,8 @@
 
                 <!-- CHART AREA: Tone Reproduction (switchable) -->
                 <div id="panelToneReproChart" style="display:none;">
-                    <!-- Axis labels and 2x2 grid -->
+                    <!-- Diagram with info panel beside it -->
+                    <div class="tr-layout">
                     <div class="relative tr-frame" style="padding: 24px 8px 8px 28px;">
                         <!-- Top axis label -->
                         <div class="tr-axis-label" style="position:absolute; top:4px; left:28px; right:8px;">
@@ -769,6 +809,14 @@
                             <span>Log Scene Luminance</span>
                         </div>
                     </div>
+
+                    <div class="tr-info-panel">
+                        <div class="tr-info-block"><div class="ti-title">Q1 · Camera / Flare</div><div class="ti-lines" id="trInfoQ1"></div></div>
+                        <div class="tr-info-block"><div class="ti-title">Q2 · Film</div><div class="ti-lines" id="trInfoQ2"></div></div>
+                        <div class="tr-info-block"><div class="ti-title">Q3 · Paper</div><div class="ti-lines" id="trInfoQ3"></div></div>
+                        <div class="tr-info-block"><div class="ti-title">Q4 · Reproduction</div><div class="ti-lines" id="trInfoQ4"></div></div>
+                    </div>
+                    </div><!-- /tr-layout -->
 
                     <!-- TR controls below diagram -->
                     <div class="mt-4 text-sm">
@@ -3626,7 +3674,7 @@
                     updateToneReproduction();
                     await new Promise(r => setTimeout(r, 500));
 
-                    const trContainer = trPanel.querySelector('.relative');
+                    const trContainer = trPanel.querySelector('.tr-layout') || trPanel.querySelector('.relative');
                     if (!trContainer) continue;
 
                     try {
@@ -5774,6 +5822,17 @@
         };
 
         // --- TR POINT LABEL + INFO OVERLAY PLUGIN ---
+        // Render a quadrant's info lines into its HTML block beside the diagram
+        const renderTrInfoBlock = (elId, lines) => {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.innerHTML = lines.map(line => {
+                if (line === '') return '<div class="ti-gap"></div>';
+                if (line.startsWith('*')) return `<div class="ti-sub">${escapeHtml(line.slice(1))}</div>`;
+                return `<div>${escapeHtml(line)}</div>`;
+            }).join('');
+        };
+
         const trPointLabelPlugin = {
             id: 'trPointLabels',
             afterDatasetsDraw: (chart) => {
@@ -5872,44 +5931,7 @@
                     });
                 });
 
-                // Draw corner info block
-                const info = chart._trInfo;
-                if (!info || !info.lines || info.lines.length === 0) return;
-                const corner = info.corner || 'bl'; // bl, br, tl, tr
-
-                ctx.save();
-                ctx.font = "10px 'SF Mono', ui-monospace, Menlo, monospace";
-                ctx.fillStyle = 'rgba(80,75,65,0.85)';
-                const lineH = 13;
-                const pad = 8;
-
-                let x, startY, align;
-                if (corner === 'bl') {
-                    align = 'left'; x = area.left + pad;
-                    startY = area.bottom - pad - (info.lines.length * lineH);
-                } else if (corner === 'br') {
-                    align = 'right'; x = area.right - pad;
-                    startY = area.bottom - pad - (info.lines.length * lineH);
-                } else if (corner === 'tl') {
-                    align = 'left'; x = area.left + pad;
-                    startY = area.top + pad;
-                } else { // tr
-                    align = 'right'; x = area.right - pad;
-                    startY = area.top + pad;
-                }
-
-                ctx.textAlign = align;
-                ctx.textBaseline = 'top';
-                info.lines.forEach((line, i) => {
-                    const isBold = line.startsWith('*');
-                    const text = isBold ? line.slice(1) : line;
-                    ctx.font = isBold
-                        ? "bold 10px -apple-system, 'SF Pro Text', sans-serif"
-                        : "10px 'SF Mono', ui-monospace, Menlo, monospace";
-                    ctx.fillStyle = isBold ? 'rgba(26,26,26,0.9)' : 'rgba(80,75,65,0.85)';
-                    ctx.fillText(text, x, startY + (i * lineH));
-                });
-                ctx.restore();
+                // Corner info blocks now live in the HTML panel beside the diagram
 
                 // Draw zone strip if present (Q4 only)
                 const zoneData = chart._zoneStrip;
@@ -5947,16 +5969,8 @@
                     ctx.fillText('Gradient', 0, 0);
                     ctx.restore();
 
-                    // Average gradient labels in top-left corner of Q4
+                    // Avg/Mid values shown in the Q4 info block beside the diagram
                     if (gradInfo.avg !== undefined) {
-                        ctx.font = "bold 9px 'SF Mono', ui-monospace, Menlo, monospace";
-                        ctx.fillStyle = '#d70015';
-                        ctx.textAlign = 'left';
-                        ctx.textBaseline = 'top';
-                        ctx.fillText(`Avg: ${gradInfo.avg.toFixed(2)}`, area.left + 6, area.top + 6);
-                        if (gradInfo.avgMid !== undefined) {
-                            ctx.fillText(`Mid: ${gradInfo.avgMid.toFixed(2)}`, area.left + 6, area.top + 18);
-                        }
                         // Subtle horizontal line at avg value
                         const avgPy = y2.getPixelForValue(gradInfo.avg);
                         ctx.strokeStyle = 'rgba(155,44,44,0.3)';
@@ -7188,8 +7202,8 @@
             const filmDR = D_at_highlight - D_at_shadow;
             const speedMethodLabels = { fixedDensity: 'FD', jones: 'Jones', deltaX: 'ΔX' };
 
-            // Q2 Film — bottom-left corner
-            const q2Info = [`*Film Curve`];
+            // Q2 Film
+            const q2Info = [];
             q2Info.push(curveName);
             q2Info.push(`CI:${ci.toFixed(2)}` + (curveGamma ? `  G:${curveGamma.toFixed(2)}` : ''));
             if (curveGBar) q2Info.push(`G-bar:${curveGBar.toFixed(2)}`);
@@ -7220,11 +7234,11 @@
                     q2Info.push(`Δ Shadow:${dLogH > 0 ? '+' : ''}${dLogH.toFixed(2)} logH (${dStops > 0 ? '+' : ''}${dStops.toFixed(1)} stops)`);
                 }
             }
-            trChartQ2._trInfo = { corner: 'bl', lines: q2Info };
+            renderTrInfoBlock('trInfoQ2', q2Info);
 
-            // Q1 Camera — bottom-right corner
+            // Q1 Camera
             const flareFactorLinear = Math.pow(10, effFlare);
-            const q1Info = [`*Camera Image`];
+            const q1Info = [];
             q1Info.push(`Scene LSLR:${sceneLslr.toFixed(2)}`);
             q1Info.push(`Speed:${speedMethodLabels[trSpeedMethod] || trSpeedMethod}`);
             q1Info.push(`Flare:${effFlare.toFixed(2)} logH`);
@@ -7233,9 +7247,9 @@
             if (showMetered && meteredLogH !== null) {
                 q1Info.push(`Metered:logH ${meteredLogH.toFixed(2)} (${meteredGrayPct}% gray)`);
             }
-            trChartQ1._trInfo = { corner: 'br', lines: q1Info };
+            renderTrInfoBlock('trInfoQ1', q1Info);
 
-            // Q3 Paper — top-left corner (above the curve)
+            // Q3 Paper
             const printDR = shadowPrintD - highlightPrintD;
             const paperNameVal = (document.getElementById('paperName')?.value || '').trim();
             const paperDevVal = (document.getElementById('paperDeveloper')?.value || '').trim();
@@ -7272,11 +7286,11 @@
                 q3Lines.push(`Metered:D ${meteredPrintD.toFixed(2)}`);
             }
             if (paperExpStops !== 0) q3Lines.push(`Paper Exp:${paperExpStops > 0 ? '+' : ''}${paperExpStops.toFixed(1)} stops`);
-            trChartQ3._trInfo = { corner: 'tl', lines: q3Lines };
+            renderTrInfoBlock('trInfoQ3', q3Lines);
 
-            // Q4 Tone Reproduction — top-right corner
+            // Q4 Tone Reproduction
             // Show per-stop gradient from shadow to highlight
-            const q4Info = [`*Reproduction`];
+            const q4Info = [];
             q4Info.push(`SBR:${sceneStops.toFixed(1)} stops`);
             q4Info.push(`LSLR:${sceneLslr.toFixed(2)}`);
             q4Info.push(`Film DR:${filmDR.toFixed(2)}`);
@@ -7306,6 +7320,10 @@
                 }
                 prevPd = pd;
             }
+            const ga = trChartQ4._gradientAxis;
+            if (ga && ga.avg !== undefined) {
+                q4Info.push(`Avg:${ga.avg.toFixed(2)}` + (ga.avgMid !== undefined ? `  Mid:${ga.avgMid.toFixed(2)}` : ''));
+            }
             if (showMetered && meteredPrintD !== null) {
                 const meteredIdealD = sceneLineY(meteredR);
                 const meteredDeltaPrint = meteredPrintD - meteredIdealD;
@@ -7314,7 +7332,7 @@
                 q4Info.push(`Print D:${meteredPrintD.toFixed(2)}  Ideal:${meteredIdealD.toFixed(2)}`);
                 q4Info.push(`Δ Ideal:${meteredDeltaPrint > 0 ? '+' : ''}${meteredDeltaPrint.toFixed(2)}`);
             }
-            trChartQ4._trInfo = { corner: 'tr', lines: q4Info };
+            renderTrInfoBlock('trInfoQ4', q4Info);
             trChartQ4._zoneStrip = null;
             trChartQ1._zoneStrip = { shadowR: shadowReflectance, numZones: 11 };
 
