@@ -10,14 +10,14 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['IBM Plex Sans', 'system-ui', 'sans-serif'],
-                        serif: ['Source Serif 4', 'Georgia', 'serif'],
-                        mono: ['IBM Plex Mono', 'monospace'],
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'Inter', 'Roboto', 'sans-serif'],
+                        serif: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Inter', 'sans-serif'],
+                        mono: ['ui-monospace', 'SF Mono', 'Menlo', 'monospace'],
                     },
                     borderRadius: {
-                        DEFAULT: '2px',
-                        'md': '2px',
-                        'lg': '3px',
+                        DEFAULT: '8px',
+                        'md': '10px',
+                        'lg': '12px',
                     },
                 }
             }
@@ -28,22 +28,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --bg-page: #f0eeea;
-            --bg-card: #faf9f7;
-            --bg-card-alt: #f5f3ef;
-            --border-subtle: #d8d4cc;
-            --border-medium: #b8b3aa;
-            --text-primary: #1a1a1a;
-            --text-secondary: #4a4a4a;
-            --text-muted: #6e6e6e;
-            --accent: #8b6914;
-            --accent-hover: #6d5210;
-            --accent-light: #f5f0e4;
-            --green-accent: #2d6a4f;
-            --red-accent: #9b2c2c;
+            --bg-page: #f5f5f7;
+            --bg-card: #ffffff;
+            --bg-card-alt: #f5f5f7;
+            --border-subtle: #e8e8ed;
+            --border-medium: #d2d2d7;
+            --text-primary: #1d1d1f;
+            --text-secondary: #424245;
+            --text-muted: #6e6e73;
+            --accent: #0066cc;
+            --accent-hover: #0055b3;
+            --accent-light: #eaf2fb;
+            --green-accent: #248a3d;
+            --red-accent: #d70015;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter', 'Roboto', sans-serif;
+            --font-mono: ui-monospace, 'SF Mono', 'Menlo', monospace;
         }
         body {
-            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            font-family: var(--font-sans);
             background-color: var(--bg-page);
             color: var(--text-secondary);
             font-size: 14px;
@@ -51,29 +53,30 @@
             -webkit-font-smoothing: antialiased;
         }
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Source Serif 4', 'Georgia', serif;
+            font-family: var(--font-sans);
             color: var(--text-primary);
             font-weight: 600;
-            letter-spacing: -0.01em;
+            letter-spacing: -0.015em;
         }
 
-        /* Buttons */
+        /* Buttons — pill-shaped, blue primary */
         .custom-btn {
             background-color: var(--accent);
             color: #ffffff;
             transition: all 0.15s ease;
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: var(--font-sans);
             font-weight: 500;
-            letter-spacing: 0.02em;
-            border-radius: 3px;
+            letter-spacing: -0.01em;
+            border-radius: 999px;
         }
         .custom-btn:hover { background-color: var(--accent-hover); }
         .secondary-btn {
-            background-color: var(--text-muted);
-            color: #ffffff;
-            border-radius: 3px;
+            background-color: #e8e8ed;
+            color: var(--text-primary);
+            border-radius: 999px;
+            transition: background-color 0.15s ease;
         }
-        .secondary-btn:hover { background-color: var(--text-secondary); }
+        .secondary-btn:hover { background-color: #dcdce1; }
 
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
@@ -84,28 +87,35 @@
         /* Form elements */
         input[type="text"], input[type="number"], input[type="datetime-local"],
         textarea, select {
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: var(--font-sans);
             font-size: 13px;
             background-color: #fff;
-            border: 1px solid var(--border-subtle);
-            border-radius: 2px;
+            border: 1px solid var(--border-medium);
+            border-radius: 8px;
             color: var(--text-primary);
-            transition: border-color 0.15s ease;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 1px var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.18);
         }
         label {
             font-size: 12px;
             font-weight: 500;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0;
         }
         input[type="checkbox"] {
             accent-color: var(--accent);
+        }
+        input[type="color"] {
+            border: 1px solid var(--border-medium);
+            border-radius: 8px;
+            background: #fff;
+            padding: 2px;
+            min-width: 36px;
+            cursor: pointer;
         }
         input[type="radio"] {
             accent-color: var(--accent);
@@ -114,20 +124,20 @@
         /* Data inputs */
         .data-input {
             height: 100px;
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 12px;
             line-height: 1.6;
         }
 
-        /* Cards */
+        /* Cards — quiet gray cards on white panels */
         .curve-input-group {
-            transition: border-color 0.2s ease;
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 2px;
+            transition: background-color 0.2s ease;
+            background-color: var(--bg-card-alt);
+            border: 1px solid transparent;
+            border-radius: 14px;
         }
         .curve-input-group:hover {
-            border-color: var(--border-medium);
+            background-color: #f0f0f3;
         }
 
         /* Details grid */
@@ -143,22 +153,21 @@
         /* File input */
         .file-input-label { cursor: pointer; }
 
-        /* Table styling */
+        /* Table styling — hairlines only */
         table {
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: var(--font-sans);
         }
         table thead th {
-            font-family: 'IBM Plex Sans', sans-serif;
-            font-size: 10px;
+            font-family: var(--font-sans);
+            font-size: 11px;
             font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
+            letter-spacing: 0;
             color: var(--text-muted);
-            background-color: var(--bg-card-alt);
-            border-bottom: 2px solid var(--border-medium);
+            background-color: transparent;
+            border-bottom: 1px solid var(--border-medium);
         }
         table tbody td {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 13px;
             color: var(--text-primary);
         }
@@ -178,7 +187,7 @@
 
         /* Glossary modal */
         #glossaryModal dt {
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: var(--font-sans);
             font-weight: 600;
             color: var(--text-primary);
             font-size: 13px;
@@ -191,7 +200,7 @@
 
         /* Warning boxes */
         .curve-warning {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 11px;
         }
 
@@ -200,25 +209,26 @@
             background-color: #fff;
         }
 
-        /* Print-like panel styling */
+        /* Panels — white squircle cards, subtle diffuse lift */
         .panel {
             background-color: var(--bg-card);
             border: 1px solid var(--border-subtle);
-            border-radius: 2px;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
         }
 
         /* Export section */
         .export-btn {
-            background-color: var(--green-accent);
+            background-color: var(--accent);
             color: #fff;
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: var(--font-sans);
             font-weight: 500;
-            letter-spacing: 0.02em;
-            border-radius: 3px;
+            letter-spacing: -0.01em;
+            border-radius: 999px;
             transition: background-color 0.15s ease;
         }
         .export-btn:hover {
-            background-color: #1b4332;
+            background-color: var(--accent-hover);
         }
 
         /* Range slider */
@@ -226,14 +236,13 @@
             accent-color: var(--accent);
         }
 
-        /* Subtle section headings */
+        /* Section headings — sentence case, quiet */
         .section-heading {
-            font-family: 'IBM Plex Sans', sans-serif;
-            font-size: 11px;
+            font-family: var(--font-sans);
+            font-size: 13px;
             font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-muted);
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
             margin-bottom: 0.75rem;
             padding-bottom: 0.5rem;
             border-bottom: 1px solid var(--border-subtle);
@@ -244,18 +253,16 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #eceae5;
+            background: var(--bg-card-alt);
             margin-left: -0.5rem;
             margin-right: -0.5rem;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            border: 1px solid #e5e2dc;
-            border-bottom: 1px solid #e5e2dc;
+            padding: 0.6rem 0.85rem;
+            border-radius: 12px;
+            border: none;
             margin-bottom: 0.75rem;
         }
         .section-heading.collapsible:not(.collapsed) {
-            border-radius: 6px 6px 0 0;
-            border-bottom: none;
+            border-radius: 12px 12px 0 0;
             margin-bottom: 0;
         }
         .section-heading.collapsible::after {
@@ -263,12 +270,12 @@
             display: inline-block;
             width: 22px;
             height: 22px;
-            background: #e8e5df;
-            border-radius: 5px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23444' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background: #e8e8ed;
+            border-radius: 999px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: center;
-            background-size: 14px;
+            background-size: 13px;
             flex-shrink: 0;
             transition: transform 0.15s ease, background 0.15s ease;
         }
@@ -276,67 +283,75 @@
             transform: rotate(-90deg);
         }
         .section-heading.collapsible:hover::after {
-            background-color: #d1cdc6;
+            background-color: #dcdce1;
         }
         .collapsible-content {
             overflow: hidden;
-            background: #f5f3ef;
-            border-radius: 0 0 6px 6px;
-            padding: 0.75rem;
+            background: var(--bg-card-alt);
+            border-radius: 0 0 12px 12px;
+            padding: 0.85rem;
             margin-left: -0.5rem;
             margin-right: -0.5rem;
             margin-top: 0;
             margin-bottom: 0.75rem;
-            border: 1px solid #e5e2dc;
-            border-top: none;
+            border: none;
         }
         .collapsible-content.collapsed {
             display: none;
         }
 
-        /* Tone Reproduction Diagram */
+        /* Frosted sticky tab bar with segmented-control tabs */
+        .tabbar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(255, 255, 255, 0.72);
+            border-bottom: 1px solid var(--border-subtle);
+        }
         .tab-btn {
-            padding: 8px 20px;
+            padding: 7px 18px;
             font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.03em;
-            color: #6e6e6e;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: var(--text-secondary);
             background: transparent;
             border: none;
-            border-bottom: 2px solid transparent;
+            border-radius: 999px;
             cursor: pointer;
-            transition: color 0.15s, border-color 0.15s;
-            margin-bottom: -1px;
+            transition: color 0.15s, background-color 0.15s, box-shadow 0.15s;
         }
-        .tab-btn:hover { color: #1a1a1a; }
+        .tab-btn:hover { color: var(--text-primary); }
         .tab-btn.tab-active {
-            color: #1a1a1a;
-            border-bottom-color: #1a1a1a;
+            color: var(--text-primary);
+            font-weight: 600;
+            background: #ffffff;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
         }
         .ap-sub-tab {
             padding: 5px 14px;
             font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            color: #6e6e6e;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: var(--text-muted);
             background: rgba(0,0,0,0.04);
-            border: 1px solid #e5e2dc;
-            border-radius: 4px;
+            border: 1px solid transparent;
+            border-radius: 999px;
             cursor: pointer;
             transition: all 0.15s;
         }
-        .ap-sub-tab:hover { color: #1a1a1a; background: rgba(0,0,0,0.07); }
+        .ap-sub-tab:hover { color: var(--text-primary); background: rgba(0,0,0,0.07); }
         .ap-sub-tab.ap-sub-active {
-            color: #1a1a1a;
-            background: #fff;
-            border-color: #1a1a1a;
+            color: #fff;
+            background: var(--accent);
         }
         .tr-grid-wrapper {
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
             gap: 0;
-            border: 1.5px solid #1a1a1a;
+            border: 1.5px solid #1d1d1f;
             background: #fff;
         }
         .tr-cell {
@@ -345,20 +360,20 @@
             height: 100%;
             overflow: hidden;
         }
-        .tr-cell-tl { border-right: 1px solid #999; border-bottom: 1px solid #999; }
-        .tr-cell-tr { border-bottom: 1px solid #999; }
-        .tr-cell-bl { border-right: 1px solid #999; }
+        .tr-cell-tl { border-right: 1px solid #c7c7cc; border-bottom: 1px solid #c7c7cc; }
+        .tr-cell-tr { border-bottom: 1px solid #c7c7cc; }
+        .tr-cell-bl { border-right: 1px solid #c7c7cc; }
         .tr-cell-br { }
         .tr-q-title {
             position: absolute;
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: var(--font-sans);
             font-size: 10px;
             font-weight: 600;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+            letter-spacing: 0;
             color: var(--text-muted);
             z-index: 10;
             padding: 3px 6px;
+            border-radius: 6px;
             background: rgba(255,255,255,0.85);
         }
         .tr-qt-tl { top: 6px; left: 6px; }
@@ -366,7 +381,7 @@
         .tr-qt-bl { bottom: 6px; left: 6px; }
         .tr-qt-br { bottom: 6px; right: 6px; }
         .tr-axis-label {
-            font-family: 'IBM Plex Sans', sans-serif;
+            font-family: var(--font-sans);
             font-size: 11px;
             font-weight: 500;
             color: var(--text-muted);
@@ -374,27 +389,24 @@
             letter-spacing: 0.02em;
         }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
 
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <header class="mb-8 relative">
-            <a href="menu.html" class="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-[#e8e5df] transition-colors" title="Menu" style="color:var(--text-muted);">
+            <a href="menu.html" class="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-[#e8e8ed] transition-colors" title="Menu" style="color:var(--text-muted);">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </a>
-            <div class="text-center">
-                <h1 class="text-3xl font-bold" style="letter-spacing: -0.02em;">Film Curve Analyzer</h1>
-                <p class="text-sm text-[#6e6e6e] mt-1 font-sans tracking-wide">Sensitometric Analysis &amp; Development Planning</p>
+            <div class="text-center py-6">
+                <h1 class="text-5xl font-semibold" style="letter-spacing: -0.025em;">Film Curve Analyzer</h1>
+                <p class="text-lg mt-2" style="color: var(--text-muted); letter-spacing: -0.01em;">Sensitometric analysis &amp; development planning.</p>
             </div>
 
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-1 bg-[#faf9f7] p-5 border border-[#d8d4cc] space-y-5">
+            <div class="lg:col-span-1 panel p-5 space-y-5">
                 <!-- LEFT PANEL: Film (default) -->
                 <div id="leftPanelFilm">
                 <div>
@@ -444,12 +456,12 @@
                             <label><input type="radio" name="isoMethod" value="standard" checked> Pick a Reference</label>
                             <label><input type="radio" name="isoMethod" value="iso6_interpolated"> Interpolated Reference</label>
                         </div>
-                        <div id="iso6InterpolatedInfo" class="hidden mt-2 p-2 bg-[#f5f3ef] border border-[#d8d4cc] text-xs rounded">
+                        <div id="iso6InterpolatedInfo" class="hidden mt-2 p-2 bg-[#f5f5f7] border border-[#d2d2d7] text-xs rounded">
                             <p class="mb-1">Synthesizes a virtual curve at exactly ΔD=0.80 by interpolating across your development series. Requires ≥3 curves bracketing ΔD=0.80</p>
                             <div class="flex items-center space-x-2 mt-1">
                                 <label class="flex items-center space-x-1"><input type="checkbox" id="showIso6CurveToggle" checked><span>Show ΔD=0.80 curve on chart</span></label>
                             </div>
-                            <p id="iso6StatusMsg" class="mt-1 font-medium" style="color:#2d6a4f;"></p>
+                            <p id="iso6StatusMsg" class="mt-1 font-medium" style="color:#248a3d;"></p>
                         </div>
                         <div id="standardIsoInputContainer">
                             <label class="font-medium" for="targetIsoInput">Target ISO:</label>
@@ -457,8 +469,8 @@
                         </div>
                         <div id="refCurveContainer" class="hidden space-y-6"></div>
                          <div class="mt-2">
-                            <button id="toggleCalibrationBtn" class="text-xs text-[#8b6914] hover:underline font-medium uppercase tracking-wider">Calibration Options</button>
-                            <div id="calibrationContainer" class="hidden mt-3 p-3 bg-[#f5f3ef] border border-[#d8d4cc] space-y-3">
+                            <button id="toggleCalibrationBtn" class="text-xs text-[#0066cc] hover:underline font-medium">Calibration Options</button>
+                            <div id="calibrationContainer" class="hidden mt-3 p-3 bg-[#f5f5f7] border border-[#d2d2d7] space-y-3">
                                 <h4 class="section-heading">Calibrate Sensitometer</h4>
                                 <p class="text-xs text-gray-600">Use a known, ISO-compliant test curve to find the absolute log H offset for your sensitometer.</p>
                                 <div>
@@ -484,19 +496,19 @@
                 <div>
                     <h2 class="section-heading">Curves</h2>
                     <div class="flex space-x-2 mb-4">
-                        <button id="addCurveBtn" class="custom-btn font-medium py-1.5 px-3 text-xs tracking-wider uppercase">+ Add Curve</button>
-                        <label for="file-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider uppercase">Import</label>
+                        <button id="addCurveBtn" class="custom-btn font-medium py-1.5 px-3 text-xs tracking-wider">+ Add Curve</button>
+                        <label for="file-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Import</label>
                         <input type="file" id="file-import" class="hidden" accept=".json">
-                        <button id="export-json" class="secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider uppercase">Export Data</button>
-                        <label for="compare-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider uppercase" style="border-color: #ffffff; color: #ffffff;">Compare Films</label>
+                        <button id="export-json" class="secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Export Data</button>
+                        <label for="compare-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider" style="border-color: #ffffff; color: #ffffff;">Compare Films</label>
                         <input type="file" id="compare-import" class="hidden" accept=".json" multiple>
                     </div>
                     <div class="flex items-center space-x-2 mb-4">
-                        <button id="showAllCurvesBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider uppercase">Show All</button>
-                        <button id="hideAllCurvesBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider uppercase">Hide All</button>
-                        <label for="btzs-import" class="file-input-label secondary-btn py-1 px-2 text-[10px] tracking-wider uppercase">Import BTZS</label>
+                        <button id="showAllCurvesBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Show All</button>
+                        <button id="hideAllCurvesBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Hide All</button>
+                        <label for="btzs-import" class="file-input-label secondary-btn py-1 px-2 text-[10px] tracking-wider">Import BTZS</label>
                         <input type="file" id="btzs-import" class="hidden" accept=".pfc">
-                        <button id="resetAllBtn" class="py-1 px-2 text-[10px] tracking-wider uppercase font-medium rounded" style="background:#dc2626;color:#fff;border:1px solid #b91c1c;">Reset All</button>
+                        <button id="resetAllBtn" class="py-1 px-2 text-[10px] tracking-wider font-medium rounded" style="background:#dc2626;color:#fff;border:1px solid #b91c1c;">Reset All</button>
                     </div>
                     <div id="curvesContainer" class="space-y-6 max-h-[50vh] overflow-y-auto pr-2"></div>
                 </div>
@@ -511,20 +523,20 @@
                     <h3 class="section-heading mt-4">Paper & Process</h3>
                     <div class="space-y-2 text-sm mb-4">
                         <div>
-                            <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Paper</label>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Paper</label>
                             <input type="text" id="paperName" class="w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. Ilford MG V">
                         </div>
                         <div class="grid grid-cols-3 gap-2">
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Developer</label>
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Developer</label>
                                 <input type="text" id="paperDeveloper" class="w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. Multigrade">
                             </div>
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Dilution</label>
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Dilution</label>
                                 <input type="text" id="paperDilution" class="w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. 1+9">
                             </div>
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Temp</label>
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Temp</label>
                                 <input type="text" id="paperTemp" class="w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. 20°C">
                             </div>
                         </div>
@@ -547,7 +559,7 @@
                     <hr>
                     <div class="mt-4 mb-4">
                         <label class="flex items-center gap-1.5 text-sm cursor-pointer">
-                            <input type="checkbox" id="trUseMeasuredPaper" class="accent-[#1a1a1a]">
+                            <input type="checkbox" id="trUseMeasuredPaper" class="accent-[#1d1d1f]">
                             <span class="font-medium">Use measured paper in Tone Reproduction</span>
                         </label>
                         <div id="trPaperModePanel" class="mt-2" style="display:none;">
@@ -567,15 +579,15 @@
                     <hr>
                     <div class="flex items-center justify-between my-4">
                         <div class="flex items-center space-x-2 flex-wrap gap-y-2">
-                            <button id="addPaperCurveBtn" class="custom-btn font-medium py-1.5 px-3 text-xs tracking-wider uppercase">+ Add Grade</button>
-                            <button id="showAllPaperBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider uppercase">Show All</button>
-                            <button id="hideAllPaperBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider uppercase">Hide All</button>
-                            <label for="paper-file-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider uppercase" style="cursor:pointer;">Import Paper</label>
+                            <button id="addPaperCurveBtn" class="custom-btn font-medium py-1.5 px-3 text-xs tracking-wider">+ Add Grade</button>
+                            <button id="showAllPaperBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Show All</button>
+                            <button id="hideAllPaperBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Hide All</button>
+                            <label for="paper-file-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider" style="cursor:pointer;">Import Paper</label>
                             <input type="file" id="paper-file-import" class="hidden" accept=".json">
-                            <button id="export-paper-json" class="secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider uppercase">Export Paper</button>
+                            <button id="export-paper-json" class="secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Export Paper</button>
                         </div>
                         <label class="flex items-center gap-1.5 text-xs cursor-pointer" style="color:var(--text-muted);">
-                            <input type="checkbox" id="paperShowPoints" class="accent-[#1a1a1a]" checked>
+                            <input type="checkbox" id="paperShowPoints" class="accent-[#1d1d1f]" checked>
                             Points
                         </label>
                     </div>
@@ -584,9 +596,9 @@
                 </div><!-- /leftPanelPaper -->
             </div>
 
-            <div class="lg:col-span-2 bg-[#faf9f7] p-5 border border-[#d8d4cc]">
+            <div class="lg:col-span-2 panel p-5">
                 <!-- Tab navigation -->
-                <div class="flex border-b border-[#d8d4cc] mb-4" style="margin: -5px -5px 16px -5px; padding: 0 5px;">
+                <div class="tabbar flex items-center gap-1" style="margin: -20px -20px 16px -20px; padding: 12px 20px; border-radius: 18px 18px 0 0;">
                     <button id="tabCurves" class="tab-btn tab-active" onclick="switchTab('curves')">Curves</button>
                     <button id="tabToneRepro" class="tab-btn" onclick="switchTab('tonerepro')">Tone Reproduction</button>
                     <button id="tabAnalysis" class="tab-btn" onclick="switchTab('analysis')">Analysis Plots</button>
@@ -595,7 +607,7 @@
 
                 <!-- CHART AREA: Curves (switchable) -->
                 <div id="panelCurvesChart">
-                <div id="chartContainer" class="w-full mb-4 bg-white border border-[#e5e2dc] p-2" style="height: 600px;">
+                <div id="chartContainer" class="w-full mb-4 bg-white border border-[#e8e8ed] p-2" style="height: 600px;">
                     <canvas id="filmCurveChart"></canvas>
                 </div>
                 </div>
@@ -649,13 +661,13 @@
                         <!-- Section 1: Source & Scene -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Source Curve</label>
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Source Curve</label>
                                 <select id="trCurveSelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
                                     <option value="" disabled selected>Select a curve…</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Scene LSLR</label>
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Scene LSLR</label>
                                 <input type="number" id="trSceneLslr" step="0.01" min="0.50" max="4.00" placeholder="auto" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
                                 <p class="text-xs mt-0.5" style="color:var(--text-muted);">Leave empty for LER/CI</p>
                             </div>
@@ -666,12 +678,12 @@
                         <!-- Section 2: Exposure Sliders -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Film Exposure <span id="trFilmExpVal" class="font-normal" style="color:#1a1a1a;">0.0</span> stops</label>
-                                <input type="range" id="trFilmExpSlider" min="-3" max="3" step="0.1" value="0" class="w-full mt-1 accent-[#1a1a1a]" style="height:6px;">
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Film Exposure <span id="trFilmExpVal" class="font-normal" style="color:#1d1d1f;">0.0</span> stops</label>
+                                <input type="range" id="trFilmExpSlider" min="-3" max="3" step="0.1" value="0" class="w-full mt-1 accent-[#1d1d1f]" style="height:6px;">
                             </div>
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Paper Exposure <span id="trPaperExpVal" class="font-normal" style="color:#1a1a1a;">0.0</span> stops</label>
-                                <input type="range" id="trPaperExpSlider" min="-3" max="3" step="0.1" value="0" class="w-full mt-1 accent-[#1a1a1a]" style="height:6px;">
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Paper Exposure <span id="trPaperExpVal" class="font-normal" style="color:#1d1d1f;">0.0</span> stops</label>
+                                <input type="range" id="trPaperExpSlider" min="-3" max="3" step="0.1" value="0" class="w-full mt-1 accent-[#1d1d1f]" style="height:6px;">
                             </div>
                         </div>
 
@@ -680,7 +692,7 @@
                         <!-- Section 3: Speed, Anchor, Flare -->
                         <div class="grid grid-cols-4 gap-3">
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Speed Point</label>
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Speed Point</label>
                                 <select id="trSpeedMethod" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1">
                                     <option value="fixedDensity">Fixed Density</option>
                                     <option value="jones">Jones (FG)</option>
@@ -688,18 +700,18 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Paper Anchor</label>
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Paper Anchor</label>
                                 <select id="trPaperAnchor" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1">
                                     <option value="shadow">Shadow (T)</option>
                                     <option value="highlight">Highlight (S)</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Anchor %Dmax</label>
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Anchor %Dmax</label>
                                 <input type="number" id="trAnchorPct" min="50" max="100" step="1" value="90" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1">
                             </div>
                             <div>
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Offset (Flare)</label>
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Offset (Flare)</label>
                                 <div id="trEiOffset" class="w-full p-1.5 border border-gray-200 rounded-md text-xs mt-1 bg-gray-50 text-center font-mono" style="min-height:2em;">—</div>
                             </div>
                         </div>
@@ -709,11 +721,11 @@
                         <!-- Section 4: Display Options -->
                         <div class="flex items-center gap-4 pt-1">
                                 <label class="flex items-center gap-1.5 text-xs cursor-pointer">
-                                    <input type="checkbox" id="trShowGradient" class="accent-[#1a1a1a]">
+                                    <input type="checkbox" id="trShowGradient" class="accent-[#1d1d1f]">
                                     <span class="font-medium">Show Reproduction Gradient</span>
                                 </label>
                                 <label class="flex items-center gap-1.5 text-xs cursor-pointer">
-                                    <input type="checkbox" id="trShowMetered" class="accent-[#1a1a1a]">
+                                    <input type="checkbox" id="trShowMetered" class="accent-[#1d1d1f]">
                                     <span class="font-medium">Show Metered</span>
                                 </label>
                                 <div class="flex items-center gap-1">
@@ -733,16 +745,16 @@
                         <button class="ap-sub-tab" onclick="switchAnalysisPlot('lslrEfs')">LSLR vs EFS</button>
                         <button class="ap-sub-tab" onclick="switchAnalysisPlot('lslrCi')">LSLR vs CI</button>
                     </div>
-                    <div class="w-full bg-white border border-[#e5e2dc] p-2" style="height: 540px; position: relative;">
+                    <div class="w-full bg-white border border-[#e8e8ed] p-2" style="height: 540px; position: relative;">
                         <canvas id="analysisPlotCanvas"></canvas>
-                        <div id="apCrosshairInfo" style="display:none; position:absolute; pointer-events:none; font: 10px 'IBM Plex Mono', monospace; color:#1a1a1a; background:rgba(255,253,248,0.92); border:1px solid rgba(0,0,0,0.2); padding:2px 6px; border-radius:3px; white-space:nowrap; z-index:20;"></div>
+                        <div id="apCrosshairInfo" style="display:none; position:absolute; pointer-events:none; font: 10px 'SF Mono', ui-monospace, Menlo, monospace; color:#1d1d1f; background:rgba(255,253,248,0.92); border:1px solid rgba(0,0,0,0.2); padding:2px 6px; border-radius:3px; white-space:nowrap; z-index:20;"></div>
                     </div>
                     <div class="mt-2 text-xs text-center" style="color:var(--text-muted);">Hover over the regression curve to read interpolated values</div>
                 </div>
 
                 <!-- CHART AREA: Paper Curve (switchable) -->
                 <div id="panelPaperCurve" style="display:none;">
-                    <div id="paperChartContainer" class="w-full mb-4 bg-white border border-[#e5e2dc] p-2" style="height: 600px;">
+                    <div id="paperChartContainer" class="w-full mb-4 bg-white border border-[#e8e8ed] p-2" style="height: 600px;">
                         <canvas id="paperCurveChart"></canvas>
                     </div>
                     <h3 class="section-heading mt-4">Paper Characteristics</h3>
@@ -757,7 +769,7 @@
                                     <th class="py-2 px-2 text-left" title="Speed point: Dmin + 0.04">T</th>
                                     <th class="py-2 px-2 text-left" title="Log Exposure Range = log H at S minus log H at T">LER</th>
                                     <th class="py-2 px-2 text-left" title="Cyan / Magenta / Yellow filtration">CMY</th>
-                                    <th class="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TR</th>
+                                    <th class="py-2 px-2 text-left text-xs font-medium text-gray-500">TR</th>
                                 </tr>
                             </thead>
                             <tbody id="paperResultsTable"></tbody>
@@ -765,7 +777,7 @@
                     </div>
                     <div id="paperCmyResult" class="mt-4"></div>
                     <div class="mt-6 text-center">
-                        <button id="exportPaperPdfBtn" class="export-btn font-medium py-2.5 px-6 text-sm tracking-wide uppercase">Export Paper Curves as PDF</button>
+                        <button id="exportPaperPdfBtn" class="export-btn font-medium py-2.5 px-6 text-sm tracking-wide">Export Paper Curves as PDF</button>
                     </div>
                 </div>
 
@@ -774,18 +786,18 @@
                 <!-- SHARED CONTROLS (always visible) -->
                 <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
                     <div>
-                        <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Flare Model</label>
+                        <label class="font-medium text-xs" style="color:var(--text-muted);">Flare Model</label>
                         <select id="flareModelSelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
                             <option value="fixed" selected>Fixed Flare</option>
                             <option value="practical">Dynamic Flare</option>
                         </select>
                     </div>
                     <div>
-                        <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Paper LER</label>
+                        <label class="font-medium text-xs" style="color:var(--text-muted);">Paper LER</label>
                         <input type="number" id="targetLer" step="0.01" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" placeholder="e.g. 1.05" value="1.05">
                     </div>
                     <div>
-                        <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Flare (log H)</label>
+                        <label class="font-medium text-xs" style="color:var(--text-muted);">Flare (log H)</label>
                         <input type="number" id="flareLogH" step="0.01" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" value="0.40">
                     </div>
                 </div>
@@ -806,7 +818,7 @@
                                 <th class="py-2 px-2 text-left">FD EI</th>
                                 <th class="py-2 px-2 text-left">ΔX EI</th>
                                 <th class="py-2 px-2 text-left">Jones EI</th>
-                                <th class="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider iso-ref-col">Ref</th>
+                                <th class="py-2 px-2 text-left text-xs font-medium text-gray-500 iso-ref-col">Ref</th>
                             </tr>
                         </thead>
                         <tbody id="resultsTable"></tbody>
@@ -828,8 +840,8 @@
                                 <th class="py-2 px-2 text-left" id="efsColumnHeader">EI</th>
                                 <th class="py-2 px-2 text-left">Eff. Flare</th>
                                 <th class="py-2 px-2 text-left" title="Pure density range without flare: LER ÷ CI">LER/CI</th>
-                                <th class="py-2 px-2 text-left" style="color: #2d6a4f;" title="Log Scene Luminance Range including flare">LSLR</th>
-                                <th class="py-2 px-2 text-left" style="color: #2d6a4f;">Stops</th>
+                                <th class="py-2 px-2 text-left" style="color: #248a3d;" title="Log Scene Luminance Range including flare">LSLR</th>
+                                <th class="py-2 px-2 text-left" style="color: #248a3d;">Stops</th>
                             </tr>
                         </thead>
                         <tbody id="exposureTable"></tbody>
@@ -856,10 +868,10 @@
                         </div>
                     </div>
                     <div id="zoneTableOutput" class="overflow-x-auto"></div>
-                    <div class="mt-4 pt-3 border-t border-[#e5e2dc]">
+                    <div class="mt-4 pt-3 border-t border-[#e8e8ed]">
                         <div class="grid grid-cols-4 gap-3 items-end">
                             <div class="col-span-1">
-                                <label class="font-medium text-xs uppercase tracking-wider" style="color:var(--text-muted);">Scene LSLR</label>
+                                <label class="font-medium text-xs" style="color:var(--text-muted);">Scene LSLR</label>
                                 <input type="number" id="sceneLslrInput" step="0.01" min="0.30" max="4.00" placeholder="e.g. 2.00" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
                             </div>
                             <div class="col-span-3">
@@ -911,7 +923,7 @@
                         <input type="checkbox" id="plotSingleCurvesCheckbox" class="mr-2">
                         <label for="plotSingleCurvesCheckbox">Plot each curve individually in the export</label>
                     </div>
-                    <button id="exportPdfBtn" class="export-btn font-medium py-2.5 px-6 text-sm tracking-wide uppercase">Export as PDF</button>
+                    <button id="exportPdfBtn" class="export-btn font-medium py-2.5 px-6 text-sm tracking-wide">Export as PDF</button>
                 </div>
                 </div><!-- /filmControlsBelow -->
             </div>
@@ -1538,7 +1550,7 @@
         let globalReferenceCurve = null; // Store reference curve globally for PDF export
         let globalIso6Curve = null; // Store ISO 6 synthetic ΔD=0.80 curve
         let logH_Offset = null; // For sensitometer calibration
-        const defaultColors = ['#1a1a1a', '#8b2500', '#00457c', '#2d6a4f', '#6b3fa0', '#b45309', '#64748b'];
+        const defaultColors = ['#1d1d1f', '#8b2500', '#00457c', '#248a3d', '#6b3fa0', '#b25000', '#64748b'];
 
         // Speed constant K for S = K / Hm.
         // Fixed Density uses 0.80; Delta X and Fractional Gradient use 0.40 (1 stop deeper in toe).
@@ -1577,9 +1589,9 @@
 
         const initializeChart = () => {
             // Set Chart.js global defaults for scientific look
-            Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+            Chart.defaults.font.family = "-apple-system, 'SF Pro Text', sans-serif";
             Chart.defaults.font.size = 12;
-            Chart.defaults.color = '#4a4a4a';
+            Chart.defaults.color = '#424245';
             
             filmChart = new Chart(ctx, {
                 type: 'line',
@@ -1590,24 +1602,24 @@
                     scales: {
                         x: {
                             type: 'linear', position: 'bottom',
-                            title: { display: true, text: 'Relative log H', font: { size: 14, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a', padding: { top: 8 } },
-                            grid: { color: '#e5e2dc', lineWidth: 0.75, drawTicks: true, tickLength: 6 },
-                            border: { display: true, color: '#1a1a1a', width: 1.5 },
-                            ticks: { font: { size: 11, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a', padding: 4 }
+                            title: { display: true, text: 'Relative log H', font: { size: 14, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f', padding: { top: 8 } },
+                            grid: { color: '#e8e8ed', lineWidth: 0.75, drawTicks: true, tickLength: 6 },
+                            border: { display: true, color: '#1d1d1f', width: 1.5 },
+                            ticks: { font: { size: 11, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245', padding: 4 }
                         },
                         y: {
-                            title: { display: true, text: 'Density (D)', font: { size: 14, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a', padding: { bottom: 8 } },
+                            title: { display: true, text: 'Density (D)', font: { size: 14, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f', padding: { bottom: 8 } },
                             min: 0,
-                            grid: { color: '#e5e2dc', lineWidth: 0.75, drawTicks: true, tickLength: 6 },
-                            border: { display: true, color: '#1a1a1a', width: 1.5 },
-                            ticks: { font: { size: 11, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a', padding: 4 }
+                            grid: { color: '#e8e8ed', lineWidth: 0.75, drawTicks: true, tickLength: 6 },
+                            border: { display: true, color: '#1d1d1f', width: 1.5 },
+                            ticks: { font: { size: 11, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245', padding: 4 }
                         }
                     },
                     plugins: {
                         legend: {
                             position: 'top',
                             labels: {
-                                font: { size: 12, family: "'IBM Plex Sans', sans-serif", weight: '500' },
+                                font: { size: 12, family: "-apple-system, 'SF Pro Text', sans-serif", weight: '500' },
                                 usePointStyle: true,
                                 pointStyle: 'line',
                                 padding: 16,
@@ -1636,8 +1648,8 @@
                         },
                         tooltip: {
                             backgroundColor: 'rgba(26,26,26,0.92)',
-                            titleFont: { family: "'IBM Plex Sans', sans-serif", size: 12, weight: '600' },
-                            bodyFont: { family: "'IBM Plex Mono', monospace", size: 12 },
+                            titleFont: { family: "-apple-system, 'SF Pro Text', sans-serif", size: 12, weight: '600' },
+                            bodyFont: { family: "'SF Mono', ui-monospace, Menlo, monospace", size: 12 },
                             padding: 10,
                             cornerRadius: 2,
                             displayColors: true,
@@ -1669,10 +1681,10 @@
              if (show) {
                  if (!document.getElementById('refCurve')) {
                     const refCurveHTML = `
-                        <div id="refCurve" class="p-4 border border-[#d8d4cc] border-l-2 bg-[#faf9f7]" style="border-left-color: #2d6a4f;">
+                        <div id="refCurve" class="p-4 border border-[#d2d2d7] border-l-2 bg-[#ffffff]" style="border-left-color: #248a3d;">
                             <div class="flex justify-between items-center mb-3">
-                                <h4 class="text-sm font-semibold font-sans uppercase tracking-wide" style="color: #2d6a4f;">Reference Curve</h4>
-                                <button class="remove-ref-curve-btn text-[#b8b3aa] hover:text-[#9b2c2c] font-bold text-sm">&times;</button>
+                                <h4 class="text-sm font-semibold font-sans" style="color: #248a3d;">Reference Curve</h4>
+                                <button class="remove-ref-curve-btn text-[#c7c7cc] hover:text-[#d70015] font-bold text-sm">&times;</button>
                             </div>
                             <div class="space-y-3">
                                 <textarea class="data-input w-full p-2 border border-gray-300 rounded-md" placeholder="Paste Density values for reference curve..."></textarea>
@@ -1775,12 +1787,12 @@
                     <div class="flex justify-between items-center mb-3">
                         <div class="flex items-center space-x-2">
                              <div class="flex flex-col">
-                                <svg class="arrow-btn up-arrow w-3.5 h-3.5 text-[#b8b3aa] hover:text-[#1a1a1a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"></path></svg>
-                                <svg class="arrow-btn down-arrow w-3.5 h-3.5 text-[#b8b3aa] hover:text-[#1a1a1a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+                                <svg class="arrow-btn up-arrow w-3.5 h-3.5 text-[#c7c7cc] hover:text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"></path></svg>
+                                <svg class="arrow-btn down-arrow w-3.5 h-3.5 text-[#c7c7cc] hover:text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
-                            <h4 class="text-sm font-semibold font-sans uppercase tracking-wide text-[#4a4a4a]">Curve ${curveCounter}</h4>
+                            <h4 class="text-sm font-semibold font-sans text-[#424245]">Curve ${curveCounter}</h4>
                         </div>
-                        <button class="remove-curve-btn text-[#b8b3aa] hover:text-[#9b2c2c] font-bold text-sm" data-curve-id="${curveId}">&times;</button>
+                        <button class="remove-curve-btn text-[#c7c7cc] hover:text-[#d70015] font-bold text-sm" data-curve-id="${curveId}">&times;</button>
                     </div>
                     <div class="space-y-3">
                         <div class="grid grid-cols-2 gap-3">
@@ -2035,7 +2047,7 @@
                 if (iso6Result && iso6Result.error) {
                     if (statusEl) { statusEl.textContent = '! ' + iso6Result.error; statusEl.style.color = '#b91c1c'; }
                 } else if (iso6Result && iso6Result.points) {
-                    if (statusEl) { statusEl.textContent = iso6Result.status; statusEl.style.color = '#2d6a4f'; }
+                    if (statusEl) { statusEl.textContent = iso6Result.status; statusEl.style.color = '#248a3d'; }
                     // Pick speed point based on current method
                     let refSpeedPoint = null;
                     if (effectiveSpeedMethod === 'fractionalGradient') {
@@ -2298,8 +2310,8 @@
                     datasets.push({
                         label: `ΔD=0.80 @ ${globalIso6Curve.time.toFixed(1)} min (ISO 6)`,
                         data: globalIso6Curve.points,
-                        borderColor: '#2d6a4f',
-                        backgroundColor: '#2d6a4f',
+                        borderColor: '#248a3d',
+                        backgroundColor: '#248a3d',
                         fill: false,
                         tension: 0.1,
                         borderWidth: 2.5,
@@ -2317,8 +2329,8 @@
                             datasets.push({
                                 label: 'ISO 6 Speed Pt',
                                 data: [{x: referenceCurve.speedPoint, y: spY}],
-                                borderColor: '#2d6a4f',
-                                backgroundColor: '#2d6a4f',
+                                borderColor: '#248a3d',
+                                backgroundColor: '#248a3d',
                                 pointStyle: 'crossRot',
                                 radius: 7, hoverRadius: 9, borderWidth: 2.5,
                                 isAnnotation: true, order: 0
@@ -2404,17 +2416,17 @@
                 }
                 const synTimeText = globalIso6Curve.time ? globalIso6Curve.time.toFixed(1) : '—';
                 resultsTable.innerHTML += `
-                    <tr style="background: #e8f5ee; border-top: 2px solid #2d6a4f;">
-                        <td class="py-1.5 px-2"><span class="font-semibold font-sans" style="color:#2d6a4f;">ISO 6 Speed (ΔD=0.80)</span></td>
-                        <td class="py-1.5 px-2" style="color:#2d6a4f;">${synTimeText}</td>
-                        <td class="py-1.5 px-2" style="color:#2d6a4f;">${synCIText}</td>
-                        <td class="py-1.5 px-2" style="color:#2d6a4f;">${synDeltaDText}</td>
-                        <td class="py-1.5 px-2" style="color:#2d6a4f;">${synGammaText}</td>
-                        <td class="py-1.5 px-2" style="color:#2d6a4f;">${synGBarText}</td>
-                        <td class="py-1.5 px-2" style="color:#2d6a4f;">—</td>
-                        <td class="py-1.5 px-2" style="color:#2d6a4f;">${synFdEI}</td>
-                        <td class="py-1.5 px-2" style="color:#2d6a4f;">${synDxEI}</td>
-                        <td class="py-1.5 px-2" style="color:#2d6a4f;">${synJonesEI}</td>
+                    <tr style="background: #e8f5ee; border-top: 2px solid #248a3d;">
+                        <td class="py-1.5 px-2"><span class="font-semibold font-sans" style="color:#248a3d;">ISO 6 Speed (ΔD=0.80)</span></td>
+                        <td class="py-1.5 px-2" style="color:#248a3d;">${synTimeText}</td>
+                        <td class="py-1.5 px-2" style="color:#248a3d;">${synCIText}</td>
+                        <td class="py-1.5 px-2" style="color:#248a3d;">${synDeltaDText}</td>
+                        <td class="py-1.5 px-2" style="color:#248a3d;">${synGammaText}</td>
+                        <td class="py-1.5 px-2" style="color:#248a3d;">${synGBarText}</td>
+                        <td class="py-1.5 px-2" style="color:#248a3d;">—</td>
+                        <td class="py-1.5 px-2" style="color:#248a3d;">${synFdEI}</td>
+                        <td class="py-1.5 px-2" style="color:#248a3d;">${synDxEI}</td>
+                        <td class="py-1.5 px-2" style="color:#248a3d;">${synJonesEI}</td>
                         <td class="py-1.5 px-2 iso-ref-col"></td>
                     </tr>`;
             }
@@ -2422,7 +2434,7 @@
             // Show fallback note
             const fallbackEl = document.getElementById('speedFallbackNote');
             fallbackEl.innerHTML = globalFallback 
-                ? '<p class="text-xs mt-1" style="color:#b45309;">High-contrast curve detected (ΔD > 1.20). EFS calculated using Jones criterion for consistency.</p>'
+                ? '<p class="text-xs mt-1" style="color:#b25000;">High-contrast curve detected (ΔD > 1.20). EFS calculated using Jones criterion for consistency.</p>'
                 : '';
 
             // --- EXPOSURE & SCENE TABLE ---
@@ -2457,8 +2469,8 @@
                         <td class="py-1.5 px-2">${efsText}</td>
                         <td class="py-1.5 px-2">${effFlareText}</td>
                         <td class="py-1.5 px-2">${lerCiText}</td>
-                        <td class="py-1.5 px-2" style="color: #2d6a4f; font-weight: 500;">${lslrText}</td>
-                        <td class="py-1.5 px-2" style="color: #2d6a4f;">${stopsText}</td>
+                        <td class="py-1.5 px-2" style="color: #248a3d; font-weight: 500;">${lslrText}</td>
+                        <td class="py-1.5 px-2" style="color: #248a3d;">${stopsText}</td>
                     </tr>`;
             });
 
@@ -2541,13 +2553,13 @@
                             const roundedTime = roundTimeTo15s(timeResult.value);
                             const m = Math.floor(roundedTime); const s = Math.round((roundedTime - m) * 60);
                             timeText = `${m}:${s.toString().padStart(2, '0')}`;
-                            if (timeResult.extrapolated) timeText = `<span style="color:#b45309;">${timeText}*</span>`;
+                            if (timeResult.extrapolated) timeText = `<span style="color:#b25000;">${timeText}*</span>`;
                         }
                         if (isoCiDataLive.length >= 2) {
                             const isoResult = getPredictedValue(isoCiDataLive, requiredCi, 'x', 'y');
                             if (isoResult.value !== null) {
                                 isoText = String(roundToThirdStopISO(isoResult.value));
-                                if (isoResult.extrapolated) isoText = `<span style="color:#b45309;">${isoText}*</span>`;
+                                if (isoResult.extrapolated) isoText = `<span style="color:#b25000;">${isoText}*</span>`;
                             }
                         }
                     }
@@ -2566,7 +2578,7 @@
                     </tr>`;
                 });
                 zoneTableOutput.innerHTML = `
-                    <p class="text-xs mb-2" style="color:#6e6e6e;">${zoneSubtitle}</p>
+                    <p class="text-xs mb-2" style="color:#6e6e73;">${zoneSubtitle}</p>
                     <table class="min-w-full border-collapse text-sm">
                         <thead><tr>
                             <th class="py-1 px-2 text-left text-xs">N±</th>
@@ -2579,7 +2591,7 @@
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>
-                    <p class="text-xs mt-1" style="color:#b45309;">${rows.includes('*') ? '* Extrapolated beyond measured data' : ''}</p>`;
+                    <p class="text-xs mt-1" style="color:#b25000;">${rows.includes('*') ? '* Extrapolated beyond measured data' : ''}</p>`;
             } else {
                 zoneTableOutput.innerHTML = '<p class="text-xs text-gray-400 mt-2">Enter at least 2 curves to generate development aims.</p>';
             }
@@ -2625,7 +2637,7 @@
             }
 
             if (requiredCi === null || requiredCi <= 0) {
-                resultEl.innerHTML = '<span style="color:#b45309;">Cannot compute — LSLR too low for current flare settings</span>';
+                resultEl.innerHTML = '<span style="color:#b25000;">Cannot compute — LSLR too low for current flare settings</span>';
                 return;
             }
 
@@ -2654,8 +2666,8 @@
 
             const stopsVal = (lslrVal / 0.301).toFixed(1);
             const speedMethodName = speedMethod === 'fractionalGradient' ? 'Jones' : speedMethod === 'deltaX' ? 'ΔX' : 'FD';
-            const warnStyle = extrapolated ? ' style="color:#b45309;"' : '';
-            const warnStar = extrapolated ? '<span style="color:#b45309;"> *extrapolated</span>' : '';
+            const warnStyle = extrapolated ? ' style="color:#b25000;"' : '';
+            const warnStar = extrapolated ? '<span style="color:#b25000;"> *extrapolated</span>' : '';
 
             resultEl.innerHTML = `<span${warnStyle}><strong>Time:</strong> ${timeText}</span>` +
                 ` &nbsp;·&nbsp; <strong>EI</strong> <span style="color:var(--text-muted);">(${speedMethodName})</span><strong>:</strong> ${eiText}` +
@@ -2667,7 +2679,7 @@
         
         const exportPDF = async () => {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
             const pageW = doc.internal.pageSize.getWidth();
             const margin = 15;
             const contentWidth = pageW - margin * 2;
@@ -2679,46 +2691,46 @@
                 styles: {
                     fontSize: 8,
                     cellPadding: { top: 2.5, right: 3, bottom: 2.5, left: 3 },
-                    lineColor: [26, 26, 26],
-                    lineWidth: 0.25,
-                    textColor: [26, 26, 26],
+                    lineColor: [199, 199, 204],
+                    lineWidth: 0.2,
+                    textColor: [29, 29, 31],
                     font: 'helvetica',
                     overflow: 'linebreak',
                     fillColor: [255, 255, 255],
                 },
                 headStyles: {
-                    fillColor: [245, 243, 239],
-                    textColor: [26, 26, 26],
+                    fillColor: [245, 245, 247],
+                    textColor: [29, 29, 31],
                     fontStyle: 'bold',
                     fontSize: 7.5,
                     cellPadding: { top: 3, right: 3, bottom: 3, left: 3 },
-                    lineColor: [26, 26, 26],
-                    lineWidth: 0.25,
+                    lineColor: [199, 199, 204],
+                    lineWidth: 0.2,
                 },
                 bodyStyles: {
                     fillColor: [255, 255, 255],
                 },
                 alternateRowStyles: {
-                    fillColor: [250, 249, 247],
+                    fillColor: [250, 250, 252],
                 },
-                tableLineColor: [26, 26, 26],
-                tableLineWidth: 0.25,
+                tableLineColor: [199, 199, 204],
+                tableLineWidth: 0.2,
             };
 
             // --- PDF Title Block ---
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(18);
-            doc.setTextColor(26, 26, 26);
+            doc.setTextColor(29, 29, 31);
             doc.text(document.getElementById('docTitle').value || 'Film Curve Analysis', pageW / 2, 20, { align: 'center' });
             
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8.5);
-            doc.setTextColor(74, 74, 74);
+            doc.setTextColor(66, 66, 69);
             doc.text(`Analyst: ${document.getElementById('docName').value || 'N/A'}`, margin, 28);
             doc.text(`Date: ${document.getElementById('docDateTime').value ? new Date(document.getElementById('docDateTime').value).toLocaleString() : 'N/A'}`, pageW - margin, 28, { align: 'right' });
             
             // Thin rule under title
-            doc.setDrawColor(26, 26, 26);
+            doc.setDrawColor(29, 29, 31);
             doc.setLineWidth(0.3);
             doc.line(margin, 31, pageW - margin, 31);
             finalY = 34;
@@ -2726,7 +2738,7 @@
             const chartCanvas = document.getElementById('filmCurveChart');
             // Render at 2× for crisp export, then restore
             const origDPR = filmChart.options.devicePixelRatio;
-            filmChart.options.devicePixelRatio = 2;
+            filmChart.options.devicePixelRatio = 3;
             filmChart.update('none');
             let imgWidth = contentWidth;
             let imgHeight = chartCanvas.height * contentWidth / chartCanvas.width;
@@ -2736,7 +2748,7 @@
                 imgWidth = imgWidth * maxImgHeight / imgHeight;
                 imgHeight = maxImgHeight;
             }
-            doc.addImage(chartCanvas.toDataURL('image/jpeg', 0.85), 'JPEG', margin + (contentWidth - imgWidth) / 2, finalY, imgWidth, imgHeight);
+            doc.addImage(chartCanvas.toDataURL('image/png'), 'PNG', margin + (contentWidth - imgWidth) / 2, finalY, imgWidth, imgHeight);
             filmChart.options.devicePixelRatio = origDPR;
             filmChart.update('none');
             finalY += imgHeight + 10;
@@ -2779,7 +2791,7 @@
             const pdfSectionHeading = (text, y) => {
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(9);
-                doc.setTextColor(26, 26, 26);
+                doc.setTextColor(29, 29, 31);
                 doc.text(text.toUpperCase(), margin, y);
                 return y + 4;
             };
@@ -2811,7 +2823,7 @@
                 finalY = 20;
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(11);
-                doc.setTextColor(26, 26, 26);
+                doc.setTextColor(29, 29, 31);
                 doc.text(document.getElementById('docTitle').value || 'Film Curve Analysis', margin, finalY);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(8);
@@ -3051,7 +3063,7 @@
                     ];
                 });
 
-                doc.setTextColor(26, 26, 26);
+                doc.setTextColor(29, 29, 31);
                 finalY = pdfSectionHeading('Development Aims', finalY);
                 finalY += 1;
                 doc.setFont('helvetica', 'normal');
@@ -3099,7 +3111,7 @@
                 finalY = 20;
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(11);
-                doc.setTextColor(26, 26, 26);
+                doc.setTextColor(29, 29, 31);
                 doc.text(document.getElementById('docTitle').value || 'Film Curve Analysis', margin, finalY);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(8);
@@ -3108,7 +3120,7 @@
                 finalY += 8;
 
                 if (processInfo.length > 0 && typeof doc.autoTable === 'function') {
-                    doc.setTextColor(26, 26, 26);
+                    doc.setTextColor(29, 29, 31);
                     finalY = pdfSectionHeading('Process Description', finalY);
                     finalY += 2;
                     doc.autoTable({ ...pdfTableDefaults, startY: finalY, body: processInfo, columns: [{ header: 'Parameter', dataKey: 'label' }, { header: 'Value', dataKey: 'value' }], showHead: 'never', margin: { left: margin, right: margin }});
@@ -3116,13 +3128,13 @@
                 }
 
                 if (generalNotes.trim()) {
-                    doc.setTextColor(26, 26, 26);
+                    doc.setTextColor(29, 29, 31);
                     finalY = pdfSectionHeading('Notes', finalY);
                     finalY += 2;
                     const splitNotes = doc.splitTextToSize(generalNotes, contentWidth);
                     doc.setFont('helvetica', 'normal');
                     doc.setFontSize(7.5);
-                    doc.setTextColor(74, 74, 74);
+                    doc.setTextColor(66, 66, 69);
                     doc.text(splitNotes, margin, finalY);
                     finalY += 4 + (splitNotes.length * 3.5);
                 }
@@ -3162,14 +3174,14 @@
                         options: {
                             responsive: false,
                             animation: { duration: 0 },
-                            devicePixelRatio: 2,
+                            devicePixelRatio: 3,
                             plugins: {
                                 legend: { display: false },
-                                title: { display: true, text: `${curve.name}`, font: { size: 14, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' }
+                                title: { display: true, text: `${curve.name}`, font: { size: 14, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' }
                             },
                             scales: {
-                                x: { type: 'linear', title: { display: true, text: filmChart.options.scales.x.title.text, font: { size: 12, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' }, border: { display: true, color: '#1a1a1a', width: 1 }, grid: { color: '#e5e2dc', lineWidth: 0.75 }, ticks: { font: { size: 10, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a' } },
-                                y: { title: { display: true, text: 'Density (D)', font: { size: 12, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' }, min: 0, border: { display: true, color: '#1a1a1a', width: 1 }, grid: { color: '#e5e2dc', lineWidth: 0.75 }, ticks: { font: { size: 10, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a' } }
+                                x: { type: 'linear', title: { display: true, text: filmChart.options.scales.x.title.text, font: { size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' }, border: { display: true, color: '#1d1d1f', width: 1 }, grid: { color: '#e8e8ed', lineWidth: 0.75 }, ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245' } },
+                                y: { title: { display: true, text: 'Density (D)', font: { size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' }, min: 0, border: { display: true, color: '#1d1d1f', width: 1 }, grid: { color: '#e8e8ed', lineWidth: 0.75 }, ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245' } }
                             }
                         },
                         plugins: [{
@@ -3228,14 +3240,14 @@
                                         if (hm && hn && hfg) {
                                             const hmPx = getPixel(hm); const hnPx = getPixel(hn); const hfgPx = getPixel(hfg);
                                             ctx.save();
-                                            ctx.font = "600 9px 'IBM Plex Sans', sans-serif";
+                                            ctx.font = "600 9px -apple-system, 'SF Pro Text', sans-serif";
                                             // Hm marker (open circle)
                                             ctx.beginPath(); ctx.arc(hmPx.x, hmPx.y, 4, 0, Math.PI * 2);
-                                            ctx.strokeStyle = '#9b2c2c'; ctx.lineWidth = 1.5; ctx.setLineDash([]); ctx.stroke();
-                                            ctx.fillStyle = '#9b2c2c'; ctx.textAlign = 'left';
+                                            ctx.strokeStyle = '#d70015'; ctx.lineWidth = 1.5; ctx.setLineDash([]); ctx.stroke();
+                                            ctx.fillStyle = '#d70015'; ctx.textAlign = 'left';
                                             ctx.fillText('Hm', hmPx.x + 6, hmPx.y - 5);
                                             // Measurement window
-                                            ctx.strokeStyle = '#4a4a4a'; ctx.fillStyle = '#4a4a4a'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+                                            ctx.strokeStyle = '#424245'; ctx.fillStyle = '#424245'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
                                             ctx.beginPath(); ctx.moveTo(hmPx.x, hmPx.y); ctx.lineTo(hnPx.x, hmPx.y); ctx.stroke();
                                             ctx.textAlign = 'center'; ctx.fillText('1.30', (hmPx.x + hnPx.x) / 2, hmPx.y - 4);
                                             ctx.beginPath(); ctx.moveTo(hnPx.x, hmPx.y); ctx.lineTo(hnPx.x, hnPx.y); ctx.stroke();
@@ -3243,7 +3255,7 @@
                                             ctx.textAlign = 'center'; ctx.fillText(`Delta D=${deltaD.toFixed(2)}`, 0, 0); ctx.restore();
                                             // Delta X arrow
                                             const arrowY = hmPx.y + 14;
-                                            ctx.strokeStyle = '#2d6a4f'; ctx.fillStyle = '#2d6a4f'; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+                                            ctx.strokeStyle = '#248a3d'; ctx.fillStyle = '#248a3d'; ctx.lineWidth = 1.5; ctx.setLineDash([]);
                                             ctx.beginPath(); ctx.moveTo(hmPx.x, arrowY); ctx.lineTo(hfgPx.x, arrowY); ctx.stroke();
                                             ctx.beginPath(); ctx.moveTo(hfgPx.x, arrowY); ctx.lineTo(hfgPx.x + 5, arrowY - 2.5); ctx.lineTo(hfgPx.x + 5, arrowY + 2.5); ctx.closePath(); ctx.fill();
                                             ctx.textAlign = 'center'; ctx.fillText(`Delta X=${deltaX.toFixed(2)}`, (hmPx.x + hfgPx.x) / 2, arrowY - 5);
@@ -3261,9 +3273,9 @@
                     
                     await new Promise(resolve => setTimeout(resolve, 300));
 
-                    const chartImgData = singleCanvas.toDataURL('image/jpeg', 0.85);
+                    const chartImgData = singleCanvas.toDataURL('image/png');
                     const singleImgHeight = singleCanvas.height * contentWidth / singleCanvas.width;
-                    doc.addImage(chartImgData, 'JPEG', margin, yPos, contentWidth, singleImgHeight);
+                    doc.addImage(chartImgData, 'PNG', margin, yPos, contentWidth, singleImgHeight);
                     yPos += singleImgHeight + 10;
                     
                     if (typeof doc.autoTable === 'function') {
@@ -3297,13 +3309,13 @@
                 if (finalY > 270) { doc.addPage(); finalY = 20; }
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(8);
-                doc.setTextColor(26, 26, 26);
+                doc.setTextColor(29, 29, 31);
                 doc.text(title, margin, finalY);
                 finalY += 4;
 
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(7.5);
-                doc.setTextColor(74, 74, 74);
+                doc.setTextColor(66, 66, 69);
                 contentLines.forEach(line => {
                     const split = doc.splitTextToSize(line, contentWidth);
                     doc.text(split, margin, finalY);
@@ -3395,9 +3407,9 @@
             plotContainer.style.position = 'absolute'; plotContainer.style.left = '-9999px'; plotContainer.style.width = '800px';
             document.body.appendChild(plotContainer);
             // Use the top-level polynomialRegression function (no need to redefine)
-            const chartOptions = { responsive: false, animation: { duration: 0 }, devicePixelRatio: 2, scales: { x: { type: 'linear', grid: { color: '#e5e2dc', lineWidth: 0.75 }, border: { display: true, color: '#1a1a1a', width: 1 }, title: { display: true, font: {size: 12, family: "'Source Serif 4', serif", weight: '600'}, color: '#1a1a1a' }, ticks: { font: {size: 10, family: "'IBM Plex Mono', monospace"}, color: '#4a4a4a' } }, y: { grid: { color: '#e5e2dc', lineWidth: 0.75 }, border: { display: true, color: '#1a1a1a', width: 1 }, title: { display: true, font: {size: 12, family: "'Source Serif 4', serif", weight: '600'}, color: '#1a1a1a' }, ticks: { font: {size: 10, family: "'IBM Plex Mono', monospace"}, color: '#4a4a4a' } } }, plugins: { legend: { display: false }, title: { display: true, font: {size: 14, family: "'Source Serif 4', serif", weight: '600'}, color: '#1a1a1a' } } };
+            const chartOptions = { responsive: false, animation: { duration: 0 }, devicePixelRatio: 2, scales: { x: { type: 'linear', grid: { color: '#e8e8ed', lineWidth: 0.75 }, border: { display: true, color: '#1d1d1f', width: 1 }, title: { display: true, font: {size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600'}, color: '#1d1d1f' }, ticks: { font: {size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace"}, color: '#424245' } }, y: { grid: { color: '#e8e8ed', lineWidth: 0.75 }, border: { display: true, color: '#1d1d1f', width: 1 }, title: { display: true, font: {size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600'}, color: '#1d1d1f' }, ticks: { font: {size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace"}, color: '#424245' } } }, plugins: { legend: { display: false }, title: { display: true, font: {size: 14, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600'}, color: '#1d1d1f' } } };
             const generateChart = async (canvasId, data, title, xLabel, yLabel) => {
-                if (data.length < 2) return null; const canvas = document.createElement('canvas'); canvas.id = canvasId; canvas.width = 400; canvas.height = 300; plotContainer.appendChild(canvas); chartOptions.scales.x.title.text = xLabel; chartOptions.scales.y.title.text = yLabel; chartOptions.plugins.title.text = title; const datasets = [{ type: 'scatter', data: data, backgroundColor: '#1a1a1a', borderColor: '#1a1a1a', radius: 2.5 }]; const regressionFn = polynomialRegression(data); if (regressionFn) { const trendlineData = []; const minX = Math.min(...data.map(p => p.x)); const maxX = Math.max(...data.map(p => p.x)); for (let x = minX; x <= maxX; x += (maxX - minX) / 20) { trendlineData.push({x: x, y: regressionFn(x)}); } datasets.push({ type: 'line', data: trendlineData, borderColor: '#8b2500', borderWidth: 1.5, tension: 0.1, pointRadius: 0, fill: false }); } const tmpChart = new Chart(canvas.getContext('2d'), { data: { datasets: datasets }, options: chartOptions }); await new Promise(resolve => setTimeout(resolve, 300)); const imgUrl = canvas.toDataURL('image/png', 1.0); tmpChart.destroy(); return imgUrl;
+                if (data.length < 2) return null; const canvas = document.createElement('canvas'); canvas.id = canvasId; canvas.width = 400; canvas.height = 300; plotContainer.appendChild(canvas); chartOptions.scales.x.title.text = xLabel; chartOptions.scales.y.title.text = yLabel; chartOptions.plugins.title.text = title; const datasets = [{ type: 'scatter', data: data, backgroundColor: '#1d1d1f', borderColor: '#1d1d1f', radius: 2.5 }]; const regressionFn = polynomialRegression(data); if (regressionFn) { const trendlineData = []; const minX = Math.min(...data.map(p => p.x)); const maxX = Math.max(...data.map(p => p.x)); for (let x = minX; x <= maxX; x += (maxX - minX) / 20) { trendlineData.push({x: x, y: regressionFn(x)}); } datasets.push({ type: 'line', data: trendlineData, borderColor: '#8b2500', borderWidth: 1.5, tension: 0.1, pointRadius: 0, fill: false }); } const tmpChart = new Chart(canvas.getContext('2d'), { data: { datasets: datasets }, options: chartOptions }); await new Promise(resolve => setTimeout(resolve, 300)); const imgUrl = canvas.toDataURL('image/png', 1.0); tmpChart.destroy(); return imgUrl;
             };
             const plotData = curvesData; const ciTimeData = plotData.filter(c => !isNaN(c.ci) && !isNaN(c.time)).map(c => ({x: c.time, y: c.ci})).sort((a,b) => a.x - b.x); const sbrIsoData = plotData.filter(c => !isNaN(c.matchedSbr) && !isNaN(c.calculatedIso)).map(c => ({x: c.matchedSbr * 0.301, y: c.calculatedIso})).sort((a,b) => a.x - b.x); const isoCiData = plotData.filter(c => !isNaN(c.calculatedIso) && !isNaN(c.ci)).map(c => ({x: c.ci, y: c.calculatedIso})).sort((a,b) => a.x - b.x); const isoTimeData = plotData.filter(c => !isNaN(c.calculatedIso) && !isNaN(c.time)).map(c => ({x: c.time, y: c.calculatedIso})).sort((a,b) => a.x - b.x); const sbrCiData = plotData.filter(c => c.matchedSbr && !isNaN(c.ci)).map(c => ({x: c.ci, y: c.matchedSbr * 0.301})).sort((a,b) => a.x - b.x);
             if (ciTimeData.length > 1 || sbrIsoData.length > 1 || isoCiData.length > 1 || isoTimeData.length > 1 || sbrCiData.length > 1) {
@@ -3508,14 +3520,14 @@
                             useCORS: true,
                             logging: false
                         });
-                        const imgData = canvas.toDataURL('image/png', 1.0);
+                        const imgData = canvas.toDataURL('image/jpeg', 0.88);
 
                         doc.addPage();
                         let ty = 15;
 
                         doc.setFont('helvetica', 'bold');
                         doc.setFontSize(14);
-                        doc.setTextColor(26, 26, 26);
+                        doc.setTextColor(29, 29, 31);
                         doc.text('Tone Reproduction \u2014 ' + pdfTitles[zi], pageW / 2, ty, { align: 'center' });
                         ty += 5;
 
@@ -3540,7 +3552,7 @@
                             imgH = imgW / imgAspect;
                         }
                         const imgX = margin + (contentWidth - imgW) / 2;
-                        doc.addImage(imgData, 'PNG', imgX, ty, imgW, imgH);
+                        doc.addImage(imgData, 'JPEG', imgX, ty, imgW, imgH);
                     } catch (e) {
                         console.error('TR capture failed for ' + zLabel, e);
                     }
@@ -3585,7 +3597,7 @@
         // --- PAPER CURVES PDF EXPORT ---
         const exportPaperPDF = async () => {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
             const pageW = doc.internal.pageSize.getWidth();
             const pageH = doc.internal.pageSize.getHeight();
             const margin = 15;
@@ -3597,32 +3609,32 @@
                 styles: {
                     fontSize: 8,
                     cellPadding: { top: 2.5, right: 3, bottom: 2.5, left: 3 },
-                    lineColor: [26, 26, 26],
-                    lineWidth: 0.25,
-                    textColor: [26, 26, 26],
+                    lineColor: [199, 199, 204],
+                    lineWidth: 0.2,
+                    textColor: [29, 29, 31],
                     font: 'helvetica',
                     overflow: 'linebreak',
                     fillColor: [255, 255, 255],
                 },
                 headStyles: {
-                    fillColor: [245, 243, 239],
-                    textColor: [26, 26, 26],
+                    fillColor: [245, 245, 247],
+                    textColor: [29, 29, 31],
                     fontStyle: 'bold',
                     fontSize: 7.5,
                     cellPadding: { top: 3, right: 3, bottom: 3, left: 3 },
-                    lineColor: [26, 26, 26],
-                    lineWidth: 0.25,
+                    lineColor: [199, 199, 204],
+                    lineWidth: 0.2,
                 },
                 bodyStyles: { fillColor: [255, 255, 255] },
                 alternateRowStyles: { fillColor: [250, 249, 247] },
-                tableLineColor: [26, 26, 26],
-                tableLineWidth: 0.25,
+                tableLineColor: [199, 199, 204],
+                tableLineWidth: 0.2,
             };
 
             const pdfSectionHeading = (text, y) => {
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(9);
-                doc.setTextColor(26, 26, 26);
+                doc.setTextColor(29, 29, 31);
                 doc.text(text.toUpperCase(), margin, y);
                 return y + 4;
             };
@@ -3635,12 +3647,12 @@
 
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(18);
-            doc.setTextColor(26, 26, 26);
+            doc.setTextColor(29, 29, 31);
             doc.text(paperName, pageW / 2, 20, { align: 'center' });
 
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8.5);
-            doc.setTextColor(74, 74, 74);
+            doc.setTextColor(66, 66, 69);
 
             const subtitleParts = [paperDev, paperDil, paperTemp].filter(s => s && s.trim());
             if (subtitleParts.length > 0) {
@@ -3656,7 +3668,7 @@
                 if (rightText) doc.text(rightText, pageW - margin, 33, { align: 'right' });
             }
 
-            doc.setDrawColor(26, 26, 26);
+            doc.setDrawColor(29, 29, 31);
             doc.setLineWidth(0.3);
             const ruleY = (docName || docDate) ? 36 : 31;
             doc.line(margin, ruleY, pageW - margin, ruleY);
@@ -3666,10 +3678,10 @@
             const paperCanvas = document.getElementById('paperCurveChart');
             if (paperChart && paperCanvas) {
                 const origDPR = paperChart.options.devicePixelRatio;
-                paperChart.options.devicePixelRatio = 2;
+                paperChart.options.devicePixelRatio = 3;
                 paperChart.update('none');
                 const imgHeight = paperCanvas.height * contentWidth / paperCanvas.width;
-                doc.addImage(paperCanvas.toDataURL('image/jpeg', 0.85), 'JPEG', margin, finalY, contentWidth, imgHeight);
+                doc.addImage(paperCanvas.toDataURL('image/png'), 'PNG', margin, finalY, contentWidth, imgHeight);
                 paperChart.options.devicePixelRatio = origDPR;
                 paperChart.update('none');
                 finalY += imgHeight + 8;
@@ -3734,7 +3746,7 @@
                         finalY += 1;
                         doc.setFont('helvetica', 'normal');
                         doc.setFontSize(8);
-                        doc.setTextColor(74, 74, 74);
+                        doc.setTextColor(66, 66, 69);
                         doc.text(`C: ${iC !== null ? iC : '—'}   M: ${iM !== null ? iM : '—'}   Y: ${iY !== null ? iY : '—'}`, margin, finalY);
                         doc.text(`Between ${lo.name} (LER ${lo.ler.toFixed(2)}) and ${hi.name} (LER ${hi.ler.toFixed(2)})`, margin, finalY + 4);
                         finalY += 12;
@@ -3779,7 +3791,7 @@
                 const splitNotes = doc.splitTextToSize(paperNotes, contentWidth);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(7.5);
-                doc.setTextColor(74, 74, 74);
+                doc.setTextColor(66, 66, 69);
                 doc.text(splitNotes, margin, finalY);
                 finalY += 4 + (splitNotes.length * 3.5);
             }
@@ -4073,7 +4085,7 @@
             if (files.length < 2) { alert('Please select at least 2 JSON files to compare.'); event.target.value = ''; return; }
             if (files.length > 10) { alert('Maximum 10 files can be compared.'); event.target.value = ''; return; }
 
-            const compareColors = ['#8b2500', '#00457c', '#2d6a4f', '#6b3fa0', '#b45309', '#1a1a1a', '#0d7377', '#a83279', '#4a6741', '#64748b'];
+            const compareColors = ['#8b2500', '#00457c', '#248a3d', '#6b3fa0', '#b25000', '#1d1d1f', '#0d7377', '#a83279', '#4a6741', '#64748b'];
 
             // Read all JSON files
             const readFile = (file) => new Promise((resolve, reject) => {
@@ -4262,7 +4274,7 @@
 
             // --- Generate comparison PDF ---
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4', compress: true });
             const pageW = doc.internal.pageSize.getWidth();
             const pageH = doc.internal.pageSize.getHeight();
             const margin = 15;
@@ -4273,14 +4285,14 @@
             // --- PAGE 1: Title + Process Details Table ---
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(18);
-            doc.setTextColor(26, 26, 26);
+            doc.setTextColor(29, 29, 31);
             doc.text('Film Comparison', pageW / 2, 22, { align: 'center' });
 
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(9);
             doc.setTextColor(110, 110, 110);
             doc.text(`${filmResults.length} films · ${new Date().toLocaleDateString()}`, pageW / 2, 29, { align: 'center' });
-            doc.setDrawColor(26, 26, 26);
+            doc.setDrawColor(29, 29, 31);
             doc.setLineWidth(0.4);
             doc.line(margin, 33, pageW - margin, 33);
 
@@ -4288,7 +4300,7 @@
             let finalY = 40;
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(9);
-            doc.setTextColor(26, 26, 26);
+            doc.setTextColor(29, 29, 31);
             doc.text('DEVELOPMENT DETAILS', margin, finalY);
             finalY += 5;
 
@@ -4313,10 +4325,10 @@
                     margin: { left: margin, right: margin },
                     styles: {
                         font: 'helvetica', fontSize: 8, cellPadding: 3,
-                        lineColor: [26, 26, 26], lineWidth: 0.25, textColor: [26, 26, 26],
+                        lineColor: [199, 199, 204], lineWidth: 0.2, textColor: [29, 29, 31],
                     },
                     headStyles: {
-                        fillColor: [245, 243, 239], textColor: [26, 26, 26],
+                        fillColor: [245, 245, 247], textColor: [29, 29, 31],
                         fontStyle: 'bold', fontSize: 7.5,
                         cellPadding: { top: 2.5, right: 3, bottom: 2.5, left: 3 },
                     },
@@ -4332,7 +4344,7 @@
             if (filmsWithNotes.length > 0) {
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(9);
-                doc.setTextColor(26, 26, 26);
+                doc.setTextColor(29, 29, 31);
                 doc.text('NOTES', margin, finalY);
                 finalY += 5;
                 filmsWithNotes.forEach(film => {
@@ -4342,7 +4354,7 @@
                     doc.setTextColor(rgb[0], rgb[1], rgb[2]);
                     doc.text(film.title + ':', margin, finalY);
                     doc.setFont('helvetica', 'normal');
-                    doc.setTextColor(74, 74, 74);
+                    doc.setTextColor(66, 66, 69);
                     const noteLines = doc.splitTextToSize(film.process.notes, contentWidth - 55);
                     doc.text(noteLines, margin + 55, finalY);
                     finalY += Math.max(4, noteLines.length * 3.5) + 2;
@@ -4407,18 +4419,18 @@
                 const chartOpts = {
                     responsive: false, animation: { duration: 0 }, devicePixelRatio: 2,
                     scales: {
-                        x: { type: 'linear', grid: { color: '#e5e2dc', lineWidth: 0.75 }, border: { display: true, color: '#1a1a1a', width: 1 },
-                            title: { display: true, text: chartDef.xLabel, font: { size: 12, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' },
-                            ticks: { font: { size: 10, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a' } },
-                        y: { grid: { color: '#e5e2dc', lineWidth: 0.75 }, border: { display: true, color: '#1a1a1a', width: 1 },
-                            title: { display: true, text: chartDef.yLabel, font: { size: 12, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' },
-                            ticks: { font: { size: 10, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a' } }
+                        x: { type: 'linear', grid: { color: '#e8e8ed', lineWidth: 0.75 }, border: { display: true, color: '#1d1d1f', width: 1 },
+                            title: { display: true, text: chartDef.xLabel, font: { size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' },
+                            ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245' } },
+                        y: { grid: { color: '#e8e8ed', lineWidth: 0.75 }, border: { display: true, color: '#1d1d1f', width: 1 },
+                            title: { display: true, text: chartDef.yLabel, font: { size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' },
+                            ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245' } }
                     },
                     plugins: {
                         legend: {
                             display: true, position: 'bottom',
                             labels: {
-                                font: { size: 10, family: "'IBM Plex Sans', sans-serif", weight: '500' },
+                                font: { size: 10, family: "-apple-system, 'SF Pro Text', sans-serif", weight: '500' },
                                 usePointStyle: true, pointStyle: 'line', boxWidth: 20, boxHeight: 2, padding: 12,
                                 generateLabels: (chart) => chart.data.datasets.map((ds, i) => ({
                                     text: ds.label, fillStyle: ds.borderColor, strokeStyle: ds.borderColor,
@@ -4426,7 +4438,7 @@
                                 })),
                             }
                         },
-                        title: { display: true, text: chartDef.title, font: { size: 14, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' }
+                        title: { display: true, text: chartDef.title, font: { size: 14, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' }
                     }
                 };
 
@@ -4442,7 +4454,7 @@
             finalY = 12;
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(9);
-            doc.setTextColor(26, 26, 26);
+            doc.setTextColor(29, 29, 31);
             doc.text('COMPARISON ANALYSIS PLOTS', margin, finalY);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(7.5);
@@ -4553,7 +4565,7 @@
                         const padX = 10, padY = 8;
 
                         // Measure total box size
-                        ctx.font = `${fontSize}px 'IBM Plex Mono', monospace`;
+                        ctx.font = `${fontSize}px 'SF Mono', ui-monospace, Menlo, monospace`;
                         let maxLineW = 0;
                         let totalH = 0;
                         infoBlocks.forEach((block, bi) => {
@@ -4586,22 +4598,22 @@
                             block.lines.forEach((line, li) => {
                                 if (li === 0) {
                                     // Title line: bold, colored
-                                    ctx.font = `bold ${titleFontSize}px 'IBM Plex Sans', sans-serif`;
+                                    ctx.font = `bold ${titleFontSize}px -apple-system, 'SF Pro Text', sans-serif`;
                                     ctx.fillStyle = block.color;
                                     // Draw small colored square
                                     ctx.fillRect(boxX + padX, curY - fontSize + 3, 8, 8);
                                     ctx.fillStyle = block.color;
                                     ctx.fillText(line, boxX + padX + 12, curY);
                                 } else {
-                                    ctx.font = `${fontSize}px 'IBM Plex Mono', monospace`;
-                                    ctx.fillStyle = '#4a4a4a';
+                                    ctx.font = `${fontSize}px 'SF Mono', ui-monospace, Menlo, monospace`;
+                                    ctx.fillStyle = '#424245';
                                     ctx.fillText(line, boxX + padX + 12, curY);
                                 }
                                 curY += lineH;
                             });
                             if (bi < infoBlocks.length - 1) {
                                 // Separator line
-                                ctx.strokeStyle = '#d8d4cc';
+                                ctx.strokeStyle = '#d2d2d7';
                                 ctx.lineWidth = 0.5;
                                 ctx.beginPath();
                                 ctx.moveTo(boxX + padX, curY - lineH / 2 + blockGap / 2);
@@ -4620,16 +4632,16 @@
                     scales: {
                         x: {
                             type: 'linear',
-                            grid: { color: '#e5e2dc', lineWidth: 0.75 },
-                            border: { display: true, color: '#1a1a1a', width: 1 },
-                            title: { display: true, text: 'Relative Log Exposure (aligned at Fb+0.10)', font: { size: 13, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' },
-                            ticks: { font: { size: 10, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a', stepSize: 0.15 }
+                            grid: { color: '#e8e8ed', lineWidth: 0.75 },
+                            border: { display: true, color: '#1d1d1f', width: 1 },
+                            title: { display: true, text: 'Relative Log Exposure (aligned at Fb+0.10)', font: { size: 13, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' },
+                            ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245', stepSize: 0.15 }
                         },
                         y: {
-                            grid: { color: '#e5e2dc', lineWidth: 0.75 },
-                            border: { display: true, color: '#1a1a1a', width: 1 },
-                            title: { display: true, text: 'Density', font: { size: 13, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' },
-                            ticks: { font: { size: 10, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a' },
+                            grid: { color: '#e8e8ed', lineWidth: 0.75 },
+                            border: { display: true, color: '#1d1d1f', width: 1 },
+                            title: { display: true, text: 'Density', font: { size: 13, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' },
+                            ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245' },
                             min: 0
                         }
                     },
@@ -4637,7 +4649,7 @@
                         legend: {
                             display: true, position: 'bottom',
                             labels: {
-                                font: { size: 11, family: "'IBM Plex Sans', sans-serif", weight: '500' },
+                                font: { size: 11, family: "-apple-system, 'SF Pro Text', sans-serif", weight: '500' },
                                 usePointStyle: true, pointStyle: 'line', boxWidth: 24, boxHeight: 2, padding: 14,
                                 generateLabels: (chart) => chart.data.datasets.map((ds, i) => ({
                                     text: ds.label, fillStyle: ds.borderColor, strokeStyle: ds.borderColor,
@@ -4648,8 +4660,8 @@
                         title: {
                             display: true,
                             text: 'Normal (N) Characteristic Curves — Comparison',
-                            font: { size: 15, family: "'Source Serif 4', serif", weight: '600' },
-                            color: '#1a1a1a', padding: { bottom: 10 }
+                            font: { size: 15, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' },
+                            color: '#1d1d1f', padding: { bottom: 10 }
                         }
                     }
                 };
@@ -4852,7 +4864,7 @@
         let paperCurvesData = [];
         let paperCurveCounter = 0;
         let paperChart = null;
-        const paperDefaultColors = ['#8b2500', '#1a5276', '#196f3d', '#7d3c98', '#b9770e', '#1a1a1a'];
+        const paperDefaultColors = ['#8b2500', '#1a5276', '#196f3d', '#7d3c98', '#b9770e', '#1d1d1f'];
 
         const addPaperCurve = (info = {}) => {
             paperCurveCounter++;
@@ -4864,41 +4876,41 @@
             const html = `
                 <div id="${pcId}" class="curve-input-group p-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h4 class="text-sm font-semibold font-sans uppercase tracking-wide text-[#4a4a4a]">Grade ${paperCurveCounter}</h4>
-                        <button class="remove-paper-btn text-[#b8b3aa] hover:text-[#9b2c2c] font-bold text-sm" data-id="${pcId}">&times;</button>
+                        <h4 class="text-sm font-semibold font-sans text-[#424245]">Grade ${paperCurveCounter}</h4>
+                        <button class="remove-paper-btn text-[#c7c7cc] hover:text-[#d70015] font-bold text-sm" data-id="${pcId}">&times;</button>
                     </div>
                     <div class="space-y-3">
                         <div class="grid grid-cols-[1fr_auto] gap-3">
                             <div>
-                                <label class="text-xs font-medium uppercase tracking-wider" style="color:var(--text-muted);">Name</label>
+                                <label class="text-xs font-medium" style="color:var(--text-muted);">Name</label>
                                 <input type="text" class="paper-name w-full p-2 border border-gray-300 rounded-md text-sm" value="${escapeHtml(info.name || `Grade ${paperCurveCounter}`)}">
                             </div>
                             <div>
-                                <label class="text-xs font-medium uppercase tracking-wider" style="color:var(--text-muted);">Color</label>
+                                <label class="text-xs font-medium" style="color:var(--text-muted);">Color</label>
                                 <input type="color" class="paper-color p-1 h-[38px] w-12 block border border-gray-300 rounded-md" value="${newColor}">
                             </div>
                         </div>
                         <div class="flex items-center gap-5 text-sm">
-                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="paper-show accent-[#1a1a1a]" ${isShow ? 'checked' : ''}> Show</label>
-                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="paper-smooth accent-[#1a1a1a]" ${info.smooth ? 'checked' : ''}> Smooth</label>
-                            <label class="flex items-center gap-1.5 cursor-pointer" title="Use this grade in Tone Reproduction Q3"><input type="radio" name="paperForTR" class="paper-tr-radio accent-[#1a1a1a]" value="${pcId}" ${isForTR ? 'checked' : ''}> Use for TR</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="paper-show accent-[#1d1d1f]" ${isShow ? 'checked' : ''}> Show</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="paper-smooth accent-[#1d1d1f]" ${info.smooth ? 'checked' : ''}> Smooth</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer" title="Use this grade in Tone Reproduction Q3"><input type="radio" name="paperForTR" class="paper-tr-radio accent-[#1d1d1f]" value="${pcId}" ${isForTR ? 'checked' : ''}> Use for TR</label>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
                             <div>
-                                <label class="text-xs font-medium uppercase tracking-wider" style="color:var(--text-muted);">C</label>
+                                <label class="text-xs font-medium" style="color:var(--text-muted);">C</label>
                                 <input type="number" step="1" min="0" max="200" class="paper-c w-full p-1.5 border border-gray-300 rounded-md text-sm font-mono" placeholder="—" value="${info.c !== undefined ? info.c : ''}">
                             </div>
                             <div>
-                                <label class="text-xs font-medium uppercase tracking-wider" style="color:var(--text-muted);">M</label>
+                                <label class="text-xs font-medium" style="color:var(--text-muted);">M</label>
                                 <input type="number" step="1" min="0" max="200" class="paper-m w-full p-1.5 border border-gray-300 rounded-md text-sm font-mono" placeholder="—" value="${info.m !== undefined ? info.m : ''}">
                             </div>
                             <div>
-                                <label class="text-xs font-medium uppercase tracking-wider" style="color:var(--text-muted);">Y</label>
+                                <label class="text-xs font-medium" style="color:var(--text-muted);">Y</label>
                                 <input type="number" step="1" min="0" max="200" class="paper-y w-full p-1.5 border border-gray-300 rounded-md text-sm font-mono" placeholder="—" value="${info.y !== undefined ? info.y : ''}">
                             </div>
                         </div>
                         <div>
-                            <label class="text-xs font-medium uppercase tracking-wider" style="color:var(--text-muted);">Density Values</label>
+                            <label class="text-xs font-medium" style="color:var(--text-muted);">Density Values</label>
                             <textarea class="paper-data data-input w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="Paste print density values, separated by commas...">${escapeHtml(info.data || '')}</textarea>
                         </div>
                     </div>
@@ -5091,7 +5103,7 @@
                 prt.innerHTML = '';
                 paperCurvesData.forEach(c => {
                     const row = document.createElement('tr');
-                    row.className = 'border-t border-[#e5e2dc]';
+                    row.className = 'border-t border-[#e8e8ed]';
                     const cmyStr = (c.c !== null || c.m !== null || c.y !== null)
                         ? `${c.c ?? '—'} / ${c.m ?? '—'} / ${c.y ?? '—'}`
                         : '—';
@@ -5145,8 +5157,8 @@
                         const iY = lerp(lo.y, hi.y);
 
                         cmyResultEl.innerHTML = `
-                            <div class="p-3 rounded-md" style="background:#f5f3ef; border: 1px solid #e5e2dc;">
-                                <div class="text-xs font-medium uppercase tracking-wider mb-2" style="color:var(--text-muted);">Interpolated CMY for LER ${targetLer.toFixed(2)}</div>
+                            <div class="p-3 rounded-md" style="background:#f5f5f7; border: 1px solid #e8e8ed;">
+                                <div class="text-xs font-medium mb-2" style="color:var(--text-muted);">Interpolated CMY for LER ${targetLer.toFixed(2)}</div>
                                 <div class="grid grid-cols-3 gap-3 text-center">
                                     <div>
                                         <div class="text-xs font-medium" style="color:var(--text-muted);">C</div>
@@ -5181,7 +5193,7 @@
             if (visibleCurves.length === 0) {
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.font = "14px 'IBM Plex Sans', sans-serif";
+                ctx.font = "14px -apple-system, 'SF Pro Text', sans-serif";
                 ctx.fillStyle = '#999'; ctx.textAlign = 'center';
                 ctx.fillText('Add paper curves and enter density data to plot', canvas.width / 2, canvas.height / 2);
                 return;
@@ -5243,34 +5255,34 @@
                                     l.text = l.text.replace(' (line)', '');
                                     return l;
                                 }),
-                                font: { size: 11, family: "'IBM Plex Sans', sans-serif" }
+                                font: { size: 11, family: "-apple-system, 'SF Pro Text', sans-serif" }
                             }
                         },
                         tooltip: {
                             callbacks: {
                                 label: ctx => `${ctx.dataset.label.replace(' (line)','')}: Step D ${ctx.parsed.x.toFixed(2)}, Print D ${ctx.parsed.y.toFixed(2)}`
                             },
-                            bodyFont: { family: "'IBM Plex Mono', monospace", size: 11 }
+                            bodyFont: { family: "'SF Mono', ui-monospace, Menlo, monospace", size: 11 }
                         },
                         title: {
                             display: true, text: 'Paper Characteristic Curves',
-                            font: { size: 15, family: "'Source Serif 4', serif", weight: '600' },
-                            color: '#1a1a1a', padding: { bottom: 12 }
+                            font: { size: 15, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' },
+                            color: '#1d1d1f', padding: { bottom: 12 }
                         }
                     },
                     scales: {
                         x: {
                             type: 'linear',
-                            grid: { color: '#e5e2dc', lineWidth: 0.75 },
-                            border: { display: true, color: '#1a1a1a', width: 1 },
-                            title: { display: true, text: 'log Exposure (Step Density)', font: { size: 12, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' },
-                            ticks: { font: { size: 10, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a' }
+                            grid: { color: '#e8e8ed', lineWidth: 0.75 },
+                            border: { display: true, color: '#1d1d1f', width: 1 },
+                            title: { display: true, text: 'log Exposure (Step Density)', font: { size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' },
+                            ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245' }
                         },
                         y: {
-                            grid: { color: '#e5e2dc', lineWidth: 0.75 },
-                            border: { display: true, color: '#1a1a1a', width: 1 },
-                            title: { display: true, text: 'Print Reflection Density', font: { size: 12, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' },
-                            ticks: { font: { size: 10, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a' }
+                            grid: { color: '#e8e8ed', lineWidth: 0.75 },
+                            border: { display: true, color: '#1d1d1f', width: 1 },
+                            title: { display: true, text: 'Print Reflection Density', font: { size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' },
+                            ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245' }
                         }
                     }
                 }
@@ -5505,24 +5517,24 @@
                          const hfgPx = getPixel(hfg); 
 
                          ctx.save();
-                         ctx.font = "600 10px 'IBM Plex Sans', sans-serif";
+                         ctx.font = "600 10px -apple-system, 'SF Pro Text', sans-serif";
 
                          // --- Step 1: Mark the Fixed Density point (Hm) on the curve ---
                          // Open circle marker at 0.10 above B+F
                          ctx.beginPath();
                          ctx.arc(hmPx.x, hmPx.y, 5, 0, Math.PI * 2);
-                         ctx.strokeStyle = '#9b2c2c';
+                         ctx.strokeStyle = '#d70015';
                          ctx.lineWidth = 1.5;
                          ctx.setLineDash([]);
                          ctx.stroke();
                          // Label
-                         ctx.fillStyle = '#9b2c2c';
+                         ctx.fillStyle = '#d70015';
                          ctx.textAlign = 'left';
                          ctx.fillText('Hm (D=B+F+0.10)', hmPx.x + 8, hmPx.y - 6);
 
                          // --- Step 2: Measurement window — the ΔD triangle ---
-                         ctx.strokeStyle = '#4a4a4a';
-                         ctx.fillStyle = '#4a4a4a';
+                         ctx.strokeStyle = '#424245';
+                         ctx.fillStyle = '#424245';
                          ctx.lineWidth = 1;
                          ctx.setLineDash([3, 3]);
 
@@ -5552,13 +5564,13 @@
                          ctx.setLineDash([]);
                          ctx.beginPath();
                          ctx.arc(hnPx.x, hnPx.y, 2.5, 0, Math.PI * 2);
-                         ctx.fillStyle = '#4a4a4a';
+                         ctx.fillStyle = '#424245';
                          ctx.fill();
 
                          // --- Step 3: ΔX shift arrow from Hm to Hfg ---
                          const arrowY = hmPx.y + 18;
-                         ctx.strokeStyle = '#2d6a4f';
-                         ctx.fillStyle = '#2d6a4f';
+                         ctx.strokeStyle = '#248a3d';
+                         ctx.fillStyle = '#248a3d';
                          ctx.lineWidth = 1.5;
                          ctx.setLineDash([]);
 
@@ -5577,7 +5589,7 @@
                          ctx.fill();
 
                          // ΔX label above arrow
-                         ctx.font = "600 10px 'IBM Plex Sans', sans-serif";
+                         ctx.font = "600 10px -apple-system, 'SF Pro Text', sans-serif";
                          ctx.textAlign = 'center';
                          ctx.fillText(`ΔX = ${deltaX.toFixed(2)}`, (hmPx.x + hfgPx.x) / 2, arrowY - 6);
 
@@ -5590,7 +5602,7 @@
                          ctx.lineTo(hfgPx.x, hfgPx.y + dx);
                          ctx.lineTo(hfgPx.x - dx, hfgPx.y);
                          ctx.closePath();
-                         ctx.fillStyle = '#2d6a4f';
+                         ctx.fillStyle = '#248a3d';
                          ctx.fill();
                          // Label
                          ctx.textAlign = 'right';
@@ -5667,11 +5679,11 @@
                         ctx.save();
                         ctx.beginPath();
                         ctx.arc(px, py, 4, 0, Math.PI * 2);
-                        ctx.fillStyle = '#1a1a1a';
+                        ctx.fillStyle = '#1d1d1f';
                         ctx.fill();
 
                         // Measure label
-                        ctx.font = "bold 9px 'IBM Plex Sans', sans-serif";
+                        ctx.font = "bold 9px -apple-system, 'SF Pro Text', sans-serif";
                         const textW = ctx.measureText(d.label).width;
                         const textH = 11;
                         const padX = 4, padY = 2, gap = 8;
@@ -5734,7 +5746,7 @@
                         ctx.stroke();
 
                         // Draw text
-                        ctx.fillStyle = '#1a1a1a';
+                        ctx.fillStyle = '#1d1d1f';
                         ctx.textAlign = 'left';
                         ctx.textBaseline = 'top';
                         ctx.fillText(d.label, bx + padX, by + padY);
@@ -5750,7 +5762,7 @@
                 const corner = info.corner || 'bl'; // bl, br, tl, tr
 
                 ctx.save();
-                ctx.font = "10px 'IBM Plex Mono', monospace";
+                ctx.font = "10px 'SF Mono', ui-monospace, Menlo, monospace";
                 ctx.fillStyle = 'rgba(80,75,65,0.85)';
                 const lineH = 13;
                 const pad = 8;
@@ -5776,8 +5788,8 @@
                     const isBold = line.startsWith('*');
                     const text = isBold ? line.slice(1) : line;
                     ctx.font = isBold
-                        ? "bold 10px 'IBM Plex Sans', sans-serif"
-                        : "10px 'IBM Plex Mono', monospace";
+                        ? "bold 10px -apple-system, 'SF Pro Text', sans-serif"
+                        : "10px 'SF Mono', ui-monospace, Menlo, monospace";
                     ctx.fillStyle = isBold ? 'rgba(26,26,26,0.9)' : 'rgba(80,75,65,0.85)';
                     ctx.fillText(text, x, startY + (i * lineH));
                 });
@@ -5791,8 +5803,8 @@
                 if (gradInfo && chart.scales.y2) {
                     const y2 = chart.scales.y2;
                     ctx.save();
-                    ctx.font = "8px 'IBM Plex Mono', monospace";
-                    ctx.fillStyle = '#9b2c2c';
+                    ctx.font = "8px 'SF Mono', ui-monospace, Menlo, monospace";
+                    ctx.fillStyle = '#d70015';
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'middle';
                     const step = 0.5;
@@ -5811,8 +5823,8 @@
                     }
                     // Axis title
                     ctx.save();
-                    ctx.font = "bold 8px 'IBM Plex Sans', sans-serif";
-                    ctx.fillStyle = '#9b2c2c';
+                    ctx.font = "bold 8px -apple-system, 'SF Pro Text', sans-serif";
+                    ctx.fillStyle = '#d70015';
                     ctx.translate(area.left + 3, area.bottom - 4);
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'bottom';
@@ -5821,8 +5833,8 @@
 
                     // Average gradient labels in top-left corner of Q4
                     if (gradInfo.avg !== undefined) {
-                        ctx.font = "bold 9px 'IBM Plex Mono', monospace";
-                        ctx.fillStyle = '#9b2c2c';
+                        ctx.font = "bold 9px 'SF Mono', ui-monospace, Menlo, monospace";
+                        ctx.fillStyle = '#d70015';
                         ctx.textAlign = 'left';
                         ctx.textBaseline = 'top';
                         ctx.fillText(`Avg: ${gradInfo.avg.toFixed(2)}`, area.left + 6, area.top + 6);
@@ -5865,7 +5877,7 @@
 
                         const cx = (x0 + x1) / 2;
                         if (x1 - x0 > 14) {
-                            ctx.font = "bold 9px 'IBM Plex Sans', sans-serif";
+                            ctx.font = "bold 9px -apple-system, 'SF Pro Text', sans-serif";
                             ctx.fillStyle = 'rgba(0,0,0,0.45)';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
@@ -6050,8 +6062,8 @@
             if (trInitialized) return;
             trInitialized = true;
 
-            const trGridStyle = { color: '#e8e5df', drawOnChartArea: false, tickLength: 3 };
-            const trTickFont = { size: 9, family: "'IBM Plex Mono', monospace" };
+            const trGridStyle = { color: '#e8e8ed', drawOnChartArea: false, tickLength: 3 };
+            const trTickFont = { size: 9, family: "'SF Mono', ui-monospace, Menlo, monospace" };
 
             const makeTRChart = (canvasId, xMin, xMax, yMin, yMax, xRev, yPos, xPos, isLeft, isTop) => {
                 return new Chart(document.getElementById(canvasId), {
@@ -6068,7 +6080,7 @@
                                 type: 'linear', min: xMin, max: xMax, reverse: xRev,
                                 position: xPos,
                                 grid: trGridStyle,
-                                ticks: { font: trTickFont, stepSize: 0.3, color: '#6e6e6e' },
+                                ticks: { font: trTickFont, stepSize: 0.3, color: '#6e6e73' },
                                 border: { display: false },
                                 afterFit: (scale) => {
                                     scale.paddingLeft = 0;
@@ -6080,7 +6092,7 @@
                                 type: 'linear', min: yMin, max: yMax,
                                 position: yPos,
                                 grid: trGridStyle,
-                                ticks: { font: trTickFont, stepSize: 0.3, color: '#6e6e6e' },
+                                ticks: { font: trTickFont, stepSize: 0.3, color: '#6e6e73' },
                                 border: { display: false },
                                 afterFit: (scale) => {
                                     scale.paddingTop = 0;
@@ -6842,7 +6854,7 @@
             let meteredDeltaFromSpeed = null;    // logH difference: metered vs speed point
             const mQ1Trace = [], mQ2Trace = [], mQ3Trace = [], mQ4Trace = [];
             const mQ1Pts = [], mQ2Pts = [], mQ3Pts = [], mQ4Pts = [];
-            const meteredColor = '#b45309'; // amber/brown
+            const meteredColor = '#b25000'; // amber/brown
 
             if (showMetered && meteredR > highlightReflectance + 0.01 && meteredR < shadowReflectance - 0.01) {
                 meteredLogH = calcQ1Y(meteredR);
@@ -6908,7 +6920,7 @@
             const traceColor = 'rgba(0,0,0,0.25)';
             const keyColor = 'rgba(0,0,0,0.7)';
 
-            setDS(trChartQ1, 0, q1Line, '#1a1a1a', false);
+            setDS(trChartQ1, 0, q1Line, '#1d1d1f', false);
             setDS(trChartQ1, 1, q1Trace, traceColor, true, 0.75);
             setDS(trChartQ1, 2, q1Key, keyColor, true, 2);
             setPtsDS(trChartQ1, 3, q1Pts);
@@ -6927,7 +6939,7 @@
             }
             trChartQ1.data.datasets.length = q1DsLen;
 
-            setDS(trChartQ2, 0, q2Line, '#1a1a1a', false);
+            setDS(trChartQ2, 0, q2Line, '#1d1d1f', false);
             setDS(trChartQ2, 1, q2Trace, traceColor, true, 0.75);
             setDS(trChartQ2, 2, q2Key, keyColor, true, 2);
             setPtsDS(trChartQ2, 3, q2Pts);
@@ -6935,7 +6947,7 @@
             // Speed point marker (always visible)
             if (speedPtMarker.length > 0) {
                 trChartQ2.data.datasets[q2DsLen] = {
-                    data: speedPtMarker, borderColor: '#1a1a1a', backgroundColor: '#1a1a1a',
+                    data: speedPtMarker, borderColor: '#1d1d1f', backgroundColor: '#1d1d1f',
                     pointRadius: 4, pointStyle: 'triangle', showLine: false, borderWidth: 1.5
                 };
                 q2DsLen++;
@@ -6954,7 +6966,7 @@
             }
             trChartQ2.data.datasets.length = q2DsLen;
 
-            setDS(trChartQ3, 0, q3Line, '#1a1a1a', false);
+            setDS(trChartQ3, 0, q3Line, '#1d1d1f', false);
             setDS(trChartQ3, 1, q3Trace, traceColor, true, 0.75);
             setDS(trChartQ3, 2, q3Key, keyColor, true, 2);
             setPtsDS(trChartQ3, 3, q3Pts);
@@ -6983,8 +6995,8 @@
                 trChartQ3.data.datasets.length = q3Len + 2;
             }
 
-            setDS(trChartQ4, 0, q4ReproCurve, '#1a1a1a', false, 2);
-            setDS(trChartQ4, 1, q4Ideal, '#1a1a1a', false, 1.5);
+            setDS(trChartQ4, 0, q4ReproCurve, '#1d1d1f', false, 2);
+            setDS(trChartQ4, 1, q4Ideal, '#1d1d1f', false, 1.5);
             setDS(trChartQ4, 2, q4HelpLines, 'rgba(0,0,0,0.25)', true, 1);
             setDS(trChartQ4, 3, q4HelpKey, 'rgba(0,0,0,0.7)', true, 2);
             setDS(trChartQ4, 4, q4Trace, traceColor, true, 0.75);
@@ -7008,7 +7020,7 @@
             if (showGrad && q4GradientCurve.length > 0) {
                 // Gradient curve
                 trChartQ4.data.datasets[7] = {
-                    data: q4GradientCurve, borderColor: '#9b2c2c', backgroundColor: 'rgba(155,44,44,0.06)',
+                    data: q4GradientCurve, borderColor: '#d70015', backgroundColor: 'rgba(155,44,44,0.06)',
                     borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true,
                     yAxisID: 'y2', order: 10
                 };
@@ -7301,7 +7313,7 @@
 
                     // Dot at intersection
                     ctx.setLineDash([]);
-                    ctx.fillStyle = '#1a1a1a';
+                    ctx.fillStyle = '#1d1d1f';
                     ctx.beginPath();
                     ctx.arc(px, py, 3, 0, Math.PI * 2);
                     ctx.fill();
@@ -7360,7 +7372,7 @@
                 if (data.length < 2) {
                     const ctx = canvas.getContext('2d');
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.font = "14px 'IBM Plex Sans', sans-serif";
+                    ctx.font = "14px -apple-system, 'SF Pro Text', sans-serif";
                     ctx.fillStyle = '#999';
                     ctx.textAlign = 'center';
                     ctx.fillText('Not enough data (need at least 2 curves)', canvas.width / 2, canvas.height / 2);
@@ -7385,7 +7397,7 @@
                 const datasets = [
                     {
                         type: 'scatter', data: data,
-                        backgroundColor: '#1a1a1a', borderColor: '#1a1a1a',
+                        backgroundColor: '#1d1d1f', borderColor: '#1d1d1f',
                         radius: 4, hoverRadius: 5, pointStyle: 'circle', order: 2
                     }
                 ];
@@ -7409,23 +7421,23 @@
                             tooltip: { enabled: false },
                             title: {
                                 display: true, text: plotDef.title,
-                                font: { size: 15, family: "'Source Serif 4', serif", weight: '600' },
-                                color: '#1a1a1a', padding: { bottom: 12 }
+                                font: { size: 15, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' },
+                                color: '#1d1d1f', padding: { bottom: 12 }
                             }
                         },
                         scales: {
                             x: {
                                 type: 'linear',
-                                grid: { color: '#e5e2dc', lineWidth: 0.75 },
-                                border: { display: true, color: '#1a1a1a', width: 1 },
-                                title: { display: true, text: plotDef.xLabel, font: { size: 12, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' },
-                                ticks: { font: { size: 10, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a' }
+                                grid: { color: '#e8e8ed', lineWidth: 0.75 },
+                                border: { display: true, color: '#1d1d1f', width: 1 },
+                                title: { display: true, text: plotDef.xLabel, font: { size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' },
+                                ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245' }
                             },
                             y: {
-                                grid: { color: '#e5e2dc', lineWidth: 0.75 },
-                                border: { display: true, color: '#1a1a1a', width: 1 },
-                                title: { display: true, text: plotDef.yLabel, font: { size: 12, family: "'Source Serif 4', serif", weight: '600' }, color: '#1a1a1a' },
-                                ticks: { font: { size: 10, family: "'IBM Plex Mono', monospace" }, color: '#4a4a4a' }
+                                grid: { color: '#e8e8ed', lineWidth: 0.75 },
+                                border: { display: true, color: '#1d1d1f', width: 1 },
+                                title: { display: true, text: plotDef.yLabel, font: { size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#1d1d1f' },
+                                ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245' }
                             }
                         },
                         onHover: (evt, elements, chart) => {
