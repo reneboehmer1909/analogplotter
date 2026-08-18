@@ -117,14 +117,19 @@
         input[type="checkbox"] {
             accent-color: var(--accent);
         }
+        /* Color inputs: the whole control is the color chip, no white frame */
         input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            padding: 0;
             border: 1px solid var(--border-medium);
             border-radius: 8px;
-            background: #fff;
-            padding: 2px;
-            min-width: 36px;
+            background: none;
+            overflow: hidden;
             cursor: pointer;
         }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0; }
         input[type="radio"] {
             accent-color: var(--accent);
         }
@@ -4998,7 +5003,7 @@
                             </div>
                             <div>
                                 <label class="text-xs font-medium" style="color:var(--text-muted);">Color</label>
-                                <input type="color" class="paper-color p-1 h-[38px] w-12 block border border-gray-300 rounded-md" value="${newColor}">
+                                <input type="color" class="paper-color h-[38px] w-12 block" value="${newColor}">
                             </div>
                         </div>
                         <div class="flex items-center gap-5 text-sm">
