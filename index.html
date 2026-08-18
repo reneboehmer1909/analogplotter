@@ -386,6 +386,17 @@
             margin-right: auto;
         }
 
+        /* Jones diagram: square overall, centered, scales to viewport */
+        .tr-frame {
+            width: min(100%, calc(100vh - 200px));
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .tr-frame .tr-grid-wrapper {
+            aspect-ratio: 1 / 1;
+            height: auto;
+        }
+
         /* Frosted sticky tab bar with segmented-control tabs */
         .tabbar {
             position: sticky;
@@ -699,7 +710,7 @@
                 <!-- CHART AREA: Tone Reproduction (switchable) -->
                 <div id="panelToneReproChart" style="display:none;">
                     <!-- Axis labels and 2x2 grid -->
-                    <div class="relative" style="padding: 24px 8px 8px 28px;">
+                    <div class="relative tr-frame" style="padding: 24px 8px 8px 28px;">
                         <!-- Top axis label -->
                         <div class="tr-axis-label" style="position:absolute; top:4px; left:28px; right:8px;">
                             <span>Neg Density → log E (Paper)</span>
@@ -709,7 +720,7 @@
                         <!-- Left axis label -->
                         <div class="tr-axis-label" style="position:absolute; left:-6px; top:50%; transform:translateY(-50%) rotate(-90deg); white-space:nowrap;">Print Density</div>
 
-                        <div class="tr-grid-wrapper" style="height: 720px;">
+                        <div class="tr-grid-wrapper">
                             <!-- Q3: Paper (top-left) -->
                             <div class="tr-cell tr-cell-tl">
                                 <div class="tr-q-title tr-qt-tl">Q3 Paper</div>
@@ -829,7 +840,7 @@
                         <button class="ap-sub-tab" onclick="switchAnalysisPlot('lslrEfs')">LSLR vs EFS</button>
                         <button class="ap-sub-tab" onclick="switchAnalysisPlot('lslrCi')">LSLR vs CI</button>
                     </div>
-                    <div class="w-full bg-white border border-[#e8e8ed] p-2" style="height: 540px; position: relative;">
+                    <div class="chart-frame bg-white border border-[#e8e8ed] p-2 rounded-lg" style="position: relative;">
                         <canvas id="analysisPlotCanvas"></canvas>
                         <div id="apCrosshairInfo" style="display:none; position:absolute; pointer-events:none; font: 10px 'SF Mono', ui-monospace, Menlo, monospace; color:#1d1d1f; background:rgba(255,253,248,0.92); border:1px solid rgba(0,0,0,0.2); padding:2px 6px; border-radius:3px; white-space:nowrap; z-index:20;"></div>
                     </div>
