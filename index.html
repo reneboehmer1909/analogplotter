@@ -1433,37 +1433,41 @@
         const INTRO_STEPS = [
             {
                 title: 'Welcome to Analogplotter',
-                body: `<p>This tool turns your densitometer readings into <strong>characteristic curves</strong> — the fundamental description of how a film responds to light.</p>
-                       <p>A characteristic curve is simply a function: <strong>exposure in, density out</strong>. Everything else — contrast, film speed, development aims, print prediction — is read from that curve.</p>` +
-                       `<div class="intro-illu">` + INTRO_SVG_FAMILY + `</div>`
-            },
-            {
-                title: 'How did you expose the step wedge?',
-                body: `<p>First decide what you actually know about the exposure:</p>
-                       <p><strong>Absolute testing</strong> — you know the light that hit the film in <strong>lux·seconds</strong> (a calibrated sensitometer). Choose <em>Custom log H (lux-s)</em> in <em>Exposure (log H) Definition</em>. Real ISO speeds can be computed.</p>
-                       <p><strong>Relative testing</strong> — you only have a step wedge and do <em>not</em> know the absolute illuminance at the film plane, but you know the <strong>density of each wedge step</strong>. Choose <em>Step Tablet Densities</em> and enter them. The exposure axis is then relative — speeds become relative to a reference, which is fine for development testing.</p>` +
+                body: `<p><strong>A tool made to help you understand your process.</strong></p>
+                       <p>Analogplotter turns your densitometer readings into characteristic curves — and reads contrast, film speed and development aims from them. The first thing the tool wants you to define is <strong>how you exposed your test films</strong>.</p>` +
                        `<div class="intro-illu">` + INTRO_SVG_WEDGE + `</div>`
             },
             {
-                title: 'The test itself',
-                body: `<p>Expose <strong>several film strips exactly the same way</strong> through the wedge — same light, same time, same everything.</p>
-                       <p>Then develop each strip for a <strong>different development time</strong> (for example 5:30, 8:00, 11:00, 16:00) and enter that time on each curve card.</p>
-                       <p>Finally, measure the density of every step on every strip and paste the values into the matching curve. The result is a <strong>family of curves</strong> — one per development time.</p>` +
+                title: 'Absolute or relative testing?',
+                body: `<p><strong>Do you know the exact amount of light that hit your film, in lux·seconds?</strong> If yes, you can do <strong>absolute testing</strong>, allowing you to determine ISO properly.</p>
+                       <p><strong>You don't know the exact amount of light that hit the film</strong> — but you do know the density steps of the step tablet you used? Then you will do <strong>relative testing</strong>: comparing curve shapes against each other, without knowing the absolute sensitivity of the material.</p>
+                       <p>You enter what you know in the <strong>Exposure (log H) Definition</strong> area in the sidebar.</p>`
+            },
+            {
+                title: 'Entering your data',
+                body: `<p>Once the exposure is defined you are ready to <strong>add a curve</strong>. For each test strip, enter how long you developed it in minutes and the density steps your process gave you.</p>
+                       <p><strong>Make sure your exposure stays exactly the same for each film</strong> — only the development time changes.</p>
+                       <p>Also make sure the first few steps are similar for every curve. If curve 1 starts with 0.27, 0.27, 0.27 and curve 4 starts with 0.29, 0.29, 0.32 — you are fine. But if curve 4 starts with 0.35, 0.45, … you may have chosen the overall exposure wrong. <strong>Each curve should begin at its Dmin</strong> — the minimum density your process can produce.</p>` +
                        `<div class="intro-illu">` + INTRO_SVG_STRIPS + `</div>`
             },
             {
-                title: 'Film speed — three ways to read it',
-                body: `<p>A speed point is the exposure the criterion calls "just enough". The three methods place it differently:</p>
-                       <p><strong>Fixed Density</strong> — where the curve reaches 0.10 above base+fog. The ISO 6 method: simple and repeatable (S = 0.8/Hm).</p>
-                       <p><strong>Fractional Gradient (Jones)</strong> — where the curve's slope reaches 30% of its average gradient over the next 1.5 log H. This tracks the first <em>printable shadow detail</em>, found in Jones' print-judgment experiments.</p>
-                       <p><strong>Delta-X</strong> — a practical approximation of the fractional gradient computed from ΔD, the density rise 1.3 log H to the right of Hm.</p>
-                       <p><strong>Why ΔX and FG sit lower on the curve:</strong> shadow tones become printable <em>before</em> density reaches 0.10 — usable gradient begins further down the toe. The methods use different speed constants (0.8 vs 0.4) precisely so their speeds stay comparable.</p>` +
+                title: 'Your curves',
+                body: `<p>If all is well you will see a family of curves — each one a <strong>function of exposure vs density</strong>.</p>
+                       <p>They should look <strong>smooth, without nicks</strong>. If a curve looks off or has bigger nicks in it, reevaluate your process before trusting the numbers.</p>` +
+                       `<div class="intro-illu">` + INTRO_SVG_FAMILY + `</div>`
+            },
+            {
+                title: 'The speed point',
+                body: `<p>In the tool settings you can change how the <strong>speed point</strong> is determined. The speed point is the reference that builds the bridge to your exposure meter — it helps you place the scene luminance range properly onto the film curve.</p>
+                       <p>There are several ways to determine it: <strong>Delta-X</strong>, <strong>Fractional Gradient</strong>, or <strong>0.10 over B+F</strong>. Make sure you read up on these methods!</p>
+                       <p><strong>Reference mode:</strong> if you test relative (not absolute), you can pick one curve and assign it a box speed. Say your 6-minute curve was developed to the manufacturer's data sheet — that curve becomes your reference and is assumed to be ISO box speed (e.g. 6 min = ISO 400). The tool then places all other curves relative to it and tells you their speeds based on that reference.</p>` +
                        `<div class="intro-illu">` + INTRO_SVG_SPEED + `</div>`
             },
             {
-                title: 'Try it',
-                body: `<p>Load a realistic example — four development times of the same film, ΔD bracketing the ISO condition — and explore: the curve family, the speed points, the Development Aims table, and the Tone Reproduction diagram.</p>
-                       <p>Your own work starts in the sidebar: <strong>Exposure (log H) Definition</strong> → <strong>Curves → + Add Curve</strong>. Reopen this introduction anytime with the <strong>?</strong> in the header.</p>
+                title: 'The rest of the tool',
+                body: `<p><strong>Tone Reproduction</strong> lets you follow the tonal compression through your full picture-making process, from scene to paper. This is for advanced users — look up the Jones four-quadrant system for more.</p>
+                       <p><strong>Analysis Plots</strong> shows the important relationships (CI vs time, speed vs contrast …) that help in a practical environment. And under <strong>Paper Curve</strong> you can plot curves for your darkroom papers.</p>
+                       <p><strong>Enjoy the tool and happy experimenting!</strong></p>
                        <div class="intro-illu" style="gap:10px;">
                            <button class="custom-btn font-medium py-2 px-5 text-sm" onclick="loadDemoData(); closeIntroWizard(true);">Load example data</button>
                            <button class="secondary-btn font-medium py-2 px-5 text-sm" onclick="closeIntroWizard(true);">Start with my own data</button>
