@@ -1,0 +1,5 @@
+# Reference library (copyrighted PDFs, ~600 MB) — never commit
+Res/
+
+# macOS
+.DS_Store
