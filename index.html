@@ -226,6 +226,46 @@
             background-color: #fff;
         }
 
+        /* Undo toast */
+        .undo-toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(29, 29, 31, 0.92);
+            color: #f5f5f7;
+            padding: 10px 18px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 13px;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .undo-toast-btn {
+            color: #2997ff;
+            font-weight: 600;
+            font-size: 13px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+        .undo-toast-btn:hover { text-decoration: underline; }
+
+        /* Live value-count feedback under data textareas */
+        .value-count {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            margin-top: 2px;
+            min-height: 14px;
+        }
+        .value-count.count-bad { color: var(--red-accent); }
+
         /* Panels — white squircle cards, subtle diffuse lift */
         .panel {
             background-color: var(--bg-card);
@@ -644,6 +684,7 @@
                         <div id="customLogHContainer" class="hidden">
                             <label for="customLogHInput" class="font-medium">Custom log H Values:</label>
                             <textarea id="customLogHInput" class="data-input w-full p-2 border border-gray-300 rounded-md" placeholder="Paste log H values, separated by commas..."></textarea>
+                            <div id="customLogHCount" class="value-count"></div>
                             <p id="logHWarning" class="text-xs text-red-600 mt-1 hidden">Number of log H values must match the number of density values for each curve.</p>
                         </div>
                     </div>
@@ -846,6 +887,7 @@
                         <div id="paperCustomStepsContainer" class="hidden">
                             <label class="font-medium text-xs">Step Tablet Densities:</label>
                             <textarea id="paperCustomSteps" class="data-input w-full p-2 text-xs border rounded-md font-mono" placeholder="Paste step densities, comma-separated..."></textarea>
+                            <div id="paperCustomStepsCount" class="value-count"></div>
                         </div>
                     </div>
                 </div>
@@ -1187,6 +1229,92 @@
         const escapeHtml = (s) => String(s ?? '')
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+        // Tolerant number-list parsing: commas, semicolons, tabs, spaces, newlines
+        const parseNumberList = (str) => String(str || '')
+            .split(/[,;\s]+/).map(s => parseFloat(s)).filter(n => !isNaN(n));
+
+        const debounce = (fn, ms) => {
+            let t = null;
+            return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+        };
+
+        // --- SESSION PERSISTENCE (curve data survives reload) ---
+        const SESSION_KEY = 'sensitometry_session_data';
+
+        const collectFilmCurveInfo = (el) => ({
+            name: el.querySelector('.curve-name').value,
+            time: el.querySelector('.curve-time').value,
+            data: el.querySelector('.data-input').value,
+            gammaStart: el.querySelector('.gamma-start').value,
+            gammaEnd: el.querySelector('.gamma-end').value,
+            color: el.querySelector('.curve-color').value,
+            speedPointColor: el.querySelector('.speedpoint-color').value,
+            style: el.querySelector('.curve-style').value,
+            show: el.querySelector('.show-curve').checked,
+            smooth: el.querySelector('.smooth-curve').checked,
+            showSpeedPoint: el.querySelector('.show-speedpoint').checked,
+            showCI: el.querySelector('.show-ci').checked,
+            showDX: el.querySelector('.show-dx').checked,
+            showIsoRef: el.querySelector('.show-iso-ref')?.checked
+        });
+
+        const collectPaperCurveInfo = (g) => {
+            const cVal = g.querySelector('.paper-c').value;
+            const mVal = g.querySelector('.paper-m').value;
+            const yVal = g.querySelector('.paper-y').value;
+            return {
+                name: g.querySelector('.paper-name').value,
+                color: g.querySelector('.paper-color').value,
+                show: g.querySelector('.paper-show').checked,
+                smooth: g.querySelector('.paper-smooth')?.checked || false,
+                forTR: g.querySelector('.paper-tr-radio').checked,
+                data: g.querySelector('.paper-data').value,
+                c: cVal !== '' ? parseFloat(cVal) : undefined,
+                m: mVal !== '' ? parseFloat(mVal) : undefined,
+                y: yVal !== '' ? parseFloat(yVal) : undefined
+            };
+        };
+
+        const saveSessionData = debounce(() => {
+            try {
+                const session = { curves: [], paperCurves: [], reference: null };
+                document.querySelectorAll('#curvesContainer .curve-input-group').forEach(el => {
+                    session.curves.push(collectFilmCurveInfo(el));
+                });
+                document.querySelectorAll('#paperCurvesContainer .curve-input-group').forEach(g => {
+                    session.paperCurves.push(collectPaperCurveInfo(g));
+                });
+                const refEl = document.getElementById('refCurve');
+                if (refEl) {
+                    session.reference = {
+                        iso: refEl.querySelector('.reference-iso').value,
+                        data: refEl.querySelector('.data-input').value
+                    };
+                }
+                localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+            } catch (e) { /* storage full or unavailable — never break the app over autosave */ }
+        }, 400);
+
+        // --- UNDO TOAST (deleted curves are recoverable) ---
+        let undoToastTimer = null;
+        const showUndoToast = (message, restoreFn) => {
+            let toast = document.getElementById('undoToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'undoToast';
+                toast.className = 'undo-toast';
+                document.body.appendChild(toast);
+            }
+            clearTimeout(undoToastTimer);
+            toast.innerHTML = `<span>${escapeHtml(message)}</span><button class="undo-toast-btn">Undo</button>`;
+            toast.querySelector('.undo-toast-btn').addEventListener('click', () => {
+                toast.remove();
+                clearTimeout(undoToastTimer);
+                restoreFn();
+            });
+            undoToastTimer = setTimeout(() => toast.remove(), 6000);
+        };
 
         const smoothData = (data) => {
             if (data.length < 3) return data;
@@ -1810,11 +1938,90 @@
             return Math.round(mins * 4) / 4; // 0.25 min = 15 sec
         };
 
+        // Crosshair readout on the film chart: log H + interpolated density per curve
+        const filmHoverPlugin = {
+            id: 'filmHover',
+            afterDatasetsDraw: (chart) => {
+                if (chart.canvas.id !== 'filmCurveChart') return;
+                const hx = chart._hoverLogH;
+                if (hx === undefined || hx === null) return;
+                const area = chart.chartArea, ctx2 = chart.ctx;
+                const xs = chart.scales.x, ys = chart.scales.y;
+                if (hx < xs.min || hx > xs.max) return;
+                const px = xs.getPixelForValue(hx);
+
+                const rows = [`log H ${hx.toFixed(2)}`];
+                const marks = [];
+                curvesData.forEach(c => {
+                    if (!c.points || c.points.length < 2 || c.showCurve === false) return;
+                    const minX = c.points[0].x, maxX = c.points[c.points.length - 1].x;
+                    if (hx < minX - 1e-9 || hx > maxX + 1e-9) return;
+                    const d = interpolateY(c.points, hx);
+                    if (d === null) return;
+                    rows.push(`${c.name}  D ${d.toFixed(2)}`);
+                    marks.push({ y: d, color: c.color });
+                });
+                if (rows.length === 1) return;
+
+                ctx2.save();
+                ctx2.strokeStyle = 'rgba(0,0,0,0.25)';
+                ctx2.lineWidth = 1;
+                ctx2.setLineDash([4, 4]);
+                ctx2.beginPath(); ctx2.moveTo(px, area.top); ctx2.lineTo(px, area.bottom); ctx2.stroke();
+                ctx2.setLineDash([]);
+
+                marks.forEach(m => {
+                    const py = ys.getPixelForValue(m.y);
+                    if (py < area.top || py > area.bottom) return;
+                    ctx2.beginPath(); ctx2.arc(px, py, 3.5, 0, Math.PI * 2);
+                    ctx2.fillStyle = m.color; ctx2.fill();
+                    ctx2.strokeStyle = '#fff'; ctx2.lineWidth = 1.5; ctx2.stroke();
+                });
+
+                ctx2.font = "11px 'SF Mono', ui-monospace, Menlo, monospace";
+                const boxW = Math.max(...rows.map(r => ctx2.measureText(r).width)) + 18;
+                const lineH = 15, boxH = rows.length * lineH + 12;
+                let bx = px + 14;
+                if (bx + boxW > area.right - 4) bx = px - 14 - boxW;
+                const by = area.top + 8;
+                ctx2.fillStyle = 'rgba(255,255,255,0.94)';
+                ctx2.strokeStyle = 'rgba(0,0,0,0.15)';
+                ctx2.lineWidth = 1;
+                ctx2.beginPath(); ctx2.roundRect(bx, by, boxW, boxH, 8); ctx2.fill(); ctx2.stroke();
+                ctx2.textAlign = 'left'; ctx2.textBaseline = 'top';
+                rows.forEach((r, i) => {
+                    ctx2.fillStyle = i === 0 ? '#1d1d1f' : '#424245';
+                    ctx2.font = i === 0
+                        ? "bold 11px -apple-system, 'SF Pro Text', sans-serif"
+                        : "11px 'SF Mono', ui-monospace, Menlo, monospace";
+                    ctx2.fillText(r, bx + 9, by + 6 + i * lineH);
+                });
+                ctx2.restore();
+            }
+        };
+
         const initializeChart = () => {
             // Set Chart.js global defaults for scientific look
             Chart.defaults.font.family = "-apple-system, 'SF Pro Text', sans-serif";
             Chart.defaults.font.size = 12;
             Chart.defaults.color = '#424245';
+
+            const hoverCanvas = document.getElementById('filmCurveChart');
+            hoverCanvas.addEventListener('mousemove', (e) => {
+                if (!filmChart) return;
+                const rect = hoverCanvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+                const a = filmChart.chartArea;
+                if (!a || mx < a.left || mx > a.right || my < a.top || my > a.bottom) {
+                    if (filmChart._hoverLogH != null) { filmChart._hoverLogH = null; filmChart.draw(); }
+                    return;
+                }
+                filmChart._hoverLogH = filmChart.scales.x.getValueForPixel(mx);
+                filmChart.draw();
+            });
+            hoverCanvas.addEventListener('mouseleave', () => {
+                if (filmChart && filmChart._hoverLogH != null) { filmChart._hoverLogH = null; filmChart.draw(); }
+            });
             
             filmChart = new Chart(ctx, {
                 type: 'line',
@@ -1926,7 +2133,7 @@
                     });
                     // Attach the container listener only once — it survives innerHTML resets
                     if (!refCurveContainer.dataset.inputListenerAttached) {
-                        refCurveContainer.addEventListener('input', updateChartAndCalculations);
+                        refCurveContainer.addEventListener('input', updateChartDebounced);
                         refCurveContainer.dataset.inputListenerAttached = 'true';
                     }
                  }
@@ -2029,6 +2236,7 @@
                             </div>
                         </div>
                         <textarea class="data-input w-full p-2 border border-gray-300 rounded-md" placeholder="Paste Density values, separated by commas...">${escapeHtml(curveInfo.data || '')}</textarea>
+                        <div class="value-count"></div>
                         <div id="warning-${curveId}" class="curve-warning hidden mt-2 p-2 bg-yellow-100 text-yellow-800 text-xs rounded-md"></div>
                         <div class="grid grid-cols-2 gap-2 text-sm">
                             <div><label>Gamma Start logH:</label><input type="number" step="0.01" class="gamma-start w-full p-1 border" value="${curveInfo.gammaStart || '1.80'}"></div>
@@ -2066,10 +2274,21 @@
                 </div>`;
             curvesContainer.insertAdjacentHTML('beforeend', curveHTML);
             const newCurveEl = document.getElementById(curveId);
-            newCurveEl.addEventListener('input', updateChartAndCalculations);
+            newCurveEl.addEventListener('input', updateChartDebounced);
             newCurveEl.querySelector('.remove-curve-btn').addEventListener('click', (e) => {
-                document.getElementById(e.target.dataset.curveId).remove();
+                const cardEl = document.getElementById(e.target.dataset.curveId);
+                const savedInfo = collectFilmCurveInfo(cardEl);
+                const savedIdx = Array.prototype.indexOf.call(curvesContainer.children, cardEl);
+                cardEl.remove();
                 updateChartAndCalculations();
+                showUndoToast(`Curve "${savedInfo.name}" deleted`, () => {
+                    addCurve(savedInfo);
+                    const restored = curvesContainer.lastElementChild;
+                    if (savedIdx < curvesContainer.children.length - 1) {
+                        curvesContainer.insertBefore(restored, curvesContainer.children[savedIdx]);
+                    }
+                    updateChartAndCalculations();
+                });
             });
             newCurveEl.querySelector('.up-arrow').addEventListener('click', () => {
                 if (newCurveEl.previousElementSibling) {
@@ -2098,7 +2317,9 @@
             
             let xValues = [];
             if (logHMode !== 'auto') {
-                const rawValues = customLogHInput.value.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                const rawValues = parseNumberList(customLogHInput.value);
+                const logHCountEl = document.getElementById('customLogHCount');
+                if (logHCountEl) logHCountEl.textContent = rawValues.length > 0 ? `${rawValues.length} log H values` : '';
                 if (logHMode === 'step_tablet' && rawValues.length > 0) {
                     const maxVal = Math.max(...rawValues);
                     xValues = rawValues.map(v => maxVal - v); // Convert density to rel log H
@@ -2121,7 +2342,20 @@
                 const warningEl = document.getElementById(`warning-${el.id}`);
                 if (warningEl) warningEl.style.display = 'none';
 
-                let yValues = el.querySelector('.data-input').value.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                let yValues = parseNumberList(el.querySelector('.data-input').value);
+                const countEl = el.querySelector('.value-count');
+                if (countEl) {
+                    if (yValues.length === 0) {
+                        countEl.textContent = '';
+                        countEl.classList.remove('count-bad');
+                    } else if (logHMode !== 'auto' && xValues.length !== yValues.length) {
+                        countEl.textContent = `${yValues.length} values — expected ${xValues.length} (log H)`;
+                        countEl.classList.add('count-bad');
+                    } else {
+                        countEl.textContent = `${yValues.length} values`;
+                        countEl.classList.remove('count-bad');
+                    }
+                }
                 if (yValues.length === 0) return;
 
                 const shouldSmooth = el.querySelector('.smooth-curve').checked;
@@ -2237,7 +2471,7 @@
             } else if (isoMethod === 'reference') {
                 const refCurveEl = document.getElementById('refCurve');
                 if (refCurveEl) {
-                    const yValues = refCurveEl.querySelector('.data-input').value.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                    const yValues = parseNumberList(refCurveEl.querySelector('.data-input').value);
                     if (yValues.length > 0) {
                         let refPoints;
                         if (logHMode === 'auto') { refPoints = yValues.map((y, i) => ({ x: (i + 1) * 0.15, y: y }));
@@ -2830,7 +3064,13 @@
 
             // Keep the Analysis tab in sync when curve data changes while it is open
             if (typeof window.refreshAnalysisPlot === 'function') window.refreshAnalysisPlot();
+
+            saveSessionData();
         };
+
+        // Debounced recalculation for text entry — keeps typing responsive
+        const updateChartDebounced = debounce(() => updateChartAndCalculations(), 150);
+        const paperRefreshDebounced = debounce(() => { parsePaperCurves(); updatePaperCurveChart(); }, 150);
 
         const updateSceneLslrLookup = () => {
             const resultEl = document.getElementById('sceneLslrResult');
@@ -5148,13 +5388,24 @@
                         <div>
                             <label class="text-xs font-medium" style="color:var(--text-muted);">Density Values</label>
                             <textarea class="paper-data data-input w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="Paste print density values, separated by commas...">${escapeHtml(info.data || '')}</textarea>
+                            <div class="value-count"></div>
                         </div>
                     </div>
                 </div>`;
             container.insertAdjacentHTML('beforeend', html);
             const el = document.getElementById(pcId);
             el.querySelector('.remove-paper-btn').addEventListener('click', () => {
+                const savedInfo = collectPaperCurveInfo(el);
+                const savedIdx = Array.prototype.indexOf.call(container.children, el);
                 el.remove(); parsePaperCurves(); updatePaperCurveChart();
+                showUndoToast(`Grade "${savedInfo.name}" deleted`, () => {
+                    addPaperCurve(savedInfo);
+                    const restored = container.lastElementChild;
+                    if (savedIdx < container.children.length - 1) {
+                        container.insertBefore(restored, container.children[savedIdx]);
+                    }
+                    parsePaperCurves(); updatePaperCurveChart();
+                });
             });
             el.querySelector('.paper-up-arrow').addEventListener('click', () => {
                 if (el.previousElementSibling) {
@@ -5170,7 +5421,7 @@
             });
             const onChange = () => { parsePaperCurves(); updatePaperCurveChart(); };
             el.querySelectorAll('input, textarea').forEach(inp => {
-                inp.addEventListener('input', onChange);
+                inp.addEventListener('input', paperRefreshDebounced);
                 inp.addEventListener('change', onChange);
             });
         };
@@ -5185,6 +5436,8 @@
             if (mode === 'custom') {
                 const raw = document.getElementById('paperCustomSteps').value.trim();
                 if (raw) customSteps = raw.split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
+                const stepsCountEl = document.getElementById('paperCustomStepsCount');
+                if (stepsCountEl) stepsCountEl.textContent = customSteps && customSteps.length ? `${customSteps.length} steps` : '';
             }
 
             document.getElementById('paperCurvesContainer').querySelectorAll('.curve-input-group').forEach(g => {
@@ -5200,8 +5453,20 @@
                 const m = mVal !== '' ? parseFloat(mVal) : null;
                 const y = yVal !== '' ? parseFloat(yVal) : null;
                 const raw = g.querySelector('.paper-data').value.trim();
-                if (!raw) return;
-                let densities = raw.split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
+                const gCountEl = g.querySelector('.value-count');
+                let densities = raw ? raw.split(/[\s,]+/).map(Number).filter(n => !isNaN(n)) : [];
+                if (gCountEl) {
+                    if (densities.length === 0) {
+                        gCountEl.textContent = '';
+                        gCountEl.classList.remove('count-bad');
+                    } else if (customSteps && customSteps.length > 0 && customSteps.length !== densities.length) {
+                        gCountEl.textContent = `${densities.length} values — expected ${customSteps.length} (steps)`;
+                        gCountEl.classList.add('count-bad');
+                    } else {
+                        gCountEl.textContent = `${densities.length} values`;
+                        gCountEl.classList.remove('count-bad');
+                    }
+                }
                 if (densities.length < 3) return;
 
                 const shouldSmooth = g.querySelector('.paper-smooth')?.checked || false;
@@ -5344,6 +5609,8 @@
                     trInfoEl.textContent = 'Enable checkbox above to use measured paper curves.';
                 }
             }
+
+            saveSessionData();
 
             // Populate paper results table
             const prt = document.getElementById('paperResultsTable');
@@ -7435,7 +7702,7 @@
             autoTableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js';
             document.head.appendChild(autoTableScript);
             
-            Chart.register(visualizerPlugin, whiteBackgroundPlugin);
+            Chart.register(visualizerPlugin, whiteBackgroundPlugin, filmHoverPlugin);
             initializeChart();
             addCurveBtn.addEventListener('click', () => addCurve());
 
@@ -7820,17 +8087,17 @@
             compareFileInput.addEventListener('change', compareFilms);
             btzsFileInput.addEventListener('change', importBTZS);
             targetLerInput.addEventListener('input', () => { updateChartAndCalculations(); parsePaperCurves(); });
-            flareLogHInput.addEventListener('input', updateChartAndCalculations);
+            flareLogHInput.addEventListener('input', updateChartDebounced);
             flareModelSelect.addEventListener('change', updateChartAndCalculations);
             isoMethodRadios.forEach(radio => radio.addEventListener('change', toggleIsoMethodUI));
-            targetIsoInput.addEventListener('input', updateChartAndCalculations);
+            targetIsoInput.addEventListener('input', updateChartDebounced);
             speedMethodSelect.addEventListener('change', updateChartAndCalculations);
-            normalLslrInput.addEventListener('input', updateChartAndCalculations);
-            document.getElementById('targetCiInput').addEventListener('input', updateChartAndCalculations);
+            normalLslrInput.addEventListener('input', updateChartDebounced);
+            document.getElementById('targetCiInput').addEventListener('input', updateChartDebounced);
             logHModeSelect.addEventListener('change', toggleLogH_UI);
-            customLogHInput.addEventListener('input', updateChartAndCalculations);
-            xAxisStepInput.addEventListener('input', updateChartAndCalculations);
-            yAxisStepInput.addEventListener('input', updateChartAndCalculations);
+            customLogHInput.addEventListener('input', updateChartDebounced);
+            xAxisStepInput.addEventListener('input', updateChartDebounced);
+            yAxisStepInput.addEventListener('input', updateChartDebounced);
             showGridToggle.addEventListener('change', updateChartAndCalculations);
             showPointsToggle.addEventListener('change', updateChartAndCalculations);
             document.getElementById('showIso6CurveToggle').addEventListener('change', updateChartAndCalculations);
@@ -7861,7 +8128,7 @@
                 toggleLogH_UI(); // This will also trigger updateChartAndCalculations
             });
             calibrateBtn.addEventListener('click', () => {
-                const refData = document.getElementById('refCurveData').value.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                const refData = parseNumberList(document.getElementById('refCurveData').value);
                 const refIso = parseFloat(document.getElementById('refCurveIso').value);
 
                 if (refData.length < 2 || isNaN(refIso) || refIso <= 0) {
@@ -7876,7 +8143,7 @@
                 if (currentLogHMode === 'auto') {
                     refPoints = refData.map((y, i) => ({ x: (i + 1) * 0.15, y: y }));
                 } else {
-                    let xValues = customLogHInput.value.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                    let xValues = parseNumberList(customLogHInput.value);
                     if (currentLogHMode === 'step_tablet' && xValues.length > 0) {
                         const maxVal = Math.max(...xValues);
                         xValues = xValues.map(v => maxVal - v);
@@ -8048,7 +8315,7 @@
             document.getElementById('resetAllBtn').addEventListener('click', () => {
                 if (!confirm('Are you sure you want to reset all settings and curve data?')) return;
                 if (!confirm('This will permanently clear everything. Really reset?')) return;
-                try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+                try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(SESSION_KEY); } catch(e) {}
                 location.reload();
             });
 
@@ -8058,7 +8325,7 @@
                 document.getElementById('paperCustomStepsContainer').classList.toggle('hidden', e.target.value !== 'custom');
                 parsePaperCurves(); updatePaperCurveChart();
             });
-            document.getElementById('paperCustomSteps').addEventListener('input', () => { parsePaperCurves(); updatePaperCurveChart(); });
+            document.getElementById('paperCustomSteps').addEventListener('input', paperRefreshDebounced);
             document.getElementById('trUseMeasuredPaper').addEventListener('change', () => {
                 const checked = document.getElementById('trUseMeasuredPaper').checked;
                 document.getElementById('trPaperModePanel').style.display = checked ? '' : 'none';
@@ -8082,7 +8349,27 @@
             document.getElementById('paperShowPoints').addEventListener('change', updatePaperCurveChart);
             document.getElementById('exportPaperPdfBtn').addEventListener('click', exportPaperPDF);
 
-            addCurve();
+            // Restore the previous session's curve data; fall back to one empty curve
+            let sessionRestored = false;
+            try {
+                const sess = JSON.parse(localStorage.getItem(SESSION_KEY));
+                if (sess) {
+                    (sess.curves || []).forEach(c => addCurve(c));
+                    (sess.paperCurves || []).forEach(pc => addPaperCurve(pc));
+                    if (sess.reference && sess.reference.data) {
+                        manageRefCurveUI(true);
+                        const refEl = document.getElementById('refCurve');
+                        if (refEl) {
+                            refEl.querySelector('.reference-iso').value = sess.reference.iso || '';
+                            refEl.querySelector('.data-input').value = sess.reference.data;
+                        }
+                    }
+                    sessionRestored = (sess.curves || []).length > 0;
+                    if ((sess.paperCurves || []).length > 0) { parsePaperCurves(); updatePaperCurveChart(); }
+                    if (sessionRestored) updateChartAndCalculations();
+                }
+            } catch (e) { console.error('Session restore failed:', e); }
+            if (!sessionRestored) addCurve();
             toggleIsoMethodUI(); 
             updateIsoInputUI();
         });
