@@ -388,13 +388,33 @@
 
         /* Jones diagram: square overall, centered, scales to viewport */
         .tr-frame {
-            width: min(100%, calc(100vh - 200px));
+            width: min(100%, calc(100vh - 110px));
             margin-left: auto;
             margin-right: auto;
         }
         .tr-frame .tr-grid-wrapper {
             aspect-ratio: 1 / 1;
             height: auto;
+        }
+
+        /* Collapsible sidebar section cards: heading is the whole card face */
+        #leftPanelFilm > div > .section-heading.collapsible,
+        #leftPanelPaper > div > .section-heading.collapsible {
+            margin: -14px -16px;
+            padding: 12px 16px;
+            background: transparent;
+            border-radius: 14px;
+        }
+        #leftPanelFilm > div > .section-heading.collapsible:not(.collapsed),
+        #leftPanelPaper > div > .section-heading.collapsible:not(.collapsed) {
+            margin-bottom: 0;
+        }
+        #leftPanelFilm > div > .collapsible-content,
+        #leftPanelPaper > div > .collapsible-content {
+            background: transparent;
+            margin: 0;
+            padding: 12px 0 0;
+            border: none;
         }
 
         /* Frosted sticky tab bar with segmented-control tabs */
@@ -505,8 +525,8 @@
                 <!-- LEFT PANEL: Film (default) -->
                 <div id="leftPanelFilm">
                 <div>
-                    <h2 class="section-heading">Document Information</h2>
-                    <div class="space-y-3 text-sm">
+                    <h2 class="section-heading collapsible collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Document Information</h2>
+                    <div class="space-y-3 text-sm collapsible-content collapsed">
                         <div><label class="font-medium">Document Title:</label><input type="text" id="docTitle" class="w-full p-2 border border-gray-300 rounded-md" placeholder="e.g., HP5+ Development Tests"></div>
                         <div><label class="font-medium">Analyst Name:</label><input type="text" id="docName" class="w-full p-2 border border-gray-300 rounded-md"></div>
                         <div><label class="font-medium">Date & Time:</label><input type="datetime-local" id="docDateTime" class="w-full p-2 border border-gray-300 rounded-md"></div>
@@ -516,8 +536,8 @@
                 <hr>
 
                 <div>
-                    <h2 class="section-heading">Exposure (log H) Definition</h2>
-                    <div class="space-y-3 text-sm">
+                    <h2 class="section-heading collapsible collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Exposure (log H) Definition</h2>
+                    <div class="space-y-3 text-sm collapsible-content collapsed">
                         <div>
                             <label class="font-medium">X-Axis Mode:</label>
                             <select id="logHModeSelect" class="w-full p-2 border border-gray-300 rounded-md">
@@ -537,8 +557,8 @@
                 <hr>
 
                 <div>
-                    <h2 class="section-heading">EFS Calculation</h2>
-                    <div class="space-y-3 text-sm">
+                    <h2 class="section-heading collapsible collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">EFS Calculation</h2>
+                    <div class="space-y-3 text-sm collapsible-content collapsed">
                         <div>
                             <label class="font-medium">Speed Method:</label>
                             <select id="speedMethodSelect" class="w-full p-2 border border-gray-300 rounded-md">
@@ -1906,12 +1926,14 @@
                             <div><label>Gamma Start logH:</label><input type="number" step="0.01" class="gamma-start w-full p-1 border" value="${curveInfo.gammaStart || '1.80'}"></div>
                             <div><label>Gamma End logH:</label><input type="number" step="0.01" class="gamma-end w-full p-1 border" value="${curveInfo.gammaEnd || '2.85'}"></div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="flex items-center space-x-2">
-                                <label class="text-sm">Color:</label><input type="color" class="curve-color p-1 h-10 w-10 block" value="${curveInfo.color || newColor}">
-                                <label class="text-sm">Speed Pt:</label><input type="color" class="speedpoint-color p-1 h-10 w-10 block" value="${curveInfo.speedPointColor || '#FF0000'}">
+                        <div class="flex flex-wrap items-end gap-x-4 gap-y-2">
+                            <div class="flex items-center gap-2">
+                                <label class="text-sm">Color:</label><input type="color" class="curve-color h-8 w-9" value="${curveInfo.color || newColor}">
                             </div>
-                            <div>
+                            <div class="flex items-center gap-2">
+                                <label class="text-sm">Speed Pt:</label><input type="color" class="speedpoint-color h-8 w-9" value="${curveInfo.speedPointColor || '#FF0000'}">
+                            </div>
+                            <div class="flex-1" style="min-width: 130px;">
                                 <label class="text-sm">Style:</label>
                                 <select class="curve-style w-full p-2 border border-gray-300 rounded-md text-sm">
                                     <option value="solid" ${!curveInfo.style || curveInfo.style === 'solid' ? 'selected' : ''}>Solid</option>
@@ -6175,7 +6197,7 @@
                                 type: 'linear', min: xMin, max: xMax, reverse: xRev,
                                 position: xPos,
                                 grid: trGridStyle,
-                                ticks: { font: trTickFont, stepSize: 0.3, color: '#6e6e73' },
+                                ticks: { font: trTickFont, stepSize: 0.3, color: '#6e6e73', callback: (v) => (Math.round(v * 10) % 6 === 0 ? v.toFixed(1) : '') },
                                 border: { display: false },
                                 afterFit: (scale) => {
                                     scale.paddingLeft = 0;
@@ -6187,7 +6209,7 @@
                                 type: 'linear', min: yMin, max: yMax,
                                 position: yPos,
                                 grid: trGridStyle,
-                                ticks: { font: trTickFont, stepSize: 0.3, color: '#6e6e73' },
+                                ticks: { font: trTickFont, stepSize: 0.3, color: '#6e6e73', callback: (v) => (Math.round(v * 10) % 6 === 0 ? v.toFixed(1) : '') },
                                 border: { display: false },
                                 afterFit: (scale) => {
                                     scale.paddingTop = 0;
