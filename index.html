@@ -544,6 +544,16 @@
             text-align: center;
             letter-spacing: 0.02em;
         }
+        .tr-side-label {
+            position: absolute;
+            transform: translateY(-50%) rotate(180deg);
+            writing-mode: vertical-rl;
+            white-space: nowrap;
+            font-size: 10px;
+        }
+        .tr-side-label.tr-side-right {
+            transform: translateY(-50%);
+        }
     </style>
 </head>
 <body>
@@ -769,15 +779,18 @@
                 <div id="panelToneReproChart" style="display:none;">
                     <!-- Diagram with info panel beside it -->
                     <div class="tr-layout">
-                    <div class="relative tr-frame" style="padding: 24px 8px 8px 28px;">
+                    <div class="relative tr-frame" style="padding: 24px 22px 8px 22px;">
                         <!-- Top axis label -->
-                        <div class="tr-axis-label" style="position:absolute; top:4px; left:28px; right:8px;">
+                        <div class="tr-axis-label" style="position:absolute; top:4px; left:22px; right:22px;">
                             <span>Neg Density → log E (Paper)</span>
                             <span style="margin:0 16px;">|</span>
                             <span>Log Scene Luminance</span>
                         </div>
-                        <!-- Left axis label -->
-                        <div class="tr-axis-label" style="position:absolute; left:-6px; top:50%; transform:translateY(-50%) rotate(-90deg); white-space:nowrap;">Print Density</div>
+                        <!-- Side axis labels: top half = print density, bottom half = log H -->
+                        <div class="tr-axis-label tr-side-label" style="left:0; top:25%;">Print Density</div>
+                        <div class="tr-axis-label tr-side-label" style="left:0; top:75%;">log H (Film)</div>
+                        <div class="tr-axis-label tr-side-label tr-side-right" style="right:0; top:25%;">Print Density</div>
+                        <div class="tr-axis-label tr-side-label tr-side-right" style="right:0; top:75%;">log H (Film)</div>
 
                         <div class="tr-grid-wrapper">
                             <!-- Q3: Paper (top-left) -->
@@ -6202,7 +6215,9 @@
                     plugins: [trPointLabelPlugin],
                     options: {
                         responsive: true, maintainAspectRatio: false, animation: false,
-                        layout: { padding: 0 },
+                        // autoPadding false: Chart.js otherwise adds asymmetric padding for edge
+                        // tick labels, shifting chart areas so cross-quadrant trace lines misalign
+                        layout: { autoPadding: false, padding: 0 },
                         plugins: { legend: { display: false }, tooltip: { enabled: false } },
                         elements: { point: { radius: 0 }, line: { borderWidth: 2 } },
                         scales: {
@@ -6633,19 +6648,20 @@
             // Film curve as {x: density, y: logH} for Q2 chart axis
             const q2Points = filmPoints.map(p => ({ x: p.y, y: p.x }));
 
-            // Dynamic axis limits — fully computed from actual data
-            const sceneMin = -0.6;
-            const sceneMax = Math.max(2.7, Math.ceil((shadowReflectance + 0.5) * 10) / 10);
+            // Dynamic axis limits — tight around the actual data so curves fill the quadrants
+            const sceneMin = -0.5;
+            const sceneMax = Math.ceil((shadowReflectance + 0.3) * 10) / 10;
 
             // LogH axis: must cover both film data range and camera equation outputs
             const logHMin_data = Math.min(filmPoints[0].x, logH_at_highlight, logH_at_shadow);
             const logHMax_data = Math.max(filmPoints[filmPoints.length - 1].x, logH_at_highlight, logH_at_shadow);
-            const axisLogHMin = Math.floor((logHMin_data - 0.3) * 10) / 10;
-            const axisLogHMax = Math.ceil((logHMax_data + 0.5) * 10) / 10;
-            const curveLogHLimit = axisLogHMax - 0.2;
+            const axisLogHMin = Math.floor((logHMin_data - 0.2) * 10) / 10;
+            const axisLogHMax = Math.ceil((logHMax_data + 0.25) * 10) / 10;
+            const curveLogHLimit = axisLogHMax - 0.1;
 
-            const axisDensMax = Math.max(3.5, Math.ceil(((D_at_highlight || 2.5) + 0.8) * 10) / 10);
-            const curveDensLimit = axisDensMax - 0.2;
+            const filmDmaxVal = Math.max(...filmPoints.map(p => p.y));
+            const axisDensMax = Math.ceil((Math.max(filmDmaxVal, D_at_highlight || 0) + 0.25) * 10) / 10;
+            const curveDensLimit = axisDensMax - 0.1;
 
             // Update axis limits
             trChartQ4.options.scales.x.min = sceneMin; trChartQ4.options.scales.x.max = sceneMax;
@@ -6656,7 +6672,7 @@
             trChartQ2.options.scales.y.max = axisLogHMax;
             trChartQ2.options.scales.x.max = axisDensMax;
             trChartQ3.options.scales.x.max = axisDensMax;
-            const printAxisMax = Math.max(2.5, Math.ceil((paperDmax + 0.3) * 10) / 10);
+            const printAxisMax = Math.ceil((paperDmax + 0.2) * 10) / 10;
             trChartQ3.options.scales.y.max = printAxisMax;
             trChartQ4.options.scales.y.max = printAxisMax;
 
