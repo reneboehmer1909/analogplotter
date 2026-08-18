@@ -137,15 +137,15 @@
             line-height: 1.6;
         }
 
-        /* Cards — quiet gray cards on white panels */
+        /* Cards — white cards inside the gray sidebar sections */
         .curve-input-group {
-            transition: background-color 0.2s ease;
-            background-color: var(--bg-card-alt);
-            border: 1px solid transparent;
-            border-radius: 14px;
+            transition: border-color 0.2s ease;
+            background-color: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
         }
         .curve-input-group:hover {
-            background-color: #f0f0f3;
+            border-color: var(--border-medium);
         }
 
         /* Details grid */
@@ -363,6 +363,29 @@
             .app-sidebar { border-right: none; padding-right: 0; }
         }
 
+        /* Sidebar sections as distinct gray cards */
+        #leftPanelFilm > div, #leftPanelPaper > div {
+            background: var(--bg-card-alt);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+        }
+        #leftPanelFilm > hr, #leftPanelPaper > hr { display: none; }
+        #leftPanelFilm > div > .section-heading,
+        #leftPanelPaper > div > .section-heading {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        /* Curve plot keeps a sensible aspect ratio, centered, scales to viewport */
+        .chart-frame {
+            aspect-ratio: 1.4 / 1;
+            width: min(100%, calc((100vh - 240px) * 1.4));
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
         /* Frosted sticky tab bar with segmented-control tabs */
         .tabbar {
             position: sticky;
@@ -517,7 +540,7 @@
                             <label><input type="radio" name="isoMethod" value="standard" checked> Pick a Reference</label>
                             <label><input type="radio" name="isoMethod" value="iso6_interpolated"> Interpolated Reference</label>
                         </div>
-                        <div id="iso6InterpolatedInfo" class="hidden mt-2 p-2 bg-[#f5f5f7] border border-[#d2d2d7] text-xs rounded">
+                        <div id="iso6InterpolatedInfo" class="hidden mt-2 p-2 bg-white border border-[#e8e8ed] text-xs rounded">
                             <p class="mb-1">Synthesizes a virtual curve at exactly ΔD=0.80 by interpolating across your development series. Requires ≥3 curves bracketing ΔD=0.80</p>
                             <div class="flex items-center space-x-2 mt-1">
                                 <label class="flex items-center space-x-1"><input type="checkbox" id="showIso6CurveToggle" checked><span>Show ΔD=0.80 curve on chart</span></label>
@@ -531,7 +554,7 @@
                         <div id="refCurveContainer" class="hidden space-y-6"></div>
                          <div class="mt-2">
                             <button id="toggleCalibrationBtn" class="text-xs text-[#0066cc] hover:underline font-medium">Calibration Options</button>
-                            <div id="calibrationContainer" class="hidden mt-3 p-3 bg-[#f5f5f7] border border-[#d2d2d7] space-y-3">
+                            <div id="calibrationContainer" class="hidden mt-3 p-3 bg-white border border-[#e8e8ed] rounded-lg space-y-3">
                                 <h4 class="section-heading">Calibrate Sensitometer</h4>
                                 <p class="text-xs text-gray-600">Use a known, ISO-compliant test curve to find the absolute log H offset for your sensitometer.</p>
                                 <div>
@@ -556,20 +579,20 @@
 
                 <div>
                     <h2 class="section-heading">Curves</h2>
-                    <div class="flex space-x-2 mb-4">
+                    <div class="flex flex-wrap gap-2 mb-4">
                         <button id="addCurveBtn" class="custom-btn font-medium py-1.5 px-3 text-xs tracking-wider">+ Add Curve</button>
                         <label for="file-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Import</label>
                         <input type="file" id="file-import" class="hidden" accept=".json">
                         <button id="export-json" class="secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Export Data</button>
-                        <label for="compare-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider" style="border-color: #ffffff; color: #ffffff;">Compare Films</label>
+                        <label for="compare-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Compare Films</label>
                         <input type="file" id="compare-import" class="hidden" accept=".json" multiple>
                     </div>
-                    <div class="flex items-center space-x-2 mb-4">
+                    <div class="flex flex-wrap items-center gap-2 mb-4">
                         <button id="showAllCurvesBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Show All</button>
                         <button id="hideAllCurvesBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Hide All</button>
                         <label for="btzs-import" class="file-input-label secondary-btn py-1 px-2 text-[10px] tracking-wider">Import BTZS</label>
                         <input type="file" id="btzs-import" class="hidden" accept=".pfc">
-                        <button id="resetAllBtn" class="py-1 px-2 text-[10px] tracking-wider font-medium rounded" style="background:#dc2626;color:#fff;border:1px solid #b91c1c;">Reset All</button>
+                        <button id="resetAllBtn" class="py-1 px-2 text-[10px] tracking-wider font-medium" style="background:#dc2626;color:#fff;border-radius:999px;">Reset All</button>
                     </div>
                     <div id="curvesContainer" class="space-y-6 max-h-[50vh] overflow-y-auto pr-2"></div>
                 </div>
@@ -668,7 +691,7 @@
 
                 <!-- CHART AREA: Curves (switchable) -->
                 <div id="panelCurvesChart">
-                <div id="chartContainer" class="w-full mb-4 bg-white border border-[#e8e8ed] p-2 rounded-lg" style="height: calc(100vh - 250px); min-height: 480px;">
+                <div id="chartContainer" class="chart-frame mb-4 bg-white border border-[#e8e8ed] p-2 rounded-lg">
                     <canvas id="filmCurveChart"></canvas>
                 </div>
                 </div>
@@ -815,7 +838,7 @@
 
                 <!-- CHART AREA: Paper Curve (switchable) -->
                 <div id="panelPaperCurve" style="display:none;">
-                    <div id="paperChartContainer" class="w-full mb-4 bg-white border border-[#e8e8ed] p-2 rounded-lg" style="height: calc(100vh - 250px); min-height: 480px;">
+                    <div id="paperChartContainer" class="chart-frame mb-4 bg-white border border-[#e8e8ed] p-2 rounded-lg">
                         <canvas id="paperCurveChart"></canvas>
                     </div>
                     <h3 class="section-heading mt-4">Paper Characteristics</h3>
