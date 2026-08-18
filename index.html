@@ -357,10 +357,18 @@
         }
         .app-sidebar {
             min-width: 0;
+            position: sticky;
+            top: var(--topbar-h);
+            height: calc(100vh - var(--topbar-h));
+            overflow-y: auto;
+            margin-top: -20px;
+            padding: 20px 10px 24px 2px;
+            overscroll-behavior: contain;
         }
         .app-content { min-width: 0; }
         @media (max-width: 1023px) {
             .app-grid { grid-template-columns: minmax(0, 1fr); }
+            .app-sidebar { position: static; height: auto; overflow: visible; margin-top: 0; padding: 0; }
         }
 
         /* Sidebar sections as distinct gray cards */
@@ -704,7 +712,7 @@
                             <input type="file" id="btzs-import" class="hidden" accept=".pfc">
                             <button id="resetAllBtn" class="py-1 px-2 text-[10px] tracking-wider font-medium" style="background:#dc2626;color:#fff;border-radius:999px;">Reset All</button>
                         </div>
-                        <div id="curvesContainer" class="space-y-6 max-h-[68vh] overflow-y-auto pr-2"></div>
+                        <div id="curvesContainer" class="space-y-6"></div>
                     </div>
                 </div>
                 </div><!-- /leftPanelFilm -->
@@ -864,7 +872,7 @@
                             Points
                         </label>
                     </div>
-                    <div id="paperCurvesContainer" class="space-y-6 max-h-[68vh] overflow-y-auto pr-2"></div>
+                    <div id="paperCurvesContainer" class="space-y-6"></div>
                 </div>
                 </div><!-- /leftPanelPaper -->
             </div>
