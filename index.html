@@ -364,7 +364,7 @@
         }
 
         /* Sidebar sections as distinct gray cards */
-        #leftPanelFilm > div, #leftPanelPaper > div {
+        #leftPanelFilm > div, #leftPanelPaper > div, #leftPanelTR > div {
             background: var(--bg-card-alt);
             border-radius: 14px;
             padding: 14px 16px;
@@ -441,6 +441,31 @@
             margin-top: 2px;
         }
         .ti-gap { height: 6px; }
+        .ti-toggle {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0;
+        }
+        .ti-toggle:not(.collapsed) { margin-bottom: 6px; }
+        .ti-toggle::after {
+            content: '';
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: #e8e8ed;
+            border-radius: 999px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 11px;
+            flex-shrink: 0;
+            transition: transform 0.15s ease;
+        }
+        .ti-toggle.collapsed::after { transform: rotate(-90deg); }
+        .ti-lines.collapsed { display: none; }
         .tr-frame .tr-grid-wrapper {
             aspect-ratio: 1 / 1;
             height: auto;
@@ -684,6 +709,84 @@
                 </div>
                 </div><!-- /leftPanelFilm -->
 
+                <!-- LEFT PANEL: Tone Reproduction settings -->
+                <div id="leftPanelTR" style="display:none;" class="space-y-5">
+                <div>
+                    <h2 class="section-heading">Source &amp; Scene</h2>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Source Curve</label>
+                            <select id="trCurveSelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
+                                <option value="" disabled selected>Select a curve…</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Scene LSLR</label>
+                            <input type="number" id="trSceneLslr" step="0.01" min="0.50" max="4.00" placeholder="auto" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
+                            <p class="text-xs mt-0.5" style="color:var(--text-muted);">Leave empty for LER/CI</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="section-heading">Exposure</h2>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Film Exposure <span id="trFilmExpVal" class="font-normal" style="color:#1d1d1f;">0.0</span> stops</label>
+                            <input type="range" id="trFilmExpSlider" min="-3" max="3" step="0.1" value="0" class="w-full mt-1 accent-[#1d1d1f]" style="height:6px;">
+                        </div>
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Paper Exposure <span id="trPaperExpVal" class="font-normal" style="color:#1d1d1f;">0.0</span> stops</label>
+                            <input type="range" id="trPaperExpSlider" min="-3" max="3" step="0.1" value="0" class="w-full mt-1 accent-[#1d1d1f]" style="height:6px;">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="section-heading">Speed &amp; Anchor</h2>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Speed Point</label>
+                            <select id="trSpeedMethod" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1">
+                                <option value="fixedDensity">Fixed Density</option>
+                                <option value="jones">Jones (FG)</option>
+                                <option value="deltaX">Delta-X</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Paper Anchor</label>
+                            <select id="trPaperAnchor" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1">
+                                <option value="shadow">Shadow (T)</option>
+                                <option value="highlight">Highlight (S)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Anchor %Dmax</label>
+                            <input type="number" id="trAnchorPct" min="50" max="100" step="1" value="90" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1">
+                        </div>
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Offset (Flare)</label>
+                            <div id="trEiOffset" class="w-full p-1.5 border border-gray-200 rounded-md text-xs mt-1 bg-gray-50 text-center font-mono" style="min-height:2em;">—</div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="section-heading">Display</h2>
+                    <div class="space-y-2 text-sm">
+                        <label class="flex items-center gap-1.5 text-xs cursor-pointer">
+                            <input type="checkbox" id="trShowGradient" class="accent-[#1d1d1f]">
+                            <span class="font-medium">Show Reproduction Gradient</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 text-xs cursor-pointer">
+                            <input type="checkbox" id="trShowMetered" class="accent-[#1d1d1f]">
+                            <span class="font-medium">Show Metered</span>
+                        </label>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="trMeteredGray" min="1" max="99" step="0.1" value="12.6" class="w-14 p-1 border border-gray-300 rounded text-xs text-center font-mono" style="height:24px;">
+                            <span class="text-xs" style="color:var(--text-muted);">% gray</span>
+                        </div>
+                    </div>
+                </div>
+                </div><!-- /leftPanelTR -->
+
                 <!-- LEFT PANEL: Paper (shown on Paper Curve tab) -->
                 <div id="leftPanelPaper" style="display:none;" class="space-y-5">
                 <div>
@@ -824,94 +927,16 @@
                     </div>
 
                     <div class="tr-info-panel">
-                        <div class="tr-info-block"><div class="ti-title">Q1 · Camera / Flare</div><div class="ti-lines" id="trInfoQ1"></div></div>
-                        <div class="tr-info-block"><div class="ti-title">Q2 · Film</div><div class="ti-lines" id="trInfoQ2"></div></div>
-                        <div class="tr-info-block"><div class="ti-title">Q3 · Paper</div><div class="ti-lines" id="trInfoQ3"></div></div>
-                        <div class="tr-info-block"><div class="ti-title">Q4 · Reproduction</div><div class="ti-lines" id="trInfoQ4"></div></div>
+                        <div class="tr-info-block"><div class="ti-title ti-toggle collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Q1 · Camera / Flare</div><div class="ti-lines collapsed" id="trInfoQ1"></div></div>
+                        <div class="tr-info-block"><div class="ti-title ti-toggle collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Q2 · Film</div><div class="ti-lines collapsed" id="trInfoQ2"></div></div>
+                        <div class="tr-info-block"><div class="ti-title ti-toggle collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Q3 · Paper</div><div class="ti-lines collapsed" id="trInfoQ3"></div></div>
+                        <div class="tr-info-block"><div class="ti-title ti-toggle collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Q4 · Reproduction</div><div class="ti-lines collapsed" id="trInfoQ4"></div></div>
                     </div>
                     </div><!-- /tr-layout -->
 
-                    <!-- TR controls below diagram -->
-                    <div class="mt-4 text-sm">
-                        <!-- Section 1: Source & Scene -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="font-medium text-xs" style="color:var(--text-muted);">Source Curve</label>
-                                <select id="trCurveSelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
-                                    <option value="" disabled selected>Select a curve…</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="font-medium text-xs" style="color:var(--text-muted);">Scene LSLR</label>
-                                <input type="number" id="trSceneLslr" step="0.01" min="0.50" max="4.00" placeholder="auto" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
-                                <p class="text-xs mt-0.5" style="color:var(--text-muted);">Leave empty for LER/CI</p>
-                            </div>
-                        </div>
-
-                        <hr style="margin:0.75rem 0; border:none;">
-
-                        <!-- Section 2: Exposure Sliders -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="font-medium text-xs" style="color:var(--text-muted);">Film Exposure <span id="trFilmExpVal" class="font-normal" style="color:#1d1d1f;">0.0</span> stops</label>
-                                <input type="range" id="trFilmExpSlider" min="-3" max="3" step="0.1" value="0" class="w-full mt-1 accent-[#1d1d1f]" style="height:6px;">
-                            </div>
-                            <div>
-                                <label class="font-medium text-xs" style="color:var(--text-muted);">Paper Exposure <span id="trPaperExpVal" class="font-normal" style="color:#1d1d1f;">0.0</span> stops</label>
-                                <input type="range" id="trPaperExpSlider" min="-3" max="3" step="0.1" value="0" class="w-full mt-1 accent-[#1d1d1f]" style="height:6px;">
-                            </div>
-                        </div>
-
-                        <hr style="margin:0.75rem 0; border:none;">
-
-                        <!-- Section 3: Speed, Anchor, Flare -->
-                        <div class="grid grid-cols-4 gap-3">
-                            <div>
-                                <label class="font-medium text-xs" style="color:var(--text-muted);">Speed Point</label>
-                                <select id="trSpeedMethod" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1">
-                                    <option value="fixedDensity">Fixed Density</option>
-                                    <option value="jones">Jones (FG)</option>
-                                    <option value="deltaX">Delta-X</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="font-medium text-xs" style="color:var(--text-muted);">Paper Anchor</label>
-                                <select id="trPaperAnchor" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1">
-                                    <option value="shadow">Shadow (T)</option>
-                                    <option value="highlight">Highlight (S)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="font-medium text-xs" style="color:var(--text-muted);">Anchor %Dmax</label>
-                                <input type="number" id="trAnchorPct" min="50" max="100" step="1" value="90" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1">
-                            </div>
-                            <div>
-                                <label class="font-medium text-xs" style="color:var(--text-muted);">Offset (Flare)</label>
-                                <div id="trEiOffset" class="w-full p-1.5 border border-gray-200 rounded-md text-xs mt-1 bg-gray-50 text-center font-mono" style="min-height:2em;">—</div>
-                            </div>
-                        </div>
-
-                        <hr style="margin:0.75rem 0; border:none;">
-
-                        <!-- Section 4: Display Options -->
-                        <div class="flex items-center gap-4 pt-1">
-                                <label class="flex items-center gap-1.5 text-xs cursor-pointer">
-                                    <input type="checkbox" id="trShowGradient" class="accent-[#1d1d1f]">
-                                    <span class="font-medium">Show Reproduction Gradient</span>
-                                </label>
-                                <label class="flex items-center gap-1.5 text-xs cursor-pointer">
-                                    <input type="checkbox" id="trShowMetered" class="accent-[#1d1d1f]">
-                                    <span class="font-medium">Show Metered</span>
-                                </label>
-                                <div class="flex items-center gap-1">
-                                    <input type="number" id="trMeteredGray" min="1" max="99" step="0.1" value="12.6" class="w-14 p-1 border border-gray-300 rounded text-xs text-center font-mono" style="height:24px;">
-                                    <span class="text-xs" style="color:var(--text-muted);">% gray</span>
-                                </div>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- CHART AREA: Analysis Plots (switchable) -->
+                                <!-- CHART AREA: Analysis Plots (switchable) -->
                 <div id="panelAnalysisPlots" style="display:none;">
                     <div class="flex gap-1 mb-3 flex-wrap">
                         <button class="ap-sub-tab ap-sub-active" onclick="switchAnalysisPlot('ciTime')">CI vs Time</button>
@@ -3649,6 +3674,10 @@
                 trPanel.style.display = '';
                 curvesPanel.style.display = 'none';
 
+                // Expand the Q1-Q4 info fold-downs for the capture; restored below
+                const collapsedTrInfo = Array.from(trPanel.querySelectorAll('.ti-lines.collapsed, .ti-toggle.collapsed'));
+                collapsedTrInfo.forEach(el => el.classList.remove('collapsed'));
+
                 // Ensure TR charts are initialized
                 if (!trInitialized) {
                     initTRCharts();
@@ -3742,6 +3771,7 @@
                 document.getElementById('trPaperExpVal').textContent = parseFloat(savedPaperExp).toFixed(1);
                 trSel.value = savedTrVal;
                 if (savedTrVal) updateToneReproduction();
+                collapsedTrInfo.forEach(el => el.classList.add('collapsed'));
                 if (trWasHidden) {
                     trPanel.style.display = 'none';
                     curvesPanel.style.display = '';
@@ -7678,8 +7708,10 @@
                 Object.values(btns).forEach(b => b.classList.remove('tab-active'));
                 if (panels[tab]) panels[tab].style.display = '';
                 btns[tab].classList.add('tab-active');
-                leftFilm.style.display = tab === 'paper' ? 'none' : '';
+                const leftTR = document.getElementById('leftPanelTR');
+                leftFilm.style.display = (tab === 'paper' || tab === 'tonerepro') ? 'none' : '';
                 leftPaper.style.display = tab === 'paper' ? '' : 'none';
+                leftTR.style.display = tab === 'tonerepro' ? '' : 'none';
                 filmBelow.style.display = tab === 'paper' ? 'none' : '';
 
                 // Disable LER input on Tone Reproduction tab (TR uses its own scene LSLR)
