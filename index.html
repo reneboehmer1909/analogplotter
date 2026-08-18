@@ -361,8 +361,10 @@
             top: var(--topbar-h);
             height: calc(100vh - var(--topbar-h));
             overflow-y: auto;
+            /* reserve the scrollbar gutter so cards don't change width when it appears */
+            scrollbar-gutter: stable;
             margin-top: -20px;
-            padding: 20px 10px 24px 2px;
+            padding: 20px 4px 24px 2px;
             overscroll-behavior: contain;
         }
         .app-content { min-width: 0; }
