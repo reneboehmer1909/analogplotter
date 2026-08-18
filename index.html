@@ -608,23 +608,25 @@
                 <hr>
 
                 <div>
-                    <h2 class="section-heading">Curves</h2>
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <button id="addCurveBtn" class="custom-btn font-medium py-1.5 px-3 text-xs tracking-wider">+ Add Curve</button>
-                        <label for="file-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Import</label>
-                        <input type="file" id="file-import" class="hidden" accept=".json">
-                        <button id="export-json" class="secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Export Data</button>
-                        <label for="compare-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Compare Films</label>
-                        <input type="file" id="compare-import" class="hidden" accept=".json" multiple>
+                    <h2 class="section-heading collapsible collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Curves</h2>
+                    <div class="collapsible-content collapsed">
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <button id="addCurveBtn" class="custom-btn font-medium py-1.5 px-3 text-xs tracking-wider">+ Add Curve</button>
+                            <label for="file-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Import</label>
+                            <input type="file" id="file-import" class="hidden" accept=".json">
+                            <button id="export-json" class="secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Export Data</button>
+                            <label for="compare-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Compare Films</label>
+                            <input type="file" id="compare-import" class="hidden" accept=".json" multiple>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 mb-4">
+                            <button id="showAllCurvesBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Show All</button>
+                            <button id="hideAllCurvesBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Hide All</button>
+                            <label for="btzs-import" class="file-input-label secondary-btn py-1 px-2 text-[10px] tracking-wider">Import BTZS</label>
+                            <input type="file" id="btzs-import" class="hidden" accept=".pfc">
+                            <button id="resetAllBtn" class="py-1 px-2 text-[10px] tracking-wider font-medium" style="background:#dc2626;color:#fff;border-radius:999px;">Reset All</button>
+                        </div>
+                        <div id="curvesContainer" class="space-y-6 max-h-[68vh] overflow-y-auto pr-2"></div>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2 mb-4">
-                        <button id="showAllCurvesBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Show All</button>
-                        <button id="hideAllCurvesBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Hide All</button>
-                        <label for="btzs-import" class="file-input-label secondary-btn py-1 px-2 text-[10px] tracking-wider">Import BTZS</label>
-                        <input type="file" id="btzs-import" class="hidden" accept=".pfc">
-                        <button id="resetAllBtn" class="py-1 px-2 text-[10px] tracking-wider font-medium" style="background:#dc2626;color:#fff;border-radius:999px;">Reset All</button>
-                    </div>
-                    <div id="curvesContainer" class="space-y-6 max-h-[68vh] overflow-y-auto pr-2"></div>
                 </div>
                 </div><!-- /leftPanelFilm -->
 
