@@ -7712,7 +7712,8 @@
                 leftFilm.style.display = (tab === 'paper' || tab === 'tonerepro') ? 'none' : '';
                 leftPaper.style.display = tab === 'paper' ? '' : 'none';
                 leftTR.style.display = tab === 'tonerepro' ? '' : 'none';
-                filmBelow.style.display = tab === 'paper' ? 'none' : '';
+                // Film Characteristics, Exposure & Scene, etc. belong to the Curves tab only
+                filmBelow.style.display = tab === 'curves' ? '' : 'none';
 
                 // Disable LER input on Tone Reproduction tab (TR uses its own scene LSLR)
                 const lerInput = document.getElementById('targetLer');
