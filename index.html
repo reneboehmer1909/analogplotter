@@ -1406,7 +1406,7 @@
             <text x="10" y="94" font-size="11" fill="#6e6e73">Step wedge — each step passes a known fraction less light to the film</text>
         </svg>`;
 
-        const INTRO_SVG_STRIPS = `<svg width="420" height="120" viewBox="0 0 420 120">` +
+        const INTRO_SVG_STRIPS = `<svg width="420" height="140" viewBox="0 0 420 140">` +
             [['5:30','#8b2500'],['8:00','#00457c'],['11:00','#2d6a4f'],['16:00','#6b3fa0']].map((st, i) => {
                 const y = 10 + i * 27;
                 const steps = Array.from({length: 12}, (_, k) => {
@@ -1417,40 +1417,43 @@
                         <rect x="98" y="${y - 2}" width="222" height="22" rx="2" fill="none" stroke="#c7c7cc"/>` + steps +
                        `<text x="332" y="${y + 13}" font-size="10" fill="#6e6e73">→ measure</text>`;
             }).join('') +
-            `<text x="10" y="118" font-size="11" fill="#6e6e73">Identical exposures — only the development time changes</text></svg>`;
+            `<text x="10" y="133" font-size="11" fill="#6e6e73">Identical exposures — only the development time changes</text></svg>`;
 
-        const INTRO_SVG_FAMILY = `<svg width="420" height="180" viewBox="0 0 420 180">
-            <line x1="40" y1="150" x2="400" y2="150" stroke="#1d1d1f" stroke-width="1.2"/>
+        const INTRO_SVG_FAMILY = `<svg width="440" height="185" viewBox="0 0 440 185">
+            <line x1="40" y1="150" x2="395" y2="150" stroke="#1d1d1f" stroke-width="1.2"/>
             <line x1="40" y1="150" x2="40" y2="10" stroke="#1d1d1f" stroke-width="1.2"/>
-            <text x="200" y="172" font-size="11" fill="#6e6e73" text-anchor="middle">log Exposure (log H) →</text>
+            <text x="215" y="174" font-size="11" fill="#6e6e73" text-anchor="middle">log Exposure (log H) →</text>
             <text x="16" y="85" font-size="11" fill="#6e6e73" transform="rotate(-90 16 85)" text-anchor="middle">Density →</text>
-            <path d="M55 143 C 130 140 180 120 260 88 C 320 65 370 52 395 48" fill="none" stroke="#8b2500" stroke-width="2"/>
-            <path d="M55 143 C 125 138 175 108 250 68 C 310 38 365 26 395 22" fill="none" stroke="#00457c" stroke-width="2"/>
-            <path d="M55 142 C 120 136 168 98 240 52 C 300 18 355 10 395 8" fill="none" stroke="#2d6a4f" stroke-width="2"/>
-            <text x="360" y="62" font-size="10" fill="#8b2500">5:30</text>
-            <text x="360" y="34" font-size="10" fill="#00457c">8:00</text>
-            <text x="358" y="20" font-size="10" fill="#2d6a4f">11:00</text>
-            <text x="55" y="132" font-size="10" fill="#6e6e73">base + fog</text>
+            <line x1="42" y1="141" x2="393" y2="141" stroke="#c7c7cc" stroke-width="1" stroke-dasharray="4 3"/>
+            <text x="390" y="137" font-size="9" fill="#6e6e73" text-anchor="end">base + fog</text>
+            <path d="M55 140 C 125 138 175 120 250 90 C 310 68 355 56 390 50" fill="none" stroke="#8b2500" stroke-width="2"/>
+            <path d="M55 140 C 122 136 170 108 245 70 C 305 42 355 30 390 24" fill="none" stroke="#00457c" stroke-width="2"/>
+            <path d="M55 139 C 118 134 165 98 238 54 C 298 22 350 12 390 10" fill="none" stroke="#2d6a4f" stroke-width="2"/>
+            <text x="398" y="54" font-size="10" fill="#8b2500">5:30</text>
+            <text x="398" y="28" font-size="10" fill="#00457c">8:00</text>
+            <text x="398" y="14" font-size="10" fill="#2d6a4f">11:00</text>
         </svg>`;
 
-        const INTRO_SVG_SPEED = `<svg width="440" height="200" viewBox="0 0 440 200">
+        const INTRO_SVG_SPEED = `<svg width="440" height="238" viewBox="0 0 440 238">
             <line x1="40" y1="170" x2="420" y2="170" stroke="#1d1d1f" stroke-width="1.2"/>
             <line x1="40" y1="170" x2="40" y2="12" stroke="#1d1d1f" stroke-width="1.2"/>
-            <text x="230" y="192" font-size="11" fill="#6e6e73" text-anchor="middle">log Exposure →</text>
-            <line x1="40" y1="150" x2="420" y2="150" stroke="#c7c7cc" stroke-width="1" stroke-dasharray="4 3"/>
-            <text x="46" y="146" font-size="10" fill="#6e6e73">base + fog</text>
-            <path d="M55 149 C 120 148 160 144 200 132 C 260 113 320 72 400 30" fill="none" stroke="#1d1d1f" stroke-width="2.2"/>
-            <line x1="40" y1="128" x2="228" y2="128" stroke="#0066cc" stroke-width="0.8" stroke-dasharray="3 3"/>
-            <circle cx="228" cy="128" r="4.5" fill="#0066cc"/>
-            <text x="238" y="124" font-size="11" font-weight="600" fill="#0066cc">0.10 over B+F (Hm)</text>
-            <text x="238" y="138" font-size="10" fill="#6e6e73">ISO 6 fixed density · S = 0.8/Hm</text>
-            <circle cx="164" cy="142" r="4.5" fill="#d70015"/>
-            <text x="52" y="92" font-size="11" font-weight="600" fill="#d70015">ΔX / Fractional Gradient (Hfg)</text>
-            <text x="52" y="106" font-size="10" fill="#6e6e73">where usable shadow gradient begins</text>
-            <path d="M164 137 L164 112 L 150 112" fill="none" stroke="#d70015" stroke-width="0.8"/>
-            <path d="M222 158 L170 158" stroke="#424245" stroke-width="1" marker-end="none"/>
-            <path d="M175 155 L169 158 L175 161" fill="none" stroke="#424245" stroke-width="1"/>
-            <text x="196" y="154" font-size="10" fill="#424245" text-anchor="middle">ΔX ≈ 0.3 log H</text>
+            <text x="416" y="184" font-size="10" fill="#6e6e73" text-anchor="end">log Exposure →</text>
+            <line x1="42" y1="152" x2="418" y2="152" stroke="#c7c7cc" stroke-width="1" stroke-dasharray="4 3"/>
+            <text x="46" y="144" font-size="9" fill="#6e6e73">base + fog</text>
+            <path d="M55 151 C 130 150 175 143 215 128 C 270 106 330 70 415 32" fill="none" stroke="#1d1d1f" stroke-width="2.2"/>
+            <line x1="40" y1="124" x2="226" y2="124" stroke="#0066cc" stroke-width="0.8" stroke-dasharray="3 3"/>
+            <circle cx="226" cy="124" r="4.5" fill="#0066cc"/>
+            <circle cx="172" cy="143" r="4.5" fill="#d70015"/>
+            <line x1="172" y1="148" x2="172" y2="161" stroke="#d70015" stroke-width="0.8" stroke-dasharray="2 2"/>
+            <line x1="226" y1="129" x2="226" y2="161" stroke="#0066cc" stroke-width="0.8" stroke-dasharray="2 2"/>
+            <line x1="176" y1="161" x2="222" y2="161" stroke="#424245" stroke-width="1"/>
+            <path d="M181 158 L175 161 L181 164" fill="none" stroke="#424245" stroke-width="1"/>
+            <path d="M217 158 L223 161 L217 164" fill="none" stroke="#424245" stroke-width="1"/>
+            <text x="234" y="164" font-size="10" fill="#424245">ΔX ≈ 0.3 log H</text>
+            <circle cx="50" cy="205" r="4.5" fill="#0066cc"/>
+            <text x="62" y="209" font-size="11" fill="#1d1d1f"><tspan font-weight="600">0.10 over B+F (Hm)</tspan> — ISO 6 fixed density · S = 0.8/Hm</text>
+            <circle cx="50" cy="226" r="4.5" fill="#d70015"/>
+            <text x="62" y="230" font-size="11" fill="#1d1d1f"><tspan font-weight="600">ΔX / Fractional Gradient (Hfg)</tspan> — where usable shadow gradient begins</text>
         </svg>`;
 
         const INTRO_STEPS = [
