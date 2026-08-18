@@ -798,11 +798,8 @@
                 <!-- LEFT PANEL: Paper (shown on Paper Curve tab) -->
                 <div id="leftPanelPaper" style="display:none;" class="space-y-5">
                 <div>
-                    <h2 class="section-heading">Paper Curves</h2>
-                    <p class="text-xs mb-3" style="color:var(--text-muted);">Each curve represents one contrast grade of the same paper. Expose a calibrated step tablet through your enlarger, develop to completion, and measure each step with a reflection densitometer.</p>
-
-                    <h3 class="section-heading mt-4">Paper & Process</h3>
-                    <div class="space-y-2 text-sm mb-4">
+                    <h2 class="section-heading collapsible collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Paper &amp; Process</h2>
+                    <div class="space-y-3 text-sm collapsible-content collapsed">
                         <div>
                             <label class="font-medium text-xs" style="color:var(--text-muted);">Paper</label>
                             <input type="text" id="paperName" class="w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. Ilford MG V">
@@ -821,10 +818,16 @@
                                 <input type="text" id="paperTemp" class="w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. 20°C">
                             </div>
                         </div>
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Notes</label>
+                            <textarea id="paperNotes" class="w-full p-2 border border-gray-300 rounded-md h-24 text-sm" placeholder="General notes about this paper test..."></textarea>
+                        </div>
                     </div>
-                    <hr>
+                </div>
 
-                    <div class="space-y-3 text-sm my-4">
+                <div>
+                    <h2 class="section-heading collapsible collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Step Tablet Definition</h2>
+                    <div class="space-y-3 text-sm collapsible-content collapsed">
                         <div>
                             <label class="font-medium text-xs">Step Tablet Definition:</label>
                             <select id="paperStepMode" class="w-full p-2 border border-gray-300 rounded-md text-sm">
@@ -837,8 +840,11 @@
                             <textarea id="paperCustomSteps" class="data-input w-full p-2 text-xs border rounded-md font-mono" placeholder="Paste step densities, comma-separated..."></textarea>
                         </div>
                     </div>
-                    <hr>
-                    <div class="mt-4 mb-4">
+                </div>
+
+                <div>
+                    <h2 class="section-heading collapsible collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Tone Reproduction Link</h2>
+                    <div class="space-y-3 text-sm collapsible-content collapsed">
                         <label class="flex items-center gap-1.5 text-sm cursor-pointer">
                             <input type="checkbox" id="trUseMeasuredPaper" class="accent-[#1d1d1f]">
                             <span class="font-medium">Use measured paper in Tone Reproduction</span>
@@ -852,27 +858,28 @@
                         </div>
                         <p id="paperTrInfo" class="text-xs mt-1" style="color:var(--text-muted);">Select a grade with the ● radio to use in Tone Reproduction.</p>
                     </div>
-                    <hr>
-                    <div>
-                        <h3 class="section-heading mt-4">Notes</h3>
-                        <textarea id="paperNotes" class="w-full p-2 border border-gray-300 rounded-md h-24 text-sm" placeholder="General notes about this paper test..."></textarea>
-                    </div>
-                    <hr>
-                    <div class="flex items-center justify-between my-4">
-                        <div class="flex items-center space-x-2 flex-wrap gap-y-2">
+                </div>
+
+                <div>
+                    <h2 class="section-heading collapsible collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Grades</h2>
+                    <div class="collapsible-content collapsed">
+                        <p class="text-xs mb-3" style="color:var(--text-muted);">Each curve represents one contrast grade of the same paper. Expose a calibrated step tablet through your enlarger, develop to completion, and measure each step with a reflection densitometer.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
                             <button id="addPaperCurveBtn" class="custom-btn font-medium py-1.5 px-3 text-xs tracking-wider">+ Add Grade</button>
-                            <button id="showAllPaperBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Show All</button>
-                            <button id="hideAllPaperBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Hide All</button>
-                            <label for="paper-file-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider" style="cursor:pointer;">Import Paper</label>
+                            <label for="paper-file-import" class="file-input-label secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Import Paper</label>
                             <input type="file" id="paper-file-import" class="hidden" accept=".json">
                             <button id="export-paper-json" class="secondary-btn font-medium py-1.5 px-3 text-xs tracking-wider">Export Paper</button>
                         </div>
-                        <label class="flex items-center gap-1.5 text-xs cursor-pointer" style="color:var(--text-muted);">
-                            <input type="checkbox" id="paperShowPoints" class="accent-[#1d1d1f]" checked>
-                            Points
-                        </label>
+                        <div class="flex flex-wrap items-center gap-2 mb-4">
+                            <button id="showAllPaperBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Show All</button>
+                            <button id="hideAllPaperBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Hide All</button>
+                            <label class="flex items-center gap-1.5 text-xs cursor-pointer" style="color:var(--text-muted);">
+                                <input type="checkbox" id="paperShowPoints" class="accent-[#1d1d1f]" checked>
+                                Points
+                            </label>
+                        </div>
+                        <div id="paperCurvesContainer" class="space-y-6"></div>
                     </div>
-                    <div id="paperCurvesContainer" class="space-y-6"></div>
                 </div>
                 </div><!-- /leftPanelPaper -->
             </div>
@@ -962,7 +969,7 @@
 
                 <!-- CHART AREA: Paper Curve (switchable) -->
                 <div id="panelPaperCurve" style="display:none;">
-                    <div id="paperChartContainer" class="chart-frame mb-4">
+                    <div id="paperChartContainer" class="chart-hero">
                         <canvas id="paperCurveChart"></canvas>
                     </div>
                     <h3 class="section-heading mt-4">Paper Characteristics</h3>
