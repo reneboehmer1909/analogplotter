@@ -305,19 +305,14 @@
             display: none;
         }
 
-        /* Slim frosted top navigation */
+        /* Slim static top navigation: logo — tabs — menu */
         .topbar {
-            position: sticky;
-            top: 0;
-            z-index: 50;
             height: var(--topbar-h);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 16px;
             padding: 0 24px;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(255, 255, 255, 0.72);
         }
         .logo {
             font-size: 15px;
@@ -410,17 +405,6 @@
             border: none;
         }
 
-        /* Frosted sticky tab bar with segmented-control tabs */
-        .tabbar {
-            position: sticky;
-            top: var(--topbar-h);
-            z-index: 40;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(255, 255, 255, 0.72);
-            padding: 8px 0 10px;
-            margin-bottom: 16px;
-        }
         .tab-btn {
             padding: 7px 18px;
             font-size: 13px;
@@ -506,6 +490,12 @@
 
     <nav class="topbar">
         <span class="logo">Analogplotter</span>
+        <div class="flex items-center gap-1">
+            <button id="tabCurves" class="tab-btn tab-active" onclick="switchTab('curves')">Curves</button>
+            <button id="tabToneRepro" class="tab-btn" onclick="switchTab('tonerepro')">Tone Reproduction</button>
+            <button id="tabAnalysis" class="tab-btn" onclick="switchTab('analysis')">Analysis Plots</button>
+            <button id="tabPaper" class="tab-btn" onclick="switchTab('paper')">Paper Curve</button>
+        </div>
         <a href="menu.html" class="menu-btn" title="Menu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </a>
@@ -704,13 +694,6 @@
             </div>
 
             <div class="app-content">
-                <!-- Tab navigation -->
-                <div class="tabbar flex items-center gap-1">
-                    <button id="tabCurves" class="tab-btn tab-active" onclick="switchTab('curves')">Curves</button>
-                    <button id="tabToneRepro" class="tab-btn" onclick="switchTab('tonerepro')">Tone Reproduction</button>
-                    <button id="tabAnalysis" class="tab-btn" onclick="switchTab('analysis')">Analysis Plots</button>
-                    <button id="tabPaper" class="tab-btn" onclick="switchTab('paper')">Paper Curve</button>
-                </div>
 
                 <!-- CHART AREA: Curves (switchable) -->
                 <div id="panelCurvesChart">
