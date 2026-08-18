@@ -418,11 +418,27 @@
             box-shadow: 0 1px 12px rgba(0, 0, 0, 0.06);
         }
         .logo {
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: -0.01em;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            text-decoration: none;
+        }
+        .logo-mark {
+            width: 23px;
+            height: 23px;
+            flex-shrink: 0;
+        }
+        .logo-word {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
             color: var(--text-primary);
         }
+        .logo-accent {
+            font-weight: 450;
+            color: var(--text-muted);
+        }
+        .logo:hover .logo-accent { color: var(--accent); transition: color 0.15s; }
         .menu-btn {
             display: inline-flex;
             align-items: center;
@@ -687,7 +703,14 @@
 
 
     <nav class="topbar">
-        <span class="logo">Analogplotter</span>
+        <a class="logo" href="./" title="Analogplotter">
+            <svg class="logo-mark" viewBox="0 0 24 24">
+                <rect x="0.5" y="0.5" width="23" height="23" rx="6.5" fill="#1d1d1f"/>
+                <path d="M5 18.5 C10.5 18.5 12 14.5 14 11 C15.5 8.3 17 6.8 19.5 6.2" stroke="#ffffff" stroke-width="2.1" fill="none" stroke-linecap="round"/>
+                <circle cx="8.2" cy="17.6" r="1.25" fill="#2997ff"/>
+            </svg>
+            <span class="logo-word">Analog<span class="logo-accent">plotter</span></span>
+        </a>
         <div class="flex items-center gap-1">
             <button id="tabCurves" class="tab-btn tab-active" onclick="switchTab('curves')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 20 C9 20 13 16 15 11 C16.5 7.5 18 5 21 4"/></svg>Curves</button>
             <button id="tabToneRepro" class="tab-btn" onclick="switchTab('tonerepro')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="7.2" height="7.2" rx="1.5"/><rect x="13.3" y="3.5" width="7.2" height="7.2" rx="1.5"/><rect x="3.5" y="13.3" width="7.2" height="7.2" rx="1.5"/><rect x="13.3" y="13.3" width="7.2" height="7.2" rx="1.5"/></svg>Tone Reproduction</button>
