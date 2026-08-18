@@ -5099,7 +5099,13 @@
             const html = `
                 <div id="${pcId}" class="curve-input-group p-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h4 class="text-sm font-semibold font-sans text-[#424245]">Grade ${paperCurveCounter}</h4>
+                        <div class="flex items-center space-x-2">
+                            <div class="flex flex-col">
+                                <svg class="arrow-btn paper-up-arrow w-3.5 h-3.5 text-[#c7c7cc] hover:text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"></path></svg>
+                                <svg class="arrow-btn paper-down-arrow w-3.5 h-3.5 text-[#c7c7cc] hover:text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                            <h4 class="text-sm font-semibold font-sans text-[#424245]">Grade ${paperCurveCounter}</h4>
+                        </div>
                         <button class="remove-paper-btn text-[#c7c7cc] hover:text-[#d70015] font-bold text-sm" data-id="${pcId}">&times;</button>
                     </div>
                     <div class="space-y-3">
@@ -5142,6 +5148,18 @@
             const el = document.getElementById(pcId);
             el.querySelector('.remove-paper-btn').addEventListener('click', () => {
                 el.remove(); parsePaperCurves(); updatePaperCurveChart();
+            });
+            el.querySelector('.paper-up-arrow').addEventListener('click', () => {
+                if (el.previousElementSibling) {
+                    container.insertBefore(el, el.previousElementSibling);
+                    parsePaperCurves(); updatePaperCurveChart();
+                }
+            });
+            el.querySelector('.paper-down-arrow').addEventListener('click', () => {
+                if (el.nextElementSibling) {
+                    container.insertBefore(el.nextElementSibling, el);
+                    parsePaperCurves(); updatePaperCurveChart();
+                }
             });
             const onChange = () => { parsePaperCurves(); updatePaperCurveChart(); };
             el.querySelectorAll('input, textarea').forEach(inp => {
