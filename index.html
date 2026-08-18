@@ -226,6 +226,43 @@
             background-color: #fff;
         }
 
+
+        /* Tab icons + light per-tab color identity */
+        .tab-btn { display: inline-flex; align-items: center; gap: 6px; }
+        .tab-btn svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.85; }
+        #tabCurves svg { color: #0066cc; }
+        #tabToneRepro svg { color: #248a3d; }
+        #tabAnalysis svg { color: #b25000; }
+        #tabPaper svg { color: #7d3c98; }
+        #tabCurves.tab-active { background: #eaf2fb; }
+        #tabToneRepro.tab-active { background: #e9f6ee; }
+        #tabAnalysis.tab-active { background: #fdf1e6; }
+        #tabPaper.tab-active { background: #f5eefa; }
+
+        /* Intro wizard */
+        .intro-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(29, 29, 31, 0.45);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .intro-card {
+            background: #fff; border-radius: 22px; width: min(620px, calc(100vw - 40px));
+            max-height: calc(100vh - 80px); overflow-y: auto;
+            padding: 30px 34px 22px; box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+        }
+        .intro-card h2 { font-size: 22px; letter-spacing: -0.02em; margin-bottom: 12px; }
+        .intro-card p { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 10px; }
+        .intro-card p strong { color: var(--text-primary); }
+        .intro-illu { display: flex; justify-content: center; margin: 16px 0; }
+        .intro-illu svg { max-width: 100%; height: auto; }
+        .intro-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; gap: 12px; flex-wrap: wrap; }
+        .intro-dots { display: flex; gap: 6px; }
+        .intro-dot { width: 7px; height: 7px; border-radius: 999px; background: #d2d2d7; transition: background 0.15s; }
+        .intro-dot.active { background: var(--accent); }
+        .intro-skip { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+        .intro-nav { display: flex; gap: 8px; }
+        .intro-close { position: absolute; top: 14px; right: 16px; }
         /* Undo toast */
         .undo-toast {
             position: fixed;
@@ -643,10 +680,13 @@
     <nav class="topbar">
         <span class="logo">Analogplotter</span>
         <div class="flex items-center gap-1">
-            <button id="tabCurves" class="tab-btn tab-active" onclick="switchTab('curves')">Curves</button>
-            <button id="tabToneRepro" class="tab-btn" onclick="switchTab('tonerepro')">Tone Reproduction</button>
-            <button id="tabAnalysis" class="tab-btn" onclick="switchTab('analysis')">Analysis Plots</button>
-            <button id="tabPaper" class="tab-btn" onclick="switchTab('paper')">Paper Curve</button>
+            <button id="tabCurves" class="tab-btn tab-active" onclick="switchTab('curves')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 20 C9 20 13 16 15 11 C16.5 7.5 18 5 21 4"/></svg>Curves</button>
+            <button id="tabToneRepro" class="tab-btn" onclick="switchTab('tonerepro')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="7.2" height="7.2" rx="1.5"/><rect x="13.3" y="3.5" width="7.2" height="7.2" rx="1.5"/><rect x="3.5" y="13.3" width="7.2" height="7.2" rx="1.5"/><rect x="13.3" y="13.3" width="7.2" height="7.2" rx="1.5"/></svg>Tone Reproduction</button>
+            <button id="tabAnalysis" class="tab-btn" onclick="switchTab('analysis')"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="17" r="2.1"/><circle cx="11" cy="10" r="2.1"/><circle cx="17" cy="13" r="2.1"/><circle cx="20" cy="5" r="2.1"/></svg>Analysis Plots</button>
+            <button id="tabPaper" class="tab-btn" onclick="switchTab('paper')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3.5 H14.5 L19.5 8.5 V20.5 H6 Z"/><path d="M14.5 3.5 V8.5 H19.5"/></svg>Paper Curve</button>
+        </div>
+        <div class="flex items-center gap-1" style="position:absolute; right:64px;">
+            <button id="helpBtn" class="menu-btn" title="Introduction & help" onclick="showIntroWizard(true)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2 C9.5 7.7 10.6 6.8 12 6.8 C13.4 6.8 14.5 7.7 14.5 9 C14.5 10.9 12 10.9 12 12.9"/><circle cx="12" cy="16.6" r="0.6" fill="currentColor"/></svg></button>
         </div>
         <a href="menu.html" class="menu-btn" title="Menu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -1295,6 +1335,181 @@
                 localStorage.setItem(SESSION_KEY, JSON.stringify(session));
             } catch (e) { /* storage full or unavailable — never break the app over autosave */ }
         }, 400);
+
+
+        // --- INTRO WIZARD ---
+        const INTRO_KEY = 'analogplotter_intro_dismissed';
+
+        const DEMO_CURVES = [
+            { name: 'Demo 5:30',  time: '5.5', color: '#8b2500', data: '0.18, 0.20, 0.23, 0.26, 0.30, 0.34, 0.40, 0.46, 0.52, 0.60, 0.67, 0.76, 0.84, 0.93, 1.01, 1.09' },
+            { name: 'Demo 8:00',  time: '8',   color: '#00457c', data: '0.18, 0.21, 0.24, 0.28, 0.33, 0.39, 0.46, 0.55, 0.64, 0.74, 0.85, 0.96, 1.06, 1.17, 1.27, 1.36' },
+            { name: 'Demo 11:00', time: '11',  color: '#2d6a4f', data: '0.18, 0.21, 0.25, 0.30, 0.36, 0.44, 0.53, 0.64, 0.76, 0.89, 1.03, 1.17, 1.30, 1.42, 1.53, 1.63' },
+            { name: 'Demo 16:00', time: '16',  color: '#6b3fa0', data: '0.18, 0.21, 0.25, 0.31, 0.39, 0.49, 0.61, 0.76, 0.92, 1.09, 1.26, 1.43, 1.58, 1.71, 1.83, 1.92' }
+        ];
+
+        const loadDemoData = () => {
+            curvesContainer.innerHTML = '';
+            curveCounter = 0;
+            curvesData = [];
+            DEMO_CURVES.forEach(c => addCurve(c));
+            logHModeSelect.value = 'auto';
+            targetIsoInput.value = 400;
+            toggleLogH_UI();
+            updateChartAndCalculations();
+            // open the Curves fold-down so the entered data is visible
+            const h = [...document.querySelectorAll('#leftPanelFilm .section-heading.collapsible')].find(x => x.textContent.trim() === 'Curves');
+            if (h && h.classList.contains('collapsed')) h.click();
+            switchTab('curves');
+        };
+
+        const INTRO_SVG_WEDGE = `<svg width="420" height="110" viewBox="0 0 420 110">
+            <text x="10" y="18" font-size="11" fill="#6e6e73">Light</text>
+            <g stroke="#0066cc" stroke-width="1.5" marker-end="none">
+                <line x1="30" y1="26" x2="30" y2="44"/><line x1="110" y1="26" x2="110" y2="44"/><line x1="190" y1="26" x2="190" y2="44"/><line x1="270" y1="26" x2="270" y2="44"/><line x1="350" y1="26" x2="350" y2="44"/>
+            </g>
+            <g>` + Array.from({length: 10}, (_, i) => {
+                const g2 = Math.round(235 - i * 23);
+                return `<rect x="${10 + i * 40}" y="48" width="40" height="26" fill="rgb(${g2},${g2},${g2})" stroke="#c7c7cc" stroke-width="0.5"/>`;
+            }).join('') + `</g>
+            <text x="10" y="94" font-size="11" fill="#6e6e73">Step wedge — each step passes a known fraction less light to the film</text>
+        </svg>`;
+
+        const INTRO_SVG_STRIPS = `<svg width="420" height="120" viewBox="0 0 420 120">` +
+            [['5:30','#8b2500'],['8:00','#00457c'],['11:00','#2d6a4f'],['16:00','#6b3fa0']].map((st, i) => {
+                const y = 10 + i * 27;
+                const steps = Array.from({length: 12}, (_, k) => {
+                    const dark = Math.min(210, 30 + k * (12 + i * 4));
+                    return `<rect x="${100 + k * 18}" y="${y}" width="18" height="18" fill="rgb(${dark},${dark},${dark})"/>`;
+                }).join('');
+                return `<text x="10" y="${y + 13}" font-size="11" font-weight="600" fill="${st[1]}">${st[0]} min</text>
+                        <rect x="98" y="${y - 2}" width="222" height="22" rx="2" fill="none" stroke="#c7c7cc"/>` + steps +
+                       `<text x="332" y="${y + 13}" font-size="10" fill="#6e6e73">→ measure</text>`;
+            }).join('') +
+            `<text x="10" y="118" font-size="11" fill="#6e6e73">Identical exposures — only the development time changes</text></svg>`;
+
+        const INTRO_SVG_FAMILY = `<svg width="420" height="180" viewBox="0 0 420 180">
+            <line x1="40" y1="150" x2="400" y2="150" stroke="#1d1d1f" stroke-width="1.2"/>
+            <line x1="40" y1="150" x2="40" y2="10" stroke="#1d1d1f" stroke-width="1.2"/>
+            <text x="200" y="172" font-size="11" fill="#6e6e73" text-anchor="middle">log Exposure (log H) →</text>
+            <text x="16" y="85" font-size="11" fill="#6e6e73" transform="rotate(-90 16 85)" text-anchor="middle">Density →</text>
+            <path d="M55 143 C 130 140 180 120 260 88 C 320 65 370 52 395 48" fill="none" stroke="#8b2500" stroke-width="2"/>
+            <path d="M55 143 C 125 138 175 108 250 68 C 310 38 365 26 395 22" fill="none" stroke="#00457c" stroke-width="2"/>
+            <path d="M55 142 C 120 136 168 98 240 52 C 300 18 355 10 395 8" fill="none" stroke="#2d6a4f" stroke-width="2"/>
+            <text x="360" y="62" font-size="10" fill="#8b2500">5:30</text>
+            <text x="360" y="34" font-size="10" fill="#00457c">8:00</text>
+            <text x="358" y="20" font-size="10" fill="#2d6a4f">11:00</text>
+            <text x="55" y="132" font-size="10" fill="#6e6e73">base + fog</text>
+        </svg>`;
+
+        const INTRO_SVG_SPEED = `<svg width="440" height="200" viewBox="0 0 440 200">
+            <line x1="40" y1="170" x2="420" y2="170" stroke="#1d1d1f" stroke-width="1.2"/>
+            <line x1="40" y1="170" x2="40" y2="12" stroke="#1d1d1f" stroke-width="1.2"/>
+            <text x="230" y="192" font-size="11" fill="#6e6e73" text-anchor="middle">log Exposure →</text>
+            <line x1="40" y1="150" x2="420" y2="150" stroke="#c7c7cc" stroke-width="1" stroke-dasharray="4 3"/>
+            <text x="46" y="146" font-size="10" fill="#6e6e73">base + fog</text>
+            <path d="M55 149 C 120 148 160 144 200 132 C 260 113 320 72 400 30" fill="none" stroke="#1d1d1f" stroke-width="2.2"/>
+            <line x1="40" y1="128" x2="228" y2="128" stroke="#0066cc" stroke-width="0.8" stroke-dasharray="3 3"/>
+            <circle cx="228" cy="128" r="4.5" fill="#0066cc"/>
+            <text x="238" y="124" font-size="11" font-weight="600" fill="#0066cc">0.10 over B+F (Hm)</text>
+            <text x="238" y="138" font-size="10" fill="#6e6e73">ISO 6 fixed density · S = 0.8/Hm</text>
+            <circle cx="164" cy="142" r="4.5" fill="#d70015"/>
+            <text x="52" y="92" font-size="11" font-weight="600" fill="#d70015">ΔX / Fractional Gradient (Hfg)</text>
+            <text x="52" y="106" font-size="10" fill="#6e6e73">where usable shadow gradient begins</text>
+            <path d="M164 137 L164 112 L 150 112" fill="none" stroke="#d70015" stroke-width="0.8"/>
+            <path d="M222 158 L170 158" stroke="#424245" stroke-width="1" marker-end="none"/>
+            <path d="M175 155 L169 158 L175 161" fill="none" stroke="#424245" stroke-width="1"/>
+            <text x="196" y="154" font-size="10" fill="#424245" text-anchor="middle">ΔX ≈ 0.3 log H</text>
+        </svg>`;
+
+        const INTRO_STEPS = [
+            {
+                title: 'Welcome to Analogplotter',
+                body: `<p>This tool turns your densitometer readings into <strong>characteristic curves</strong> — the fundamental description of how a film responds to light.</p>
+                       <p>A characteristic curve is simply a function: <strong>exposure in, density out</strong>. Everything else — contrast, film speed, development aims, print prediction — is read from that curve.</p>` +
+                       `<div class="intro-illu">` + INTRO_SVG_FAMILY + `</div>`
+            },
+            {
+                title: 'How did you expose the step wedge?',
+                body: `<p>First decide what you actually know about the exposure:</p>
+                       <p><strong>Absolute testing</strong> — you know the light that hit the film in <strong>lux·seconds</strong> (a calibrated sensitometer). Choose <em>Custom log H (lux-s)</em> in <em>Exposure (log H) Definition</em>. Real ISO speeds can be computed.</p>
+                       <p><strong>Relative testing</strong> — you only have a step wedge and do <em>not</em> know the absolute illuminance at the film plane, but you know the <strong>density of each wedge step</strong>. Choose <em>Step Tablet Densities</em> and enter them. The exposure axis is then relative — speeds become relative to a reference, which is fine for development testing.</p>` +
+                       `<div class="intro-illu">` + INTRO_SVG_WEDGE + `</div>`
+            },
+            {
+                title: 'The test itself',
+                body: `<p>Expose <strong>several film strips exactly the same way</strong> through the wedge — same light, same time, same everything.</p>
+                       <p>Then develop each strip for a <strong>different development time</strong> (for example 5:30, 8:00, 11:00, 16:00) and enter that time on each curve card.</p>
+                       <p>Finally, measure the density of every step on every strip and paste the values into the matching curve. The result is a <strong>family of curves</strong> — one per development time.</p>` +
+                       `<div class="intro-illu">` + INTRO_SVG_STRIPS + `</div>`
+            },
+            {
+                title: 'Film speed — three ways to read it',
+                body: `<p>A speed point is the exposure the criterion calls "just enough". The three methods place it differently:</p>
+                       <p><strong>Fixed Density</strong> — where the curve reaches 0.10 above base+fog. The ISO 6 method: simple and repeatable (S = 0.8/Hm).</p>
+                       <p><strong>Fractional Gradient (Jones)</strong> — where the curve's slope reaches 30% of its average gradient over the next 1.5 log H. This tracks the first <em>printable shadow detail</em>, found in Jones' print-judgment experiments.</p>
+                       <p><strong>Delta-X</strong> — a practical approximation of the fractional gradient computed from ΔD, the density rise 1.3 log H to the right of Hm.</p>
+                       <p><strong>Why ΔX and FG sit lower on the curve:</strong> shadow tones become printable <em>before</em> density reaches 0.10 — usable gradient begins further down the toe. The methods use different speed constants (0.8 vs 0.4) precisely so their speeds stay comparable.</p>` +
+                       `<div class="intro-illu">` + INTRO_SVG_SPEED + `</div>`
+            },
+            {
+                title: 'Try it',
+                body: `<p>Load a realistic example — four development times of the same film, ΔD bracketing the ISO condition — and explore: the curve family, the speed points, the Development Aims table, and the Tone Reproduction diagram.</p>
+                       <p>Your own work starts in the sidebar: <strong>Exposure (log H) Definition</strong> → <strong>Curves → + Add Curve</strong>. Reopen this introduction anytime with the <strong>?</strong> in the header.</p>
+                       <div class="intro-illu" style="gap:10px;">
+                           <button class="custom-btn font-medium py-2 px-5 text-sm" onclick="loadDemoData(); closeIntroWizard(true);">Load example data</button>
+                           <button class="secondary-btn font-medium py-2 px-5 text-sm" onclick="closeIntroWizard(true);">Start with my own data</button>
+                       </div>`
+            }
+        ];
+
+        let introStepIdx = 0;
+        const renderIntroStep = () => {
+            const card = document.getElementById('introCard');
+            if (!card) return;
+            const step = INTRO_STEPS[introStepIdx];
+            const dots = INTRO_STEPS.map((_, i) => `<div class="intro-dot${i === introStepIdx ? ' active' : ''}"></div>`).join('');
+            card.innerHTML = `
+                <button class="menu-btn intro-close" onclick="closeIntroWizard(false)" title="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+                <h2>${step.title}</h2>
+                ${step.body}
+                <div class="intro-footer">
+                    <label class="intro-skip"><input type="checkbox" id="introDontShow"> Don't show this again</label>
+                    <div class="intro-dots">${dots}</div>
+                    <div class="intro-nav">
+                        ${introStepIdx > 0 ? '<button class="secondary-btn py-1.5 px-4 text-xs font-medium" onclick="introNav(-1)">Back</button>' : ''}
+                        ${introStepIdx < INTRO_STEPS.length - 1 ? '<button class="custom-btn py-1.5 px-4 text-xs font-medium" onclick="introNav(1)">Next</button>' : ''}
+                    </div>
+                </div>`;
+            const dontShow = document.getElementById('introDontShow');
+            dontShow.checked = introDontShowChecked;
+            dontShow.addEventListener('change', () => { introDontShowChecked = dontShow.checked; });
+        };
+        let introDontShowChecked = false;
+        window.introNav = (dir) => {
+            introStepIdx = Math.max(0, Math.min(INTRO_STEPS.length - 1, introStepIdx + dir));
+            renderIntroStep();
+            document.getElementById('introCard').scrollTop = 0;
+        };
+        window.showIntroWizard = (force) => {
+            if (!force && localStorage.getItem(INTRO_KEY)) return;
+            if (document.getElementById('introOverlay')) return;
+            introStepIdx = 0;
+            introDontShowChecked = false;
+            const overlay = document.createElement('div');
+            overlay.id = 'introOverlay';
+            overlay.className = 'intro-overlay';
+            overlay.innerHTML = '<div class="intro-card" id="introCard" style="position:relative;"></div>';
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) closeIntroWizard(false); });
+            document.body.appendChild(overlay);
+            renderIntroStep();
+        };
+        window.closeIntroWizard = (completed) => {
+            const overlay = document.getElementById('introOverlay');
+            if (overlay) overlay.remove();
+            if (completed || introDontShowChecked) {
+                try { localStorage.setItem(INTRO_KEY, '1'); } catch (e) {}
+            }
+        };
 
         // --- UNDO TOAST (deleted curves are recoverable) ---
         let undoToastTimer = null;
@@ -8372,6 +8587,9 @@
             if (!sessionRestored) addCurve();
             toggleIsoMethodUI(); 
             updateIsoInputUI();
+
+            // First-visit introduction (dismissible; reopen via the ? button)
+            showIntroWizard(false);
         });
 
     </script>
