@@ -28,7 +28,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --bg-page: #f5f5f7;
+            --bg-page: #ffffff;
+            --topbar-h: 48px;
             --bg-card: #ffffff;
             --bg-card-alt: #f5f5f7;
             --border-subtle: #e8e8ed;
@@ -59,7 +60,14 @@
             letter-spacing: -0.015em;
         }
 
-        /* Buttons — pill-shaped, blue primary */
+        /* Buttons — pill-shaped, blue primary, always centered */
+        .custom-btn, .secondary-btn, .export-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: nowrap;
+        }
         .custom-btn {
             background-color: var(--accent);
             color: #ffffff;
@@ -300,15 +308,72 @@
             display: none;
         }
 
+        /* Slim frosted top navigation */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: var(--topbar-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(255, 255, 255, 0.72);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .logo {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+        }
+        .menu-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            transition: background-color 0.15s, color 0.15s;
+        }
+        .menu-btn:hover { background: #e8e8ed; color: var(--text-primary); }
+
+        /* Full-width application layout */
+        .app-main {
+            width: 100%;
+            padding: 20px 24px 40px;
+        }
+        .app-grid {
+            display: grid;
+            grid-template-columns: minmax(320px, 400px) minmax(0, 1fr);
+            gap: 28px;
+            align-items: start;
+        }
+        .app-sidebar {
+            min-width: 0;
+            border-right: 1px solid var(--border-subtle);
+            padding-right: 28px;
+        }
+        .app-content { min-width: 0; }
+        @media (max-width: 1023px) {
+            .app-grid { grid-template-columns: minmax(0, 1fr); }
+            .app-sidebar { border-right: none; padding-right: 0; }
+        }
+
         /* Frosted sticky tab bar with segmented-control tabs */
         .tabbar {
             position: sticky;
-            top: 0;
+            top: var(--topbar-h);
             z-index: 40;
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             background: rgba(255, 255, 255, 0.72);
             border-bottom: 1px solid var(--border-subtle);
+            padding: 8px 0 10px;
+            margin-bottom: 16px;
         }
         .tab-btn {
             padding: 7px 18px;
@@ -393,20 +458,16 @@
 <body>
 
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <header class="mb-8 relative">
-            <a href="menu.html" class="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-[#e8e8ed] transition-colors" title="Menu" style="color:var(--text-muted);">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </a>
-            <div class="text-center py-6">
-                <h1 class="text-5xl font-semibold" style="letter-spacing: -0.025em;">Film Curve Analyzer</h1>
-                <p class="text-lg mt-2" style="color: var(--text-muted); letter-spacing: -0.01em;">Sensitometric analysis &amp; development planning.</p>
-            </div>
+    <nav class="topbar">
+        <span class="logo">Analogplotter</span>
+        <a href="menu.html" class="menu-btn" title="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </a>
+    </nav>
 
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-1 panel p-5 space-y-5">
+    <main class="app-main">
+        <div class="app-grid">
+            <div class="app-sidebar space-y-5">
                 <!-- LEFT PANEL: Film (default) -->
                 <div id="leftPanelFilm">
                 <div>
@@ -596,9 +657,9 @@
                 </div><!-- /leftPanelPaper -->
             </div>
 
-            <div class="lg:col-span-2 panel p-5">
+            <div class="app-content">
                 <!-- Tab navigation -->
-                <div class="tabbar flex items-center gap-1" style="margin: -20px -20px 16px -20px; padding: 12px 20px; border-radius: 18px 18px 0 0;">
+                <div class="tabbar flex items-center gap-1">
                     <button id="tabCurves" class="tab-btn tab-active" onclick="switchTab('curves')">Curves</button>
                     <button id="tabToneRepro" class="tab-btn" onclick="switchTab('tonerepro')">Tone Reproduction</button>
                     <button id="tabAnalysis" class="tab-btn" onclick="switchTab('analysis')">Analysis Plots</button>
@@ -607,7 +668,7 @@
 
                 <!-- CHART AREA: Curves (switchable) -->
                 <div id="panelCurvesChart">
-                <div id="chartContainer" class="w-full mb-4 bg-white border border-[#e8e8ed] p-2" style="height: 600px;">
+                <div id="chartContainer" class="w-full mb-4 bg-white border border-[#e8e8ed] p-2 rounded-lg" style="height: calc(100vh - 250px); min-height: 480px;">
                     <canvas id="filmCurveChart"></canvas>
                 </div>
                 </div>
@@ -754,7 +815,7 @@
 
                 <!-- CHART AREA: Paper Curve (switchable) -->
                 <div id="panelPaperCurve" style="display:none;">
-                    <div id="paperChartContainer" class="w-full mb-4 bg-white border border-[#e8e8ed] p-2" style="height: 600px;">
+                    <div id="paperChartContainer" class="w-full mb-4 bg-white border border-[#e8e8ed] p-2 rounded-lg" style="height: calc(100vh - 250px); min-height: 480px;">
                         <canvas id="paperCurveChart"></canvas>
                     </div>
                     <h3 class="section-heading mt-4">Paper Characteristics</h3>
