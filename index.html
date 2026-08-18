@@ -318,7 +318,8 @@
             padding: 0 32px;
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(255, 255, 255, 0.72);
+            background: rgba(245, 245, 247, 0.85);
+            box-shadow: 0 1px 12px rgba(0, 0, 0, 0.06);
         }
         .logo {
             font-size: 15px;
@@ -369,6 +370,16 @@
         #leftPanelPaper > div > .section-heading {
             border-bottom: none;
             padding-bottom: 0;
+        }
+
+        /* First-viewport hero: the coordinate system fills the screen below the header,
+           centered; everything after it lives below the fold */
+        .chart-hero {
+            height: calc(100vh - var(--topbar-h) - 40px);
+            aspect-ratio: 1.4 / 1;
+            width: auto;
+            max-width: 100%;
+            margin: 0 auto 32px;
         }
 
         /* Curve plot keeps a sensible aspect ratio, centered, scales to viewport */
@@ -613,7 +624,7 @@
                         <input type="file" id="btzs-import" class="hidden" accept=".pfc">
                         <button id="resetAllBtn" class="py-1 px-2 text-[10px] tracking-wider font-medium" style="background:#dc2626;color:#fff;border-radius:999px;">Reset All</button>
                     </div>
-                    <div id="curvesContainer" class="space-y-6 max-h-[50vh] overflow-y-auto pr-2"></div>
+                    <div id="curvesContainer" class="space-y-6 max-h-[68vh] overflow-y-auto pr-2"></div>
                 </div>
                 </div><!-- /leftPanelFilm -->
 
@@ -694,7 +705,7 @@
                             Points
                         </label>
                     </div>
-                    <div id="paperCurvesContainer" class="space-y-6 max-h-[50vh] overflow-y-auto pr-2"></div>
+                    <div id="paperCurvesContainer" class="space-y-6 max-h-[68vh] overflow-y-auto pr-2"></div>
                 </div>
                 </div><!-- /leftPanelPaper -->
             </div>
@@ -703,7 +714,7 @@
 
                 <!-- CHART AREA: Curves (switchable) -->
                 <div id="panelCurvesChart">
-                <div id="chartContainer" class="chart-frame mb-4 bg-white border border-[#e8e8ed] p-2 rounded-lg">
+                <div id="chartContainer" class="chart-hero">
                     <canvas id="filmCurveChart"></canvas>
                 </div>
                 </div>
@@ -841,7 +852,7 @@
                         <button class="ap-sub-tab" onclick="switchAnalysisPlot('lslrEfs')">LSLR vs EFS</button>
                         <button class="ap-sub-tab" onclick="switchAnalysisPlot('lslrCi')">LSLR vs CI</button>
                     </div>
-                    <div class="chart-frame bg-white border border-[#e8e8ed] p-2 rounded-lg" style="position: relative;">
+                    <div class="chart-frame" style="position: relative;">
                         <canvas id="analysisPlotCanvas"></canvas>
                         <div id="apCrosshairInfo" style="display:none; position:absolute; pointer-events:none; font: 10px 'SF Mono', ui-monospace, Menlo, monospace; color:#1d1d1f; background:rgba(255,253,248,0.92); border:1px solid rgba(0,0,0,0.2); padding:2px 6px; border-radius:3px; white-space:nowrap; z-index:20;"></div>
                     </div>
@@ -850,7 +861,7 @@
 
                 <!-- CHART AREA: Paper Curve (switchable) -->
                 <div id="panelPaperCurve" style="display:none;">
-                    <div id="paperChartContainer" class="chart-frame mb-4 bg-white border border-[#e8e8ed] p-2 rounded-lg">
+                    <div id="paperChartContainer" class="chart-frame mb-4">
                         <canvas id="paperCurveChart"></canvas>
                     </div>
                     <h3 class="section-heading mt-4">Paper Characteristics</h3>
@@ -2362,7 +2373,7 @@
                     delete filmChart.options.scales.x.min;
                     delete filmChart.options.scales.x.max;
                 }
-                chartContainer.style.height = '600px';
+                chartContainer.style.height = ''; // let .chart-hero CSS size the plot
             }
 
             const getBorderDash = (style) => {
