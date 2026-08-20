@@ -302,6 +302,23 @@
         }
         .undo-toast-btn:hover { text-decoration: underline; }
 
+        /* Export progress overlay */
+        .export-progress-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(0, 0, 0, 0.35);
+            display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+        }
+        .export-progress-card {
+            background: #fff; border-radius: 14px; padding: 22px 28px;
+            width: 320px; box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            font-family: -apple-system, 'SF Pro Text', sans-serif;
+        }
+        .export-progress-title { font-size: 14px; font-weight: 600; color: #1d1d1f; margin-bottom: 4px; }
+        .export-progress-label { font-size: 12px; color: #86868b; margin-bottom: 12px; min-height: 1.2em; }
+        .export-progress-track { height: 6px; border-radius: 999px; background: #e8e8ed; overflow: hidden; }
+        .export-progress-fill { height: 100%; width: 0%; border-radius: 999px; background: #1d1d1f; transition: width 0.15s ease; }
+
         /* Live value-count feedback under data textareas */
         .value-count {
             font-size: 11px;
@@ -652,6 +669,15 @@
             gap: 0;
             border: 1.5px solid #1d1d1f;
             background: #fff;
+            position: relative;
+        }
+        #trHoverOverlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
         }
         .tr-cell {
             position: relative;
@@ -718,11 +744,29 @@
         </div>
         <div class="flex items-center gap-1" style="position:absolute; right:64px;">
             <button id="helpBtn" class="menu-btn" title="Introduction & help" onclick="showIntroWizard(true)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2 C9.5 7.7 10.6 6.8 12 6.8 C13.4 6.8 14.5 7.7 14.5 9 C14.5 10.9 12 10.9 12 12.9"/><circle cx="12" cy="16.6" r="0.6" fill="currentColor"/></svg></button>
+            <button id="infoBtn" class="menu-btn" title="News & contact" onclick="document.getElementById('infoOverlay').style.display='flex'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg></button>
         </div>
         <a href="menu.html" class="menu-btn" title="Menu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </a>
     </nav>
+
+    <!-- News & contact popup (info button in the topbar) -->
+    <div id="infoOverlay" class="intro-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="intro-card" style="position:relative;">
+            <h2>A note from René</h2>
+            <p>Dear users,</p>
+            <p>I've given Analogplotter a little refresh — the interface and the PDF export now look a bit nicer. Everything under the hood is unchanged, so you can keep using the tool exactly as before.</p>
+            <p>All the best,<br>René 🙂</p>
+            <hr style="border:none;border-top:1px solid #e8e8ed;margin:16px 0;">
+            <p><strong>Feedback &amp; contact</strong><br>
+            Found a bug, or have an idea for the tool? I'd love to hear from you:<br>
+            <a href="mailto:info@reneboehmer.com" style="color:var(--accent);font-weight:500;">info@reneboehmer.com</a></p>
+            <div class="intro-footer" style="justify-content:flex-end;">
+                <button class="custom-btn font-medium py-1.5 px-4 text-xs tracking-wider" onclick="document.getElementById('infoOverlay').style.display='none'">Close</button>
+            </div>
+        </div>
+    </div>
 
     <main class="app-main">
         <div class="app-grid">
@@ -853,6 +897,27 @@
                             <input type="number" id="trSceneLslr" step="0.01" min="0.50" max="4.00" placeholder="auto" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
                             <p class="text-xs mt-0.5" style="color:var(--text-muted);">Leave empty for LER/CI</p>
                         </div>
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Range Placement</label>
+                            <select id="trPlacement" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
+                                <option value="s1" selected>Shadow → Zone I (speed pt)</option>
+                                <option value="s2">Shadow → Zone II (+1 stop)</option>
+                                <option value="s3">Shadow → Zone III (+2 stops)</option>
+                                <option value="s4">Shadow → Zone IV (+3 stops)</option>
+                                <option value="h7">Highlight → Zone VII</option>
+                                <option value="h8">Highlight → Zone VIII</option>
+                                <option value="h9">Highlight → Zone IX</option>
+                                <option value="h10">Highlight → Zone X</option>
+                            </select>
+                            <p class="text-xs mt-0.5" style="color:var(--text-muted);">Where the luminance range falls on the film curve</p>
+                        </div>
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Subject Scale</label>
+                            <select id="trSubjectScale" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
+                                <option value="zone" selected>Zone System</option>
+                                <option value="reflectance">Reflectance (%)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -869,6 +934,22 @@
                     </div>
                 </div>
                 <div>
+                    <h2 class="section-heading sh-flex"><span class="sh-label" style="color:#1d1d1f;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="3" x2="12" y2="5.5"/><line x1="12" y1="18.5" x2="12" y2="21"/><line x1="3" y1="12" x2="5.5" y2="12"/><line x1="18.5" y1="12" x2="21" y2="12"/><line x1="5.6" y1="5.6" x2="7.4" y2="7.4"/><line x1="16.6" y1="16.6" x2="18.4" y2="18.4"/><line x1="16.6" y1="7.4" x2="18.4" y2="5.6"/><line x1="5.6" y1="18.4" x2="7.4" y2="16.6"/></svg></span><span class="sh-text">Flare</span></h2>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <select id="trFlareMode" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                                <option value="auto" selected>From Curves tab (flare model)</option>
+                                <option value="custom">Custom (slider)</option>
+                            </select>
+                        </div>
+                        <div id="trFlareSliderRow" class="opacity-50">
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Flare <span id="trFlareVal" class="font-normal" style="color:#1d1d1f;">0.40</span> logH</label>
+                            <input type="range" id="trFlareSlider" min="0" max="1" step="0.01" value="0.40" disabled class="w-full mt-1 accent-[#1d1d1f]" style="height:6px;">
+                            <p class="text-xs mt-0.5" style="color:var(--text-muted);">0 = no flare · 0.30 LF · 0.40 small format</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
                     <h2 class="section-heading sh-flex"><span class="sh-label" style="color:#1d1d1f;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></svg></span><span class="sh-text">Speed &amp; Anchor</span></h2>
                     <div class="grid grid-cols-2 gap-3 text-sm">
                         <div>
@@ -877,6 +958,13 @@
                                 <option value="fixedDensity">Fixed Density</option>
                                 <option value="jones">Jones (FG)</option>
                                 <option value="deltaX">Delta-X</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-medium text-xs" style="color:var(--text-muted);">Film Anchor</label>
+                            <select id="trFilmAnchor" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1" title="Speed point: placed shadow zone sits on the speed point (0.10 over Fb+f by default). Metered: the metered gray lands at the metered exposure point, 1.0 log H above the fixed-density speed point (Hg = 8/S vs Hm = 0.8/S).">
+                                <option value="speed">Speed point (0.10)</option>
+                                <option value="metered">Metered exposure</option>
                             </select>
                         </div>
                         <div>
@@ -894,6 +982,10 @@
                             <label class="font-medium text-xs" style="color:var(--text-muted);">Offset (Flare)</label>
                             <div id="trEiOffset" class="w-full p-1.5 border border-gray-200 rounded-md text-xs mt-1 bg-gray-50 text-center font-mono" style="min-height:2em;">—</div>
                         </div>
+                        <div class="col-span-2">
+                            <button id="trReanchorBtn" class="secondary-btn w-full py-1.5 text-[10px] tracking-wider">Re-anchor Paper to Current Exposure</button>
+                            <p id="trReanchorInfo" class="text-xs mt-1 text-center" style="color:var(--text-muted);"></p>
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -904,11 +996,15 @@
                             <span class="font-medium">Show Reproduction Gradient</span>
                         </label>
                         <label class="flex items-center gap-1.5 text-xs cursor-pointer">
+                            <input type="checkbox" id="trShowNoFlare" class="accent-[#1d1d1f]" checked>
+                            <span class="font-medium">Show No-Flare Reference</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 text-xs cursor-pointer">
                             <input type="checkbox" id="trShowMetered" class="accent-[#1d1d1f]">
                             <span class="font-medium">Show Metered</span>
                         </label>
                         <div class="flex items-center gap-1">
-                            <input type="number" id="trMeteredGray" min="1" max="99" step="0.1" value="12.6" class="w-14 p-1 border border-gray-300 rounded text-xs text-center font-mono" style="height:24px;">
+                            <input type="number" id="trMeteredGray" min="1" max="99" step="0.1" value="12" class="w-14 p-1 border border-gray-300 rounded text-xs text-center font-mono" style="height:24px;">
                             <span class="text-xs" style="color:var(--text-muted);">% gray</span>
                         </div>
                     </div>
@@ -1052,6 +1148,8 @@
                                 <div class="tr-q-title tr-qt-br">Q1 Camera / Flare</div>
                                 <canvas id="trQ1"></canvas>
                             </div>
+                            <!-- Live hover trace overlay, spans all four quadrants -->
+                            <canvas id="trHoverOverlay"></canvas>
                         </div>
 
                         <!-- Bottom axis label -->
@@ -1235,6 +1333,7 @@
                         <label class="flex items-center space-x-2"><input type="checkbox" id="showGridToggle" checked><span>Show Grid</span></label>
                         <label class="flex items-center space-x-2"><input type="checkbox" id="showPointsToggle" checked><span>Data Points</span></label>
                         <label class="flex items-center space-x-2"><input type="checkbox" id="squareGridToggle"><span>Square Grid</span></label>
+                        <label class="flex items-center space-x-2" title="Overlay each curve's first derivative dD/d(log H) on a secondary axis, with the detected Gamma straight-line window shaded"><input type="checkbox" id="showGradientToggle"><span>Gradient dD/dlogH</span></label>
                     </div>
                     </div>
                 </div>
@@ -1327,6 +1426,7 @@
             showSpeedPoint: el.querySelector('.show-speedpoint').checked,
             showCI: el.querySelector('.show-ci').checked,
             showDX: el.querySelector('.show-dx').checked,
+            showGamma: el.querySelector('.show-gamma')?.checked,
             showIsoRef: el.querySelector('.show-iso-ref')?.checked
         });
 
@@ -1569,15 +1669,76 @@
             undoToastTimer = setTimeout(() => toast.remove(), 6000);
         };
 
-        const smoothData = (data) => {
-            if (data.length < 3) return data;
-            const smoothed = [data[0]];
-            for (let i = 1; i < data.length - 1; i++) {
-                const avg = (data[i - 1] + data[i] + data[i + 1]) / 3;
-                smoothed.push(avg);
+        // Small transient confirmation popup (same look as the undo toast, no action button).
+        let infoToastTimer = null;
+        const showInfoToast = (message, ms = 4000) => {
+            let toast = document.getElementById('infoToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'infoToast';
+                toast.className = 'undo-toast';
+                document.body.appendChild(toast);
             }
-            smoothed.push(data[data.length - 1]);
-            return smoothed;
+            clearTimeout(infoToastTimer);
+            toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+            infoToastTimer = setTimeout(() => toast.remove(), ms);
+        };
+
+        // Tukey "3RSSH, twice" resistant smoother (Exploratory Data Analysis, 1977).
+        // Median-based, so a single outlier (dust speck, misread step) is deleted
+        // rather than smeared into its neighbours the way a moving average would.
+        //   3  running medians of 3      R  repeated until no change
+        //   S  split two-point flats     H  hanning (1/4, 1/2, 1/4)
+        //   twice: re-smooth the residuals and add them back, recovering real
+        //   signal the first pass flattened.
+        const med3 = (a, b, c) => Math.max(Math.min(a, b), Math.min(Math.max(a, b), c));
+        const smooth3R = (d) => {
+            let cur = d.slice();
+            for (let pass = 0; pass < 20; pass++) {
+                const next = cur.slice();
+                for (let i = 1; i < cur.length - 1; i++) next[i] = med3(cur[i - 1], cur[i], cur[i + 1]);
+                // Tukey end-value rule: endpoint = median of itself, its neighbour,
+                // and the linear extrapolation from the two points beyond it.
+                if (cur.length >= 3) {
+                    next[0] = med3(cur[0], next[1], 3 * next[1] - 2 * next[2]);
+                    const n = cur.length - 1;
+                    next[n] = med3(cur[n], next[n - 1], 3 * next[n - 1] - 2 * next[n - 2]);
+                }
+                if (next.every((v, i) => v === cur[i])) break;
+                cur = next;
+            }
+            return cur;
+        };
+        const smoothSplit = (d) => {
+            // S: break up 2-point flats that sit at a local extremum (mesas/valleys
+            // that running medians leave behind) by re-applying the end-value rule
+            // on each side of the flat.
+            const out = d.slice();
+            for (let i = 1; i < d.length - 2; i++) {
+                if (d[i] === d[i + 1] && d[i - 1] !== d[i] && d[i + 2] !== d[i + 1]) {
+                    const isExtremum = (d[i - 1] < d[i]) === (d[i + 2] < d[i + 1]);
+                    if (isExtremum && i >= 2 && i + 3 < d.length) {
+                        out[i] = med3(d[i], d[i - 1], 3 * d[i - 1] - 2 * d[i - 2]);
+                        out[i + 1] = med3(d[i + 1], d[i + 2], 3 * d[i + 2] - 2 * d[i + 3]);
+                    }
+                }
+            }
+            return out;
+        };
+        const smoothHann = (d) => {
+            if (d.length < 3) return d.slice();
+            const out = [d[0]];
+            for (let i = 1; i < d.length - 1; i++) out.push(0.25 * d[i - 1] + 0.5 * d[i] + 0.25 * d[i + 1]);
+            out.push(d[d.length - 1]);
+            return out;
+        };
+        const smooth3RSSH = (d) => smoothHann(smoothSplit(smoothSplit(smooth3R(d))));
+        const smoothData = (data) => {
+            if (data.length < 5) return data;
+            const first = smooth3RSSH(data);
+            const resid = data.map((v, i) => v - first[i]);
+            const roughSmooth = smooth3RSSH(resid);       // "twice": recover real signal
+            return first.map((v, i) => v + roughSmooth[i]);
         };
 
         const polynomialRegression = (data, keyX = 'x', keyY = 'y') => {
@@ -1625,6 +1786,38 @@
             return (x) => a * x * x + b * x + c;
         };
 
+        // Saturating development-velocity fit: y = A − B·e^(−k·x) with B ≥ 0.
+        // Physically motivated trend for CI/EFS vs development time — contrast and
+        // speed rise toward their gamma-infinity plateau; they never come back down.
+        // A free parabola bends downward through measurement noise at the long end,
+        // which reads as impossible "speed loss with development" on the plots.
+        // logSpace=true fits ln(y) (right for speeds, which are multiplicative).
+        const saturatingRegression = (data, logSpace = false) => {
+            const n = data.length;
+            if (n < 3) return null;
+            const pts = data.filter(p => !logSpace || p.y > 0).map(p => ({ x: p.x, y: logSpace ? Math.log(p.y) : p.y }));
+            if (pts.length < 3) return null;
+            const xMax = Math.max(...pts.map(p => p.x)) || 1;
+            let best = null;
+            // grid over the rate constant; A and B solve linearly for each k
+            for (let i = 0; i <= 80; i++) {
+                const k = Math.pow(10, -1.3 + (i / 80) * 2.6) / xMax; // k·xMax spans 0.05…20
+                let su = 0, sy = 0, suu = 0, suy = 0;
+                for (const p of pts) { const u = Math.exp(-k * p.x); su += u; sy += p.y; suu += u * u; suy += u * p.y; }
+                const det = pts.length * suu - su * su;
+                if (Math.abs(det) < 1e-12) continue;
+                let B = -(pts.length * suy - su * sy) / det;
+                let A = (sy + B * su) / pts.length;
+                if (B < 0) { B = 0; A = sy / pts.length; } // enforce monotone non-decreasing
+                let sse = 0;
+                for (const p of pts) { const e = (A - B * Math.exp(-k * p.x)) - p.y; sse += e * e; }
+                if (!best || sse < best.sse) best = { sse, A, B, k };
+            }
+            if (!best) return null;
+            const { A, B, k } = best;
+            return (x) => logSpace ? Math.exp(A - B * Math.exp(-k * x)) : (A - B * Math.exp(-k * x));
+        };
+
         // --- Bayer-Simonds-Williams Curve Rating ---
         // References:
         //   Bayer, Simonds & Williams (1961) "Description of D-Log E Curves by
@@ -1668,6 +1861,106 @@
 
         /** Linear (scene-faithful) template.  Normalized [0,1] → [0,1]. */
         const linearTemplate = (t) => Math.max(0, Math.min(1, t));
+
+        // --- Simonds (1961) genuine quality prediction ---
+        // Simonds, J.L. (1961) "A Quantitative Study of the Influence of
+        // Tone-Reproduction Factors on Picture Quality", Photographic Science
+        // and Engineering 5(5), 270-277. Kodak Research Laboratories Comm. 2188.
+        //
+        // 170 prints of 4 scenes, ranked by 30 experienced observers. Each
+        // objective tone-reproduction curve was sampled at 12 equally spaced
+        // log-scene-luminance steps (step 1 = darkest shadow, step 12 =
+        // brightest highlight) and reduced by characteristic-vector (principal
+        // component) analysis to three scalar multiples Y1-Y3. Expressing each
+        // print as a DEPARTURE (y_i = Y_i − Y_i,optimum) from the scene's
+        // optimum curve yielded a single scene-independent equation (Eq. 5):
+        //
+        //   Q = 100.0 − 3.54·y1² − 1.95·y2² − 5.10·y3²
+        //             + 0.15·y1·y2 − 1.29·y1·y3 − 0.12·y2·y3
+        //
+        // Perceptual calibration (Simonds 1961/1963; Bartleson et al. 1963):
+        //   ~10 Q-units = change discerned and similarly ranked by ≥85% of observers
+        //   ~5  Q-units = 50% detection threshold (one JND of print quality)
+        // Cross-check: Bartleson Fig. 7 uses "optimum + 1.19·V1" as exactly one
+        // 5-unit decrement; 3.54 × 1.19² = 5.01. ✓
+        //
+        // Characteristic vectors, Table I (density units, 12 steps, shadow→highlight):
+        const SIMONDS_V1 = [0.103, 0.115, 0.132, 0.152, 0.160, 0.149, 0.118, 0.092, 0.066, 0.043, 0.027, 0.016]; // density/contrast lift, peaks in midtones
+        const SIMONDS_V2 = [0.080, 0.068, 0.051, 0.019, -0.015, -0.046, -0.056, -0.054, -0.043, -0.028, -0.018, -0.009]; // shadow-vs-highlight tilt
+        const SIMONDS_V3 = [0.030, 0.016, 0.000, -0.020, -0.034, -0.031, -0.000, 0.023, 0.039, 0.044, 0.038, 0.032]; // S-shape / curvature
+
+        /**
+         * Genuine Simonds (1961) quality index.
+         * @param {number[]} deltaD  12 density deviations (actual − optimum aim),
+         *                           ordered shadow (step 1) → highlight (step 12).
+         * @returns {{ q, y1, y2, y3, residRms }} q clamped to [0,100];
+         *          residRms = RMS density deviation NOT captured by the three
+         *          vectors (Simonds' 170-curve family needed no more than three;
+         *          a large residual means the curve is outside that family and
+         *          the prediction is approximate).
+         */
+        const simondsQualityRating = (deltaD) => {
+            if (!deltaD || deltaD.length !== 12) return null;
+            // Least-squares projection onto V1..V3 (vectors are orthogonal to
+            // rounding precision; a 3×3 normal-equation solve absorbs the rounding).
+            const V = [SIMONDS_V1, SIMONDS_V2, SIMONDS_V3];
+            const A = [], b = [];
+            for (let i = 0; i < 3; i++) {
+                b.push(V[i].reduce((s, v, k) => s + v * deltaD[k], 0));
+                A.push([]);
+                for (let j = 0; j < 3; j++) {
+                    A[i].push(V[i].reduce((s, v, k) => s + v * V[j][k], 0));
+                }
+            }
+            // Solve A·y = b (Cramer's rule, 3×3)
+            const det3 = (m) =>
+                m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+                m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+                m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+            const D = det3(A);
+            if (Math.abs(D) < 1e-12) return null;
+            const col = (m, j, v) => m.map((row, i) => row.map((x, jj) => jj === j ? v[i] : x));
+            const y1 = det3(col(A, 0, b)) / D;
+            const y2 = det3(col(A, 1, b)) / D;
+            const y3 = det3(col(A, 2, b)) / D;
+
+            // Residual outside the 3-vector span
+            let ssRes = 0;
+            for (let k = 0; k < 12; k++) {
+                const recon = y1 * SIMONDS_V1[k] + y2 * SIMONDS_V2[k] + y3 * SIMONDS_V3[k];
+                ssRes += Math.pow(deltaD[k] - recon, 2);
+            }
+            const residRms = Math.sqrt(ssRes / 12);
+
+            // Simonds Eq. 5 (verbatim coefficients)
+            const q = 100.0 - 3.54 * y1 * y1 - 1.95 * y2 * y2 - 5.10 * y3 * y3
+                            + 0.15 * y1 * y2 - 1.29 * y1 * y3 - 0.12 * y2 * y3;
+            return { q: Math.max(0, Math.min(100, q)), y1, y2, y3, residRms };
+        };
+
+        /**
+         * Verbal rating tier derived from the Simonds Q index.
+         * Grounded in the perceptual calibration of the Q-scale:
+         *   1 JND (50% detection)              = 5 Q-units   (Bartleson et al. 1963, after Simonds 1961)
+         *   1 consensus step (≥85% agreement)  = 10 Q-units  (Simonds 1961, 1963)
+         * and the practical anchors in Simonds (1963): one paper-grade error
+         * ≈ 5–15 units, two grades ≈ 30–50+ units.
+         *
+         *   Excellent : Q ≥ 90  — within one consensus step of optimum (≤2 JND)
+         *   Very good : 80–89   — within two consensus steps (2–4 JND);
+         *                         the "one paper grade off" territory
+         *   OK        : 60–79   — clearly visible deviation (4–8 JND)
+         *   Poor      : < 60    — the "two paper grades off" territory;
+         *                         obvious to essentially all observers
+         */
+        const simondsRatingTier = (q) => {
+            if (q === null || q === undefined || isNaN(q)) return null;
+            const jnd = (100 - q) / 5;
+            if (q >= 90) return { label: 'Excellent', jnd, color: '#248a3d' };
+            if (q >= 80) return { label: 'Very good', jnd, color: '#5a8a24' };
+            if (q >= 60) return { label: 'OK', jnd, color: '#b25000' };
+            return { label: 'Poor', jnd, color: '#d70015' };
+        };
 
         /**
          * Bayer-Simonds-Williams least-squares curve rating.
@@ -1822,6 +2115,49 @@
         const interpolateY = (points, x, keyX = 'x', keyY = 'y') => {
              return getPredictedValue(points, x, keyX, keyY).value;
         };
+
+        // Monotone cubic interpolant (Fritsch–Carlson / PCHIP) with analytic
+        // first derivative. Smooth like a cubic spline but guaranteed never to
+        // overshoot or invent wiggles between points — the right model for
+        // physical density data. Used where derivatives matter (Gamma straight-
+        // line detection) and for dense resampling (CI arc intersections);
+        // plain piecewise-linear readback remains the default elsewhere.
+        const pchipInterpolator = (points) => {
+            const pts = [...points].sort((a, b) => a.x - b.x).filter((p, i, arr) => i === 0 || p.x !== arr[i - 1].x);
+            const n = pts.length;
+            if (n < 2) return null;
+            const h = [], d = [];
+            for (let i = 0; i < n - 1; i++) { h.push(pts[i + 1].x - pts[i].x); d.push((pts[i + 1].y - pts[i].y) / h[i]); }
+            const m = new Array(n);
+            m[0] = d[0]; m[n - 1] = d[n - 2];
+            for (let i = 1; i < n - 1; i++) {
+                if (d[i - 1] * d[i] <= 0) m[i] = 0;   // local extremum: flat tangent (monotonicity)
+                else {
+                    const w1 = 2 * h[i] + h[i - 1], w2 = h[i] + 2 * h[i - 1];
+                    m[i] = (w1 + w2) / (w1 / d[i - 1] + w2 / d[i]);
+                }
+            }
+            const seg = (x) => {
+                if (x <= pts[0].x) return 0;
+                if (x >= pts[n - 1].x) return n - 2;
+                let lo = 0, hi = n - 2;
+                while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (pts[mid].x <= x) lo = mid; else hi = mid - 1; }
+                return lo;
+            };
+            return {
+                xMin: pts[0].x, xMax: pts[n - 1].x,
+                at: (x) => {
+                    const i = seg(x), t = (x - pts[i].x) / h[i], t2 = t * t, t3 = t2 * t;
+                    return pts[i].y * (2 * t3 - 3 * t2 + 1) + h[i] * m[i] * (t3 - 2 * t2 + t)
+                         + pts[i + 1].y * (-2 * t3 + 3 * t2) + h[i] * m[i + 1] * (t3 - t2);
+                },
+                deriv: (x) => {
+                    const i = seg(x), t = (x - pts[i].x) / h[i], t2 = t * t;
+                    return (pts[i].y * (6 * t2 - 6 * t) + h[i] * m[i] * (3 * t2 - 4 * t + 1)
+                          + pts[i + 1].y * (-6 * t2 + 6 * t) + h[i] * m[i + 1] * (3 * t2 - 2 * t)) / h[i];
+                }
+            };
+        };
         
         const interpolateX = (points, y) => {
             // Walk in x-order (ascending log H) and return the FIRST crossing.
@@ -1868,7 +2204,116 @@
             const denominator = n * sumX2 - sumX * sumX;
             return denominator === 0 ? null : numerator / denominator;
         };
-        
+
+        // Least-squares slope over an explicit list of {x,y} points (no windowing).
+        const regressSlope = (pts) => {
+            const n = pts.length;
+            if (n < 2) return null;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            pts.forEach(p => { sumX += p.x; sumY += p.y; sumXY += p.x * p.y; sumX2 += p.x * p.x; });
+            const denom = n * sumX2 - sumX * sumX;
+            return denom === 0 ? null : (n * sumXY - sumX * sumY) / denom;
+        };
+
+        // Automatic Gamma: detect the straight-line portion instead of trusting a fixed
+        // log-H window. Gamma is by definition the slope of the straight line, so we locate
+        // the region where the local gradient plateaus near its maximum and regress only there.
+        // This keeps the toe and shoulder out of the fit and, unlike a fixed window, reports
+        // back the log-H bounds it actually used. Returns {gamma, startLogH, endLogH, method}
+        // or null when there is too little data to judge.
+        const GAMMA_PLATEAU_TOL = 0.90; // straight line = local gradient >= 90% of the peak gradient
+        const calculateGammaAuto = (points) => {
+            const pts = (points || []).filter(p => p && isFinite(p.x) && isFinite(p.y))
+                                      .slice().sort((a, b) => a.x - b.x);
+            const n = pts.length;
+            if (n < 2) return null;
+            // Too few points to isolate a straight line — regress everything and say so.
+            if (n < 5) {
+                const g = regressSlope(pts);
+                return g === null ? null : { gamma: g, startLogH: pts[0].x, endLogH: pts[n - 1].x, method: 'auto' };
+            }
+
+            // Smooth analytic first derivative from a monotone cubic (PCHIP) fit,
+            // sampled at 0.01 log H — no finite-difference staircase, no overshoot.
+            const spline = pchipInterpolator(pts);
+            if (!spline) return null;
+            const step = 0.01;
+            const xs = [], sgRaw = [];
+            for (let x = spline.xMin; x <= spline.xMax + 1e-9; x += step) {
+                xs.push(x);
+                sgRaw.push(spline.deriv(Math.min(x, spline.xMax)));
+            }
+            // The interpolant's derivative can spike locally at curvature kinks
+            // and noisy points. Average it over ±one median point spacing so the
+            // plateau search sees gradients at the resolution the data supports.
+            const spacings = [];
+            for (let i = 1; i < n; i++) spacings.push(pts[i].x - pts[i - 1].x);
+            spacings.sort((a, b) => a - b);
+            const hMed = spacings[Math.floor(spacings.length / 2)] || step;
+            const halfW = Math.max(1, Math.round(hMed / step));
+            const sg = sgRaw.map((_, i) => {
+                const lo = Math.max(0, i - halfW), hi = Math.min(sgRaw.length - 1, i + halfW);
+                let sum = 0;
+                for (let j = lo; j <= hi; j++) sum += sgRaw[j];
+                return sum / (hi - lo + 1);
+            });
+            const nS = sg.length;
+
+            // Peak gradient, searched away from the extreme ends (least reliable).
+            const guard = Math.max(1, Math.floor(nS * 0.03));
+            let peakIdx = guard, peak = -Infinity;
+            for (let i = guard; i < nS - guard; i++) { if (sg[i] > peak) { peak = sg[i]; peakIdx = i; } }
+            if (!(peak > 0)) return null; // no positive slope — not a usable curve
+
+            // Walk outward from the peak while the gradient stays within tolerance of it.
+            const thresh = peak * GAMMA_PLATEAU_TOL;
+            let lo = peakIdx, hi = peakIdx;
+            while (lo - 1 >= 0 && sg[lo - 1] >= thresh) lo--;
+            while (hi + 1 <= nS - 1 && sg[hi + 1] >= thresh) hi++;
+            const startLogH = xs[lo], endLogH = xs[hi];
+
+            // Regress over the MEASURED points inside the detected window — the
+            // spline chooses the window; the data provides the slope.
+            let window = pts.filter(p => p.x >= startLogH - 1e-9 && p.x <= endLogH + 1e-9);
+            if (window.length < 2) {
+                // Window narrower than point spacing: fall back to the spline slope
+                // across the window (still data-derived, just interpolated).
+                const g = (spline.at(endLogH) - spline.at(startLogH)) / (endLogH - startLogH);
+                return { gamma: g, startLogH, endLogH, method: 'auto' };
+            }
+            const g = regressSlope(window);
+            if (g === null) return null;
+            return { gamma: g, startLogH, endLogH, method: 'auto' };
+        };
+
+        // Resolve Gamma for a curve: honor a manually entered log-H window when BOTH bounds are
+        // valid numbers; otherwise fall back to automatic straight-line detection.
+        const resolveGamma = (points, startVal, endVal) => {
+            const s = parseFloat(startVal), e = parseFloat(endVal);
+            if (isFinite(s) && isFinite(e) && s !== e) {
+                const g = calculateGamma(points, Math.min(s, e), Math.max(s, e));
+                return g === null ? null : { gamma: g, startLogH: Math.min(s, e), endLogH: Math.max(s, e), method: 'manual' };
+            }
+            return calculateGammaAuto(points);
+        };
+
+        // Show, under a curve's Gamma inputs, the window that was actually used and whether it
+        // was auto-detected or manually set — so the number is auditable rather than a black box.
+        const updateGammaReadout = (el, gammaResult) => {
+            const out = el && el.querySelector('.gamma-readout');
+            if (!out) return;
+            const resetBtn = el.querySelector('.gamma-reset-btn');
+            if (!gammaResult || gammaResult.gamma === null) {
+                out.textContent = 'Gamma: — (not enough data)';
+                if (resetBtn) resetBtn.classList.toggle('hidden', !el.querySelector('.gamma-start').value);
+                return;
+            }
+            const { gamma, startLogH, endLogH, method } = gammaResult;
+            const tag = method === 'manual' ? 'measured on chart' : 'auto straight-line';
+            out.textContent = `γ ${gamma.toFixed(2)} · ${tag} · log H ${startLogH.toFixed(2)}–${endLogH.toFixed(2)}`;
+            if (resetBtn) resetBtn.classList.toggle('hidden', method !== 'manual');
+        };
+
         const calculateCI = (points) => {
             if (points.length < 2) return null;
             const dMin = points[0].y;
@@ -1876,17 +2321,35 @@
             const searchStart = points[0].x - 1.0;
             const searchEnd = points[points.length - 1].x + 1.0;
 
+            // Resample the curve densely (0.01 log H, monotone cubic) so the
+            // 0.2 / 2.2 arc intersections land on the curve itself instead of
+            // snapping to the nearest measured step — removes the quantization
+            // that coarse step tablets would otherwise impose.
+            let ciCurve = points;
+            const ciSpline = pchipInterpolator(points);
+            if (ciSpline) {
+                ciCurve = [];
+                for (let x = ciSpline.xMin; x <= ciSpline.xMax + 1e-9; x += 0.01) {
+                    ciCurve.push({ x, y: ciSpline.at(Math.min(x, ciSpline.xMax)) });
+                }
+            }
+
             for (let logHCenter = searchStart; logHCenter < searchEnd; logHCenter += 0.01) {
                 let pLow = null, pHigh = null, distLow = Infinity, distHigh = Infinity;
-                for (const p of points) {
+                for (const p of ciCurve) {
                     const dist = Math.sqrt(Math.pow(p.x - logHCenter, 2) + Math.pow(p.y - dMin, 2));
                     if (Math.abs(dist - 0.2) < distLow) { pLow = p; distLow = Math.abs(dist-0.2); }
                     if (Math.abs(dist - 2.2) < distHigh) { pHigh = p; distHigh = Math.abs(dist-2.2); }
                 }
 
-                if (pLow && pHigh && pLow.x !== pHigh.x) {
+                // Valid CI-meter geometry only: the pivot sits on the base+fog
+                // line LEFT of both intersections, low point before high point.
+                // Without this, noisy data can satisfy the equal-slope condition
+                // with a mirrored pivot at the far right end of the curve.
+                if (pLow && pHigh && pLow.x > logHCenter && pHigh.x > pLow.x) {
                     const slopeLow = (pLow.y - dMin) / (pLow.x - logHCenter);
                     const slopeHigh = (pHigh.y - dMin) / (pHigh.x - logHCenter);
+                    if (slopeLow <= 0 || slopeHigh <= 0) continue;
                     const error = Math.abs(slopeLow - slopeHigh);
                     if (error < bestFit.error) {
                         bestFit = {
@@ -1904,10 +2367,15 @@
 
         // Helper for Fractional Gradient: Calculates the slope (derivative) at a specific log H
         const calculateInstantaneousGradient = (points, x) => {
-            const epsilon = 0.01; // Small interval for derivative calc
+            // Half a data step wide: on linearly interpolated measurements a tiny
+            // epsilon makes the gradient a staircase that only changes AT data points,
+            // so the Jones criterion crossing snaps to the sampling grid (half-stop
+            // EI jumps between curves). A wider secant blends across nodes and gives
+            // a continuous gradient, letting the crossing land between data points.
+            const epsilon = 0.075;
             const y1 = interpolateY(points, x - epsilon);
             const y2 = interpolateY(points, x + epsilon);
-            
+
             if (y1 === null || y2 === null) return 0;
             return (y2 - y1) / (2 * epsilon);
         };
@@ -1934,30 +2402,44 @@
             const toeCapH = interpolateX(points, dMin + 0.80);
             if (toeCapH !== null && toeCapH < endH) endH = toeCapH;
 
-            let bestH = null;
-            let minError = Infinity;
-            const stepSize = 0.005; // Fine precision for the search
-
-            // 2. Iterative Sweep
-            for (let h = startH; h <= endH; h += stepSize) {
-                const g_inst = calculateInstantaneousGradient(points, h);
-                const h_end = h + 1.50;
+            // 2. Root find: the Jones point is where g_inst RISES THROUGH 0.3·Ḡ.
+            // (A nearest-match sweep is unstable on measured data — the globally
+            // closest |g_inst − 0.3Ḡ| point jumps between noise plateaus. A sign
+            // crossing, required to hold for a stretch of the curve, is robust.)
+            const f = (h) => {
                 const d_start = interpolateY(points, h);
-                const d_end = interpolateY(points, h_end);
-
-                if (d_end === null || d_start === null) break;
-
+                const d_end = interpolateY(points, h + 1.50);
+                if (d_start === null || d_end === null) return null;
                 const g_avg = (d_end - d_start) / 1.50;
-                if (g_avg <= 0) continue; // Skip if average gradient is non-positive
-                const targetSlope = 0.3 * g_avg;
-                const error = Math.abs(g_inst - targetSlope);
+                if (g_avg <= 0) return null;
+                return calculateInstantaneousGradient(points, h) - 0.3 * g_avg;
+            };
 
-                if (error < minError) {
-                    minError = error;
-                    bestH = h;
+            const stepSize = 0.01;
+            const SUSTAIN = 0.10; // crossing must hold for 0.10 logH — skips noise blips
+            let prev = f(startH);
+            let everNegative = prev !== null && prev < 0;
+            for (let h = startH + stepSize; h <= endH; h += stepSize) {
+                const cur = f(h);
+                if (cur === null) break;
+                if (prev !== null && prev < 0 && cur >= 0) {
+                    let sustained = true;
+                    for (let s = stepSize; s <= SUSTAIN; s += stepSize) {
+                        const v = f(h + s);
+                        if (v !== null && v < 0) { sustained = false; break; }
+                    }
+                    if (sustained) {
+                        // linear interpolation of the exact zero crossing
+                        return (h - stepSize) + stepSize * (-prev) / (cur - prev);
+                    }
                 }
+                if (cur < 0) everNegative = true;
+                prev = cur;
             }
-            return bestH;
+            // Never dipped below the criterion: the whole searchable toe is already
+            // steeper than 0.3·Ḡ, so the criterion point sits at the search start.
+            if (!everNegative && prev !== null && prev >= 0) return startH;
+            return null;
         };
 
         const calculateDeltaXParams = (points) => {
@@ -2253,6 +2735,136 @@
             }
         };
 
+        // Shades each curve's detected Gamma straight-line window when the
+        // gradient overlay is active — makes the auto-detection visible.
+        const gammaBandPlugin = {
+            id: 'gammaBand',
+            beforeDatasetsDraw: (chart) => {
+                if (chart.canvas.id !== 'filmCurveChart') return;
+                const bands = chart._gammaBands;
+                if (!bands || !bands.length) return;
+                const area = chart.chartArea, xs = chart.scales.x, c2 = chart.ctx;
+                c2.save();
+                bands.forEach(b => {
+                    const x1 = Math.max(area.left, xs.getPixelForValue(b.start));
+                    const x2 = Math.min(area.right, xs.getPixelForValue(b.end));
+                    if (x2 <= x1) return;
+                    c2.fillStyle = hexToRgba(b.color, 0.06);
+                    c2.fillRect(x1, area.top, x2 - x1, area.bottom - area.top);
+                });
+                c2.restore();
+            }
+        };
+
+        // --- Interactive Gamma window picker -------------------------------------------------
+        // Lets the user define the straight-line region by clicking two points on the actual
+        // curve. While active, every other curve is hidden so only the target is in play.
+        let gammaPickState = null; // { curveId, curveName, points[], stage: 0|1, startX, hoverX }
+
+        const gammaPickPlugin = {
+            id: 'gammaPick',
+            afterDatasetsDraw: (chart) => {
+                if (chart.canvas.id !== 'filmCurveChart' || !gammaPickState) return;
+                const area = chart.chartArea, c2 = chart.ctx;
+                const xs = chart.scales.x, ys = chart.scales.y;
+
+                // Instruction banner across the top of the plot.
+                const msg = gammaPickState.stage === 0
+                    ? `Measuring “${gammaPickState.curveName}” — click the START of the straight line`
+                    : `Now click the END of the straight line   ·   Esc to cancel`;
+                c2.save();
+                c2.font = "bold 12px -apple-system, 'SF Pro Text', sans-serif";
+                const tw = c2.measureText(msg).width;
+                const bw = tw + 24, bx = area.left + (area.right - area.left - bw) / 2, by = area.top + 6;
+                c2.fillStyle = 'rgba(29,29,31,0.92)';
+                c2.beginPath(); c2.roundRect(bx, by, bw, 26, 8); c2.fill();
+                c2.fillStyle = '#fff'; c2.textAlign = 'left'; c2.textBaseline = 'middle';
+                c2.fillText(msg, bx + 12, by + 14);
+
+                // Draw a marker at a given data x on the target curve.
+                const drawMark = (x, color, solid) => {
+                    if (x === null || x === undefined) return;
+                    const y = interpolateY(gammaPickState.points, x);
+                    if (y === null) return;
+                    const px = xs.getPixelForValue(x), py = ys.getPixelForValue(y);
+                    c2.strokeStyle = color; c2.lineWidth = 1.25; c2.setLineDash(solid ? [] : [4, 4]);
+                    c2.beginPath(); c2.moveTo(px, area.top); c2.lineTo(px, area.bottom); c2.stroke();
+                    c2.setLineDash([]);
+                    c2.beginPath(); c2.arc(px, py, 5, 0, Math.PI * 2);
+                    c2.fillStyle = color; c2.fill();
+                    c2.strokeStyle = '#fff'; c2.lineWidth = 2; c2.stroke();
+                };
+                drawMark(gammaPickState.startX, '#248a3d', true);        // committed start
+                drawMark(gammaPickState.hoverX, '#00457c', false);       // snapped hover preview
+                c2.restore();
+            }
+        };
+
+        // Convert a pixel x to a free logH position, clamped to the target curve's data range.
+        // No snapping — the user can place the window bounds anywhere along the curve.
+        const pickCurveX = (px) => {
+            if (!gammaPickState || !filmChart) return null;
+            const x = filmChart.scales.x.getValueForPixel(px);
+            const pts = gammaPickState.points;
+            return Math.min(Math.max(x, pts[0].x), pts[pts.length - 1].x);
+        };
+
+        const startGammaPick = (curveId) => {
+            if (gammaPickState) cancelGammaPick();
+            const curve = curvesData.find(c => c.id === curveId);
+            if (!curve || !curve.points || curve.points.length < 2) {
+                alert('Add at least two density values to this curve before measuring Gamma on the chart.');
+                return;
+            }
+            gammaPickState = { curveId, curveName: curve.name, points: curve.points, stage: 0, startX: null, hoverX: null };
+            // Hide every dataset except this curve's own line so only the target is visible.
+            filmChart.data.datasets.forEach((ds, i) => {
+                ds._gammaPickPrevHidden = ds.hidden;
+                ds.hidden = !(ds.curveId === curveId && !ds.isAnnotation);
+            });
+            filmChart.canvas.style.cursor = 'crosshair';
+            filmChart.update('none');
+            document.addEventListener('keydown', gammaPickKeyHandler);
+        };
+
+        const gammaPickKeyHandler = (e) => { if (e.key === 'Escape') cancelGammaPick(); };
+
+        const exitGammaPick = () => {
+            document.removeEventListener('keydown', gammaPickKeyHandler);
+            if (filmChart) {
+                // Restore each dataset's pre-pick hidden flag so the upcoming full rebuild does
+                // not mistake temporarily-hidden curves for legend-toggled-off ones.
+                filmChart.data.datasets.forEach(ds => {
+                    if ('_gammaPickPrevHidden' in ds) { ds.hidden = ds._gammaPickPrevHidden; delete ds._gammaPickPrevHidden; }
+                });
+                filmChart.canvas.style.cursor = '';
+            }
+            gammaPickState = null;
+        };
+
+        const cancelGammaPick = () => {
+            exitGammaPick();
+            updateChartAndCalculations(); // full rebuild restores all curves + legend state
+        };
+
+        const finishGammaPick = (startX, endX) => {
+            const curveId = gammaPickState.curveId;
+            const lo = Math.min(startX, endX), hi = Math.max(startX, endX);
+            exitGammaPick();
+            const card = document.getElementById(curveId);
+            if (card) {
+                card.querySelector('.gamma-start').value = lo.toFixed(2);
+                card.querySelector('.gamma-end').value = hi.toFixed(2);
+            }
+            updateChartAndCalculations();
+            // Confirm the designated window and the Gamma that will now be used for this curve.
+            const curve = curvesData.find(c => c.id === curveId);
+            const g = curve && curve.gammaResult ? curve.gammaResult.gamma : null;
+            showInfoToast(g !== null
+                ? `Gamma region set: log H ${lo.toFixed(2)}–${hi.toFixed(2)} → γ ${g.toFixed(2)} will be used for “${curve.name}”`
+                : `Gamma region set (log H ${lo.toFixed(2)}–${hi.toFixed(2)}), but it contains too few data points — widen it to get a value.`);
+        };
+
         const initializeChart = () => {
             // Set Chart.js global defaults for scientific look
             Chart.defaults.font.family = "-apple-system, 'SF Pro Text', sans-serif";
@@ -2265,6 +2877,12 @@
                 const rect = hoverCanvas.getBoundingClientRect();
                 const mx = e.clientX - rect.left, my = e.clientY - rect.top;
                 const a = filmChart.chartArea;
+                // In Gamma-pick mode, snap a preview marker to the nearest data point instead.
+                if (gammaPickState) {
+                    gammaPickState.hoverX = (a && mx >= a.left && mx <= a.right) ? pickCurveX(mx) : null;
+                    filmChart.draw();
+                    return;
+                }
                 if (!a || mx < a.left || mx > a.right || my < a.top || my > a.bottom) {
                     if (filmChart._hoverLogH != null) { filmChart._hoverLogH = null; filmChart.draw(); }
                     return;
@@ -2273,7 +2891,25 @@
                 filmChart.draw();
             });
             hoverCanvas.addEventListener('mouseleave', () => {
+                if (gammaPickState) { gammaPickState.hoverX = null; filmChart.draw(); return; }
                 if (filmChart && filmChart._hoverLogH != null) { filmChart._hoverLogH = null; filmChart.draw(); }
+            });
+            hoverCanvas.addEventListener('click', (e) => {
+                if (!filmChart || !gammaPickState) return;
+                const rect = hoverCanvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const a = filmChart.chartArea;
+                if (!a || mx < a.left || mx > a.right) return;
+                const x = pickCurveX(mx);
+                if (x === null) return;
+                if (gammaPickState.stage === 0) {
+                    gammaPickState.startX = x;
+                    gammaPickState.stage = 1;
+                    filmChart.draw();
+                } else {
+                    if (Math.abs(x - gammaPickState.startX) < 0.02) return; // need two distinct positions
+                    finishGammaPick(gammaPickState.startX, x);
+                }
             });
             
             filmChart = new Chart(ctx, {
@@ -2296,6 +2932,13 @@
                             grid: { color: '#e8e8ed', lineWidth: 0.75, drawTicks: true, tickLength: 6 },
                             border: { display: true, color: '#1d1d1f', width: 1.5 },
                             ticks: { font: { size: 11, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#424245', padding: 4 }
+                        },
+                        y2: {
+                            display: false, position: 'right', min: 0,
+                            title: { display: true, text: 'Gradient dD/d(log H)', font: { size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600' }, color: '#86868b', padding: { bottom: 8 } },
+                            grid: { drawOnChartArea: false },
+                            border: { display: true, color: '#c7c7cc', width: 1 },
+                            ticks: { font: { size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace" }, color: '#86868b', padding: 4 }
                         }
                     },
                     plugins: {
@@ -2491,10 +3134,16 @@
                         <textarea class="data-input w-full p-2 border border-gray-300 rounded-md" placeholder="Paste Density values, separated by commas...">${escapeHtml(curveInfo.data || '')}</textarea>
                         <div class="value-count"></div>
                         <div id="warning-${curveId}" class="curve-warning hidden mt-2 p-2 bg-yellow-100 text-yellow-800 text-xs rounded-md"></div>
-                        <div class="grid grid-cols-2 gap-2 text-sm">
-                            <div><label>Gamma Start logH:</label><input type="number" step="0.01" class="gamma-start w-full p-1 border" value="${curveInfo.gammaStart || '1.80'}"></div>
-                            <div><label>Gamma End logH:</label><input type="number" step="0.01" class="gamma-end w-full p-1 border" value="${curveInfo.gammaEnd || '2.85'}"></div>
+                        <div class="flex items-center justify-between gap-2">
+                            <label class="text-sm font-medium">Gamma:</label>
+                            <div class="flex items-center gap-2">
+                                <button type="button" class="gamma-reset-btn secondary-btn text-xs py-1 px-2 hidden" data-curve-id="${curveId}" title="Discard the measured region and detect the straight line automatically">Reset to auto</button>
+                                <button type="button" class="gamma-pick-btn secondary-btn text-xs py-1 px-2" data-curve-id="${curveId}" title="Click two points on the chart to set the straight-line region">Measure on chart</button>
+                            </div>
                         </div>
+                        <input type="hidden" class="gamma-start" value="${curveInfo.gammaStart || ''}">
+                        <input type="hidden" class="gamma-end" value="${curveInfo.gammaEnd || ''}">
+                        <div class="gamma-readout text-xs text-[#86868b] mt-1"></div>
                         <div class="flex flex-wrap items-end gap-x-4 gap-y-2">
                             <div class="flex items-center gap-2">
                                 <label class="text-sm">Color:</label><input type="color" class="curve-color h-8 w-9" value="${curveInfo.color || newColor}">
@@ -2517,10 +3166,11 @@
                         </div>
                         <div class="grid grid-cols-3 gap-2 text-sm">
                             <div><input type="checkbox" id="show-curve-${curveId}" class="show-curve" ${curveInfo.show === false ? '' : 'checked'}><label for="show-curve-${curveId}" class="ml-2">Show</label></div>
-                            <div><input type="checkbox" id="smooth-curve-${curveId}" class="smooth-curve" ${curveInfo.smooth ? 'checked' : ''}><label for="smooth-curve-${curveId}" class="ml-2">Smooth</label></div>
+                            <div><input type="checkbox" id="smooth-curve-${curveId}" class="smooth-curve" ${curveInfo.smooth === false ? '' : 'checked'}><label for="smooth-curve-${curveId}" class="ml-2" title="Tukey 3RSSH resistant smoothing of the raw densities — removes outlier readings without smearing neighbours. All calculations use the cleaned data.">Smooth</label></div>
                             <div><input type="checkbox" id="show-speedpoint-${curveId}" class="show-speedpoint" ${curveInfo.showSpeedPoint ? 'checked' : ''}><label for="show-speedpoint-${curveId}" class="ml-2">Speed Pt.</label></div>
                             <div><input type="checkbox" id="show-ci-${curveId}" class="show-ci" ${curveInfo.showCI ? 'checked' : ''}><label for="show-ci-${curveId}" class="ml-2">Show CI</label></div>
                             <div><input type="checkbox" id="show-dx-${curveId}" class="show-dx" ${curveInfo.showDX ? 'checked' : ''}><label for="show-dx-${curveId}" class="ml-2">Show ΔX</label></div>
+                            <div><input type="checkbox" id="show-gamma-${curveId}" class="show-gamma" ${curveInfo.showGamma ? 'checked' : ''}><label for="show-gamma-${curveId}" class="ml-2" title="Shade this curve's Gamma straight-line window on the chart">Show γ</label></div>
                             <div class="iso-ref-toggle-container hidden"><input type="checkbox" id="show-iso-ref-${curveId}" class="show-iso-ref" ${curveInfo.showIsoRef === false ? '' : 'checked'}><label for="show-iso-ref-${curveId}" class="ml-2">Show EFS Ref</label></div>
                         </div>
                     </div>
@@ -2528,6 +3178,16 @@
             curvesContainer.insertAdjacentHTML('beforeend', curveHTML);
             const newCurveEl = document.getElementById(curveId);
             newCurveEl.addEventListener('input', updateChartDebounced);
+            newCurveEl.querySelector('.gamma-pick-btn').addEventListener('click', (e) => {
+                startGammaPick(e.currentTarget.dataset.curveId);
+            });
+            newCurveEl.querySelector('.gamma-reset-btn').addEventListener('click', (e) => {
+                const card = document.getElementById(e.currentTarget.dataset.curveId);
+                card.querySelector('.gamma-start').value = '';
+                card.querySelector('.gamma-end').value = '';
+                updateChartAndCalculations();
+                showInfoToast('Gamma region cleared — using automatic straight-line detection.');
+            });
             newCurveEl.querySelector('.remove-curve-btn').addEventListener('click', (e) => {
                 const cardEl = document.getElementById(e.target.dataset.curveId);
                 const savedInfo = collectFilmCurveInfo(cardEl);
@@ -2612,21 +3272,25 @@
                 if (yValues.length === 0) return;
 
                 const shouldSmooth = el.querySelector('.smooth-curve').checked;
+                let rawYValues = null; // keep the pre-smoothing readings for display
                 if (shouldSmooth) {
+                    rawYValues = yValues.slice();
                     yValues = smoothData(yValues);
                 }
-                
-                let points;
+
+                let points, rawPoints = null;
                 if (logHMode === 'auto') {
                     points = yValues.map((y, i) => ({ x: (i + 1) * 0.15, y: y }));
+                    if (rawYValues) rawPoints = rawYValues.map((y, i) => ({ x: (i + 1) * 0.15, y: y }));
                 } else {
                     if (xValues.length !== yValues.length) {
                         dataMismatch = true;
                         if (warningEl) { warningEl.textContent = `Value count mismatch: ${yValues.length} density values entered but ${xValues.length} log H values defined. Check your measurements — one reading may be missing or extra.`;
                         warningEl.style.display = 'block'; }
-                        points = []; 
+                        points = [];
                     } else {
                         points = yValues.map((y, i) => ({ x: xValues[i], y: y }));
+                        if (rawYValues) rawPoints = rawYValues.map((y, i) => ({ x: xValues[i], y: y }));
                     }
                 }
                 if(points.length === 0) return;
@@ -2650,8 +3314,8 @@
                     warningEl.style.display = 'block';
                 }
 
-                const curve = { 
-                    id: el.id, name, time, points, color, style, ci, ciParams: ciResult, matchedSbr,
+                const curve = {
+                    id: el.id, name, time, points, rawPoints, color, style, ci, ciParams: ciResult, matchedSbr,
                     dxParams: dxParams,
                     speedPoint: null,
                     speedFallback: false,
@@ -2660,11 +3324,13 @@
                     jonesSpeedPoint: calculateFractionalGradientSpeed(points),
                     dxSpeedPoint: (dxParams && dxParams.hfg) ? dxParams.hfg.x : null,
                     gBar: null, // computed below
-                    gamma: calculateGamma(points, parseFloat(el.querySelector('.gamma-start').value), parseFloat(el.querySelector('.gamma-end').value)),
+                    gammaResult: resolveGamma(points, el.querySelector('.gamma-start').value, el.querySelector('.gamma-end').value),
+                    gamma: null, // set from gammaResult below
                     showCurve: el.querySelector('.show-curve').checked,
                     showSpeedPoint: el.querySelector('.show-speedpoint').checked,
                     showCi: el.querySelector('.show-ci').checked,
                     showDx: el.querySelector('.show-dx').checked,
+                    showGamma: el.querySelector('.show-gamma')?.checked || false,
                     showIsoRef: el.querySelector('.show-iso-ref').checked,
                     speedPointColor: el.querySelector('.speedpoint-color').value,
                     calculatedIso: null,
@@ -2677,6 +3343,9 @@
                     const d1 = interpolateY(points, curve.jonesSpeedPoint + 1.50);
                     if (d0 !== null && d1 !== null) curve.gBar = (d1 - d0) / 1.50;
                 }
+                // Gamma from the resolver (manual window when set, else auto straight-line detection).
+                curve.gamma = curve.gammaResult ? curve.gammaResult.gamma : null;
+                updateGammaReadout(el, curve.gammaResult);
                 curvesData.push(curve);
             });
             
@@ -2685,7 +3354,13 @@
             // --- SPEED POINT ASSIGNMENT (two-pass for consistent criterion) ---
             // When Delta X is selected, check ALL curves first: if ANY has ΔD > threshold,
             // switch ALL to Jones. Mixing methods in a ratio comparison is invalid.
-            const DELTA_D_FALLBACK_THRESHOLD = 1.20;
+            // Fall back to Jones only when the ΔX polynomial actually breaks down —
+            // its vertex sits at ΔD 1.79. Nelson & Simonds' Table II supports the
+            // equation with data up to ΔD ≈ 1.48; from 1.48 to 1.70 we extrapolate
+            // (flagged with * in the results table), which numerically stays within
+            // ~0.1 stop of the true fractional gradient point. The old 1.20 threshold
+            // replaced good ΔX values with the noise-sensitive Jones sweep.
+            const DELTA_D_FALLBACK_THRESHOLD = 1.70;
             let effectiveSpeedMethod = speedMethod;
             let globalFallback = false;
 
@@ -2966,6 +3641,11 @@
                 filmChart.options.maintainAspectRatio = true;
                 filmChart.options.aspectRatio = xRange / yRange;
                 chartContainer.style.height = 'auto';
+                // Cap width so the chart (height = width / aspectRatio) never grows taller
+                // than the first viewport on wide screens — matches .chart-hero's height budget
+                const gridRatio = xRange / yRange;
+                chartContainer.style.aspectRatio = `${gridRatio.toFixed(4)} / 1`;
+                chartContainer.style.maxWidth = `min(100%, calc((100vh - var(--topbar-h) - 40px) * ${gridRatio.toFixed(4)}))`;
             } else {
                 filmChart.options.maintainAspectRatio = false;
                 delete filmChart.options.aspectRatio;
@@ -2977,6 +3657,8 @@
                     delete filmChart.options.scales.x.max;
                 }
                 chartContainer.style.height = ''; // let .chart-hero CSS size the plot
+                chartContainer.style.maxWidth = '';
+                chartContainer.style.aspectRatio = '';
             }
 
             const getBorderDash = (style) => {
@@ -2990,26 +3672,60 @@
             };
 
             const datasets = [];
+            const showGradient = document.getElementById('showGradientToggle')?.checked;
+            const gammaBands = []; // shaded straight-line windows, drawn by gammaBandPlugin
             curvesData.forEach(c => {
                 if (c.showCurve) {
                     datasets.push({
                         label: `${c.name} (${!isNaN(c.time) ? c.time + ' min' : ''})`,
-                        data: c.points, borderColor: c.color, backgroundColor: c.color, fill: false, tension: 0.1, 
+                        data: c.points, borderColor: c.color, backgroundColor: c.color, fill: false, tension: 0.1,
                         borderWidth: 1.75,
-                        pointRadius: showPoints ? 2.5 : 0, 
+                        pointRadius: showPoints ? 2.5 : 0,
                         pointHoverRadius: showPoints ? 4 : 0,
                         pointBorderWidth: 0,
                         borderDash: getBorderDash(c.style),
                         isAnnotation: false, curveId: c.id, order: 1
                     });
+                    // Raw (pre-smoothing) readings as faint hollow markers behind the
+                    // cleaned curve — the smoother's work stays visible, outliers show
+                    // themselves by their distance from the line.
+                    if (c.rawPoints && showPoints) {
+                        datasets.push({
+                            label: `${c.name} (raw)`, data: c.rawPoints, showLine: false,
+                            pointStyle: 'circle', radius: 2.5, hoverRadius: 4,
+                            backgroundColor: 'transparent',
+                            borderColor: hexToRgba(c.color, 0.4), pointBorderWidth: 1.25,
+                            isAnnotation: true, curveId: c.id, order: 3
+                        });
+                    }
+                    // First derivative dD/d(log H) on the secondary axis (global toggle).
+                    if (showGradient && c.points.length >= 3) {
+                        const gs = pchipInterpolator(c.points);
+                        if (gs) {
+                            const gradPts = [];
+                            for (let x = gs.xMin; x <= gs.xMax + 1e-9; x += 0.02) {
+                                gradPts.push({ x: Math.min(x, gs.xMax), y: gs.deriv(Math.min(x, gs.xMax)) });
+                            }
+                            datasets.push({
+                                label: `${c.name} (gradient)`, data: gradPts, yAxisID: 'y2',
+                                borderColor: hexToRgba(c.color, 0.55), borderWidth: 1.25,
+                                borderDash: [2, 3], pointRadius: 0, pointHoverRadius: 0,
+                                fill: false, tension: 0, isAnnotation: true, curveId: c.id, order: 4
+                            });
+                        }
+                    }
+                    // Gamma straight-line window shading — per-curve "Show γ" checkbox.
+                    if (c.showGamma && c.gammaResult && c.gammaResult.gamma !== null) {
+                        gammaBands.push({ start: c.gammaResult.startLogH, end: c.gammaResult.endLogH, color: c.color });
+                    }
                 }
                 if (c.speedPoint !== null && c.speedPoint !== undefined && c.showSpeedPoint && c.points.length > 0) {
                      const speedPointY = interpolateY(c.points, c.speedPoint);
                      if (speedPointY !== null) {
                          datasets.push({
                             label: `${c.name} Speed Pt`, data: [{x: c.speedPoint, y: speedPointY}],
-                            borderColor: c.speedPointColor, backgroundColor: c.speedPointColor, pointStyle: 'crossRot',
-                            radius: 6, hoverRadius: 8, borderWidth: 2, isAnnotation: true, order: 0
+                            borderColor: '#ffffff', backgroundColor: c.speedPointColor, pointStyle: 'rectRot',
+                            radius: 6.5, hoverRadius: 8.5, borderWidth: 1.75, isAnnotation: true, order: 0
                          });
                      }
                 }
@@ -3052,7 +3768,20 @@
                 }
             }
 
+            // Legend-toggle state lives inside the chart, so rebuilding the datasets would
+            // silently re-show curves the user hid via the legend. Carry it over by curve id/label.
+            const legendHidden = {};
+            filmChart.data.datasets.forEach((ds, i) => {
+                const key = ds.curveId !== undefined ? 'c' + ds.curveId : ds.label;
+                if (!filmChart.isDatasetVisible(i)) legendHidden[key] = true;
+            });
             filmChart.data.datasets = datasets;
+            filmChart._gammaBands = gammaBands;
+            filmChart.options.scales.y2.display = !!showGradient;
+            datasets.forEach(ds => {
+                const key = ds.curveId !== undefined ? 'c' + ds.curveId : ds.label;
+                if (legendHidden[key]) ds.hidden = true;
+            });
             filmChart.update();
 
             // --- UI/TABLE UPDATE ---
@@ -3073,7 +3802,12 @@
                 const isRef = c.isReference && isoMethod === 'standard';
                 const deltaDText = (c.dxParams && c.dxParams.deltaD !== null) ? c.dxParams.deltaD.toFixed(2) : '—';
                 const fdEIText = c.fdEI ? roundToThirdStopISO(c.fdEI) : '—';
-                const dxEIText = c.dxEI ? roundToThirdStopISO(c.dxEI) : '—';
+                // Nelson & Simonds' ΔD→ΔX parabola is backed by data up to ΔD ≈ 1.48
+                // (Table II, JOSA 46/5 1956). Beyond that the equation extrapolates —
+                // show the value in italics like other extrapolated results.
+                const dxBeyondTable = c.dxParams && c.dxParams.deltaD !== null && c.dxParams.deltaD > 1.48;
+                let dxEIText = c.dxEI ? roundToThirdStopISO(c.dxEI) : '—';
+                if (c.dxEI && dxBeyondTable) dxEIText = `<em title="ΔD ${c.dxParams.deltaD.toFixed(2)} exceeds the Nelson–Simonds data range (0.50–1.48); ΔX extrapolated">${dxEIText}*</em>`;
                 const jonesEIText = c.jonesEI ? roundToThirdStopISO(c.jonesEI) : '—';
                 const gBarText = c.gBar !== null ? c.gBar.toFixed(2) : '—';
                 const efsExactText = c.calculatedIso ? c.calculatedIso.toFixed(1) : '—';
@@ -3098,7 +3832,8 @@
                 const synPts = globalIso6Curve.points;
                 const synCI = calculateCI(synPts);
                 const synCIText = synCI && synCI.ci ? synCI.ci.toFixed(2) : '—';
-                const synGamma = calculateGamma(synPts, 0.3, 1.8);
+                const synGammaResult = calculateGammaAuto(synPts);
+                const synGamma = synGammaResult ? synGammaResult.gamma : null;
                 const synGammaText = synGamma ? synGamma.toFixed(2) : '—';
                 const synGBar = (() => {
                     if (globalIso6Curve.speedPointJones !== null) {
@@ -3395,7 +4130,45 @@
                 warnStar;
         };
         
+        // Progress overlay for the long-running PDF exports. set() yields to the
+        // browser so the bar actually repaints between synchronous work chunks.
+        const exportProgress = {
+            _els: null,
+            _ensure() {
+                if (this._els) return this._els;
+                const ov = document.createElement('div');
+                ov.className = 'export-progress-overlay';
+                ov.innerHTML = `<div class="export-progress-card">
+                    <div class="export-progress-title"></div>
+                    <div class="export-progress-label"></div>
+                    <div class="export-progress-track"><div class="export-progress-fill"></div></div>
+                </div>`;
+                document.body.appendChild(ov);
+                this._els = { ov, title: ov.querySelector('.export-progress-title'),
+                              label: ov.querySelector('.export-progress-label'),
+                              fill: ov.querySelector('.export-progress-fill') };
+                return this._els;
+            },
+            show(title) {
+                const e = this._ensure();
+                e.title.textContent = title;
+                e.label.textContent = '';
+                e.fill.style.width = '0%';
+                e.ov.style.display = 'flex';
+            },
+            async set(frac, label) {
+                const e = this._ensure();
+                e.fill.style.width = Math.round(Math.max(0, Math.min(1, frac)) * 100) + '%';
+                if (label) e.label.textContent = label;
+                // Yield one frame so the update paints before the next work chunk.
+                await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+            },
+            hide() { if (this._els) this._els.ov.style.display = 'none'; }
+        };
+
         const exportPDF = async () => {
+            exportProgress.show('Exporting PDF report');
+            try {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
             const pageW = doc.internal.pageSize.getWidth();
@@ -3435,23 +4208,43 @@
                 tableLineWidth: 0.2,
             };
 
+            // Truncate a string with an ellipsis so it never exceeds maxW at the
+            // doc's CURRENT font/size. Used for running headers.
+            const truncToWidth = (text, maxW) => {
+                if (doc.getTextWidth(text) <= maxW) return text;
+                let t = text;
+                while (t.length > 1 && doc.getTextWidth(t + '…') > maxW) t = t.slice(0, -1);
+                return t.trimEnd() + '…';
+            };
+
             // --- PDF Title Block ---
+            // Shrink-to-fit: step the font down until the title fits the content
+            // width on at most two centered lines — long titles must never clip.
+            const pdfTitle = document.getElementById('docTitle').value || 'Film Curve Analysis';
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(18);
             doc.setTextColor(29, 29, 31);
-            doc.text(document.getElementById('docTitle').value || 'Film Curve Analysis', pageW / 2, 20, { align: 'center' });
-            
+            let titleSize = 18, titleLines;
+            for (;;) {
+                doc.setFontSize(titleSize);
+                titleLines = doc.splitTextToSize(pdfTitle, contentWidth);
+                if (titleLines.length <= (titleSize <= 13 ? 2 : 1) || titleSize <= 11) break;
+                titleSize -= 1;
+            }
+            titleLines = titleLines.slice(0, 2);
+            titleLines.forEach((ln, i) => doc.text(ln, pageW / 2, 20 + i * (titleSize * 0.45), { align: 'center' }));
+            const titleBottom = 20 + (titleLines.length - 1) * (titleSize * 0.45);
+
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8.5);
             doc.setTextColor(66, 66, 69);
-            doc.text(`Analyst: ${document.getElementById('docName').value || 'N/A'}`, margin, 28);
-            doc.text(`Date: ${document.getElementById('docDateTime').value ? new Date(document.getElementById('docDateTime').value).toLocaleString() : 'N/A'}`, pageW - margin, 28, { align: 'right' });
-            
+            doc.text(`Analyst: ${document.getElementById('docName').value || 'N/A'}`, margin, titleBottom + 8);
+            doc.text(`Date: ${document.getElementById('docDateTime').value ? new Date(document.getElementById('docDateTime').value).toLocaleString() : 'N/A'}`, pageW - margin, titleBottom + 8, { align: 'right' });
+
             // Thin rule under title
             doc.setDrawColor(29, 29, 31);
             doc.setLineWidth(0.3);
-            doc.line(margin, 31, pageW - margin, 31);
-            finalY = 34;
+            doc.line(margin, titleBottom + 11, pageW - margin, titleBottom + 11);
+            finalY = titleBottom + 14;
 
             const chartCanvas = document.getElementById('filmCurveChart');
             // Render at 2× for crisp export, then restore
@@ -3466,6 +4259,7 @@
                 imgWidth = imgWidth * maxImgHeight / imgHeight;
                 imgHeight = maxImgHeight;
             }
+            await exportProgress.set(0.08, 'Rendering main chart…');
             doc.addImage(chartCanvas.toDataURL('image/png'), 'PNG', margin + (contentWidth - imgWidth) / 2, finalY, imgWidth, imgHeight);
             filmChart.options.devicePixelRatio = origDPR;
             filmChart.update('none');
@@ -3488,6 +4282,7 @@
 
             // --- PDF: FILM CHARACTERISTICS TABLE ---
             const filmTableHead = [['Curve', 'Time', 'CI', 'Delta D', 'Gamma', 'G-bar', 'EFS', 'FD EI', 'Delta X EI', 'Jones EI']];
+            await exportProgress.set(0.18, 'Building result tables…');
             const filmTableBody = curvesData.map(c => {
                 const deltaDText = (c.dxParams && c.dxParams.deltaD !== null) ? c.dxParams.deltaD.toFixed(2) : '—';
                 const fdEIText = c.fdEI ? String(roundToThirdStopISO(c.fdEI)) : '—';
@@ -3542,7 +4337,8 @@
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(11);
                 doc.setTextColor(29, 29, 31);
-                doc.text(document.getElementById('docTitle').value || 'Film Curve Analysis', margin, finalY);
+                // Reserve 45mm on the right for the analyst line; ellipsize the title.
+                doc.text(truncToWidth(document.getElementById('docTitle').value || 'Film Curve Analysis', contentWidth - 45), margin, finalY);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(8);
                 doc.setTextColor(110, 110, 110);
@@ -3830,7 +4626,7 @@
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(11);
                 doc.setTextColor(29, 29, 31);
-                doc.text(document.getElementById('docTitle').value || 'Film Curve Analysis', margin, finalY);
+                doc.text(truncToWidth(document.getElementById('docTitle').value || 'Film Curve Analysis', contentWidth - 45), margin, finalY);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(8);
                 doc.setTextColor(110, 110, 110);
@@ -3866,7 +4662,10 @@
                 singleChartContainer.style.width = '800px';
                 document.body.appendChild(singleChartContainer);
 
+                let pdfCurveIdx = 0;
                 for (const curve of curvesData) {
+                    await exportProgress.set(0.25 + 0.35 * (pdfCurveIdx++ / Math.max(1, curvesData.length)),
+                        `Curve charts (${pdfCurveIdx} of ${curvesData.length})…`);
                     doc.addPage();
                     let yPos = 20;
 
@@ -4043,7 +4842,7 @@
             };
 
             writePlainTextSection('Gamma', [
-                'Gamma is a measure of contrast defined as the slope of the straight-line portion of the D-log H curve. This tool calculates it using a linear regression on the data points that fall between the user-defined Gamma Start and Gamma End log H values.'
+                'Gamma is a measure of contrast defined as the slope of the straight-line portion of the D-log H curve. By default this tool detects that straight line automatically: it computes the local gradient along the curve, finds where the gradient plateaus near its maximum, and runs a linear regression over only that region — keeping the toe and shoulder out of the fit. The log-H window it used is reported beneath each curve’s controls. You can override it by clicking “Measure on chart” and picking the two ends of the straight line directly on the plot; “Reset to auto” returns to automatic detection.'
             ]);
 
             writePlainTextSection('Contrast Index (CI)', [
@@ -4073,6 +4872,7 @@
                 speedMethodText.push('When using the Standard EFS method, the tool finds which of your curves has a Delta D value closest to the ISO standard of 0.80. That curve is then assigned the target EFS and used as the reference for all others.');
             }
 
+            await exportProgress.set(0.62, 'Method documentation…');
             writePlainTextSection(`Effective Film Speed (${speedMethodSelect.options[speedMethodSelect.selectedIndex].text})`, speedMethodText);
 
             writePlainTextSection('Log Scene Luminance Range (LSLR)', [
@@ -4081,23 +4881,25 @@
             ]);
 
             writePlainTextSection('Tone Reproduction Quality (Q-Index)', [
-                'The Q-index uses a two-tier system based on Bayer, Simonds and Williams (1961) and Simonds (1963).',
+                'The headline quality number, Q (Simonds), is the genuine quality prediction of Simonds (1961): the departure of the actual reproduction curve from the optimum aim is sampled at 12 equally spaced log-luminance steps (darkest shadow to brightest highlight, exactly as in the original study), projected onto Simonds\' three characteristic vectors (Table I of the 1961 paper), and inserted into his scene-independent regression equation:',
+                '  Q = 100.0 - 3.54 y1^2 - 1.95 y2^2 - 5.10 y3^2 + 0.15 y1 y2 - 1.29 y1 y3 - 0.12 y2 y3',
+                'where y1 = density/contrast lift, y2 = shadow-vs-highlight tilt, y3 = S-shape curvature departure. The equation was derived from 170 prints of 4 scenes ranked by 30 experienced observers at the Kodak Research Laboratories.',
                 '',
-                'REFERENCE TEMPLATE:',
-                'The reference is a logistic S-curve that models the preferred tone reproduction. It provides about 1.15 times midtone gradient expansion with compressed highlight and shadow gradients, matching the perceptual preference described in the Simonds paper. The optimum curve uses a compressed density range (about 90 percent of the full range) so that it sits below the scene line, reflecting the finding that observers prefer prints that are about 10 percent brighter than a strict one-to-one reproduction.',
+                'PERCEPTUAL CALIBRATION:',
+                'Approximately 10 Q-units represent a quality change discerned and similarly ranked by at least 85 percent of observers (Simonds 1961, 1963). Approximately 5 Q-units represent the 50 percent detection threshold -- one just-noticeable difference of print quality (Bartleson, Jenneiahn and Woodbury 1963).',
+                '',
+                'VERBAL RATING:',
+                '  Excellent : Q >= 90 -- within one consensus step of optimum (up to 2 JND).',
+                '  Very good : 80-89 -- within two consensus steps (2-4 JND); comparable to printing one paper grade off optimum (Simonds 1963, Fig. 7).',
+                '  OK        : 60-79 -- clearly visible deviation (4-8 JND).',
+                '  Poor      : below 60 -- comparable to printing two paper grades off; obvious to essentially all observers.',
+                '',
+                'THE OPTIMUM AIM:',
+                'The aim is a logistic S-curve anchored per the preferred-reproduction literature: scene highlight at 0.04 above paper base (Holm 1994, Zone 9; the ISO 6846 LER convention) and scene shadow at 90 percent of paper Dmax (Holm 1994: Zone 1 = 1.9 on a 2.1 Dmax paper). Its midtone-to-average gradient ratio of 1.16 matches the preferred reproduction (midtone gradient 1.15, average 0.98 -- Holm 1994, after Jones and Nelson).',
                 'When the Interpolated to Target LER paper mode is active, the paper curve used in the tone reproduction is blended from two measured grades to match the target LER exactly.',
                 '',
-                'TIER 1 -- Q-Target: How close is the reproduction to the target aim?',
-                'The reference template is anchored to the known scene endpoints and paper density range. The actual reproduction curve is sampled at 30 points and compared directly to this fixed target. The Q-Target score is calculated from the normalized root-mean-square deviation between actual and target densities. A score of 100 means a perfect match. Q-Linear works the same way but compares against a straight line (scene-faithful reproduction) at full density range.',
-                '',
-                'TIER 2 -- BSW Decomposition: Why does it deviate?',
-                'Per the 1961 paper, the actual curve is fitted to the template using three free parameters that the algorithm optimizes:',
-                '  h -- Speed shift: horizontal placement along the log-luminance axis.',
-                '  c -- Contrast multiplier: slope relative to the template. A value of 1.0 means correct contrast.',
-                '  f -- Fog offset: vertical density shift. A value of 0.0 means no fog error.',
-                'The algorithm finds the best h by sweeping across a range of values in two passes (coarse then fine). At each h, the best c and f are found analytically using ordinary least-squares regression.',
-                'These values diagnose the source of deviation: h away from zero means a speed error, c away from one means a contrast error, f away from zero means a fog or offset error.',
-                'Q-Shape is derived from the leftover error after the free fit. It measures purely the shape abnormality of the curve, independent of its position. Approximately 10 units on the Q-scale represents a quality change discernible by 85 percent of observers (Simonds, 1963).'
+                'SECONDARY DIAGNOSTICS:',
+                'Q-Target and Q-Linear compare the reproduction against the aim and against a scene-faithful straight line by normalized RMS deviation. The BSW decomposition (Bayer, Simonds and Williams 1961) fits the curve with three free parameters -- h (speed shift), c (contrast multiplier), f (fog offset) -- by least squares; Q-Shape rates the leftover shape abnormality after that fit.'
             ]);
 
             // References section
@@ -4112,10 +4914,15 @@
                 "Nelson, C. N. (1960). Safety Factors in Camera Exposures. Photographic Science and Engineering, 4(1).",
                 "Jones, L. A., & Condit, H. R. (1941). The Brightness Scale of Exterior Scenes and the Computation of Correct Photographic Exposure. Journal of the Optical Society of America, 31.",
                 "Bayer, B. E., Simonds, J. L., & Williams, F. C. (1961). Description of D-Log E Curves by Specifically Chosen Parameters. Photographic Science and Engineering, 5(1), 35-40.",
+                "Simonds, J. L. (1961). A Quantitative Study of the Influence of Tone-Reproduction Factors on Picture Quality. Photographic Science and Engineering, 5(5), 270-277.",
+                "Bartleson, C. J., Jenneiahn, R. H., & Woodbury, W. W. (1963). Visual Contrast in Photographic Prints. The Journal of Photographic Science, 11(1), 35-41.",
+                "Holm, J. (1994). Exposure-Speed Relations and Tone Reproduction. IS&T's 47th Annual Conference/ICPS, 641-648.",
+                "Jones, L. A. (1942). The Theory of Tone Reproduction. In Mees, C. E. K., The Theory of the Photographic Process, Ch. XX. Macmillan.",
                 "Simonds, J. L. (1963). Factors Affecting the Quality of Black-and-White Reflexion Prints. The Journal of Photographic Science, 11.",
                 "Todd, H. N., & Zakia, R. D. (1964). A Review of Speed Methods. Photographic Science and Engineering, 8(5).",
                 "Connelly, D. (1968). Calibration Levels of Films and Exposure Devices. The Journal of Photographic Science, 16.",
                 "Mees, C. E. K. (1954). The Theory of the Photographic Process (Revised ed.). The Macmillan Company.",
+                "Acknowledgements: thanks to @spookyphoto (photrio.com) for excellent methodology suggestions — resistant data smoothing (Tukey 3RSSH), derivative-based curve analysis, and raw-plus-smoothed display are modelled on his practice.",
                 "This tool was made by René Böhmer. (Accessible under the the domain of www.analogworkshops.at) and is provided free of charge."
             ];
             
@@ -4126,9 +4933,10 @@
             document.body.appendChild(plotContainer);
             // Use the top-level polynomialRegression function (no need to redefine)
             const chartOptions = { responsive: false, animation: { duration: 0 }, devicePixelRatio: 2, scales: { x: { type: 'linear', grid: { color: '#e8e8ed', lineWidth: 0.75 }, border: { display: true, color: '#1d1d1f', width: 1 }, title: { display: true, font: {size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600'}, color: '#1d1d1f' }, ticks: { font: {size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace"}, color: '#424245' } }, y: { grid: { color: '#e8e8ed', lineWidth: 0.75 }, border: { display: true, color: '#1d1d1f', width: 1 }, title: { display: true, font: {size: 12, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600'}, color: '#1d1d1f' }, ticks: { font: {size: 10, family: "'SF Mono', ui-monospace, Menlo, monospace"}, color: '#424245' } } }, plugins: { legend: { display: false }, title: { display: true, font: {size: 14, family: "-apple-system, 'SF Pro Display', sans-serif", weight: '600'}, color: '#1d1d1f' } } };
-            const generateChart = async (canvasId, data, title, xLabel, yLabel) => {
-                if (data.length < 2) return null; const canvas = document.createElement('canvas'); canvas.id = canvasId; canvas.width = 400; canvas.height = 300; plotContainer.appendChild(canvas); chartOptions.scales.x.title.text = xLabel; chartOptions.scales.y.title.text = yLabel; chartOptions.plugins.title.text = title; const datasets = [{ type: 'scatter', data: data, backgroundColor: '#1d1d1f', borderColor: '#1d1d1f', radius: 2.5 }]; const regressionFn = polynomialRegression(data); if (regressionFn) { const trendlineData = []; const minX = Math.min(...data.map(p => p.x)); const maxX = Math.max(...data.map(p => p.x)); for (let x = minX; x <= maxX; x += (maxX - minX) / 20) { trendlineData.push({x: x, y: regressionFn(x)}); } datasets.push({ type: 'line', data: trendlineData, borderColor: '#8b2500', borderWidth: 1.5, tension: 0.1, pointRadius: 0, fill: false }); } const tmpChart = new Chart(canvas.getContext('2d'), { data: { datasets: datasets }, options: chartOptions }); await new Promise(resolve => setTimeout(resolve, 300)); const imgUrl = canvas.toDataURL('image/png', 1.0); tmpChart.destroy(); return imgUrl;
+            const generateChart = async (canvasId, data, title, xLabel, yLabel, fitFn) => {
+                if (data.length < 2) return null; const canvas = document.createElement('canvas'); canvas.id = canvasId; canvas.width = 400; canvas.height = 300; plotContainer.appendChild(canvas); chartOptions.scales.x.title.text = xLabel; chartOptions.scales.y.title.text = yLabel; chartOptions.plugins.title.text = title; const datasets = [{ type: 'scatter', data: data, backgroundColor: '#1d1d1f', borderColor: '#1d1d1f', radius: 2.5 }]; const regressionFn = fitFn !== undefined ? fitFn : polynomialRegression(data); if (regressionFn) { const trendlineData = []; const minX = Math.min(...data.map(p => p.x)); const maxX = Math.max(...data.map(p => p.x)); for (let x = minX; x <= maxX; x += (maxX - minX) / 20) { trendlineData.push({x: x, y: regressionFn(x)}); } datasets.push({ type: 'line', data: trendlineData, borderColor: '#8b2500', borderWidth: 1.5, tension: 0.1, pointRadius: 0, fill: false }); } const tmpChart = new Chart(canvas.getContext('2d'), { data: { datasets: datasets }, options: chartOptions }); await new Promise(resolve => setTimeout(resolve, 300)); const imgUrl = canvas.toDataURL('image/png', 1.0); tmpChart.destroy(); return imgUrl;
             };
+            await exportProgress.set(0.68, 'Analysis plots…');
             const plotData = curvesData; const ciTimeData = plotData.filter(c => !isNaN(c.ci) && !isNaN(c.time)).map(c => ({x: c.time, y: c.ci})).sort((a,b) => a.x - b.x); const sbrIsoData = plotData.filter(c => !isNaN(c.matchedSbr) && !isNaN(c.calculatedIso)).map(c => ({x: c.matchedSbr * 0.301, y: c.calculatedIso})).sort((a,b) => a.x - b.x); const isoCiData = plotData.filter(c => !isNaN(c.calculatedIso) && !isNaN(c.ci)).map(c => ({x: c.ci, y: c.calculatedIso})).sort((a,b) => a.x - b.x); const isoTimeData = plotData.filter(c => !isNaN(c.calculatedIso) && !isNaN(c.time)).map(c => ({x: c.time, y: c.calculatedIso})).sort((a,b) => a.x - b.x); const sbrCiData = plotData.filter(c => c.matchedSbr && !isNaN(c.ci)).map(c => ({x: c.ci, y: c.matchedSbr * 0.301})).sort((a,b) => a.x - b.x);
             if (ciTimeData.length > 1 || sbrIsoData.length > 1 || isoCiData.length > 1 || isoTimeData.length > 1 || sbrCiData.length > 1) {
                 doc.addPage(); finalY = 20; finalY = pdfSectionHeading('Analysis Plots', finalY);
@@ -4143,7 +4951,7 @@
                     doc.text(plotSubtitle, margin, finalY);
                     finalY += 5;
                 }
-                finalY += 2; const plotWidth = (contentWidth / 2) - 5; const plotHeight = plotWidth * 0.75; let currentX = margin; let rowMaxHeight = 0; const chart1 = await generateChart('ciTimeChart', ciTimeData, 'CI vs. Time', 'Time (min)', 'Contrast Index (CI)'); if (chart1) { doc.addImage(chart1, 'PNG', currentX, finalY, plotWidth, plotHeight); currentX += plotWidth + 10; rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } const chart2 = await generateChart('isoTimeChart', isoTimeData, 'EFS vs. Time', 'Time (min)', 'EFS'); if (chart2) { doc.addImage(chart2, 'PNG', currentX, finalY, plotWidth, plotHeight); rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } finalY += rowMaxHeight + 10; currentX = margin; rowMaxHeight = 0; const chart3 = await generateChart('sbrIsoChart', sbrIsoData, 'LSLR vs. EFS', 'LSLR', 'EFS'); if (chart3) { doc.addImage(chart3, 'PNG', currentX, finalY, plotWidth, plotHeight); currentX += plotWidth + 10; rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } const chart4 = await generateChart('isoCiChart', isoCiData, 'EFS vs. CI', 'Contrast Index (CI)', 'EFS'); if (chart4) { doc.addImage(chart4, 'PNG', currentX, finalY, plotWidth, plotHeight); rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } finalY += rowMaxHeight + 10; currentX = margin; rowMaxHeight = 0; const chart5 = await generateChart('sbrCiChart', sbrCiData, 'LSLR vs. CI', 'Contrast Index (CI)', 'LSLR'); if (chart5) { const centeredX = margin + (contentWidth - plotWidth) / 2; doc.addImage(chart5, 'PNG', centeredX, finalY, plotWidth, plotHeight); }
+                finalY += 2; const plotWidth = (contentWidth / 2) - 5; const plotHeight = plotWidth * 0.75; let currentX = margin; let rowMaxHeight = 0; const chart1 = await generateChart('ciTimeChart', ciTimeData, 'CI vs. Time', 'Time (min)', 'Contrast Index (CI)', saturatingRegression(ciTimeData) || polynomialRegression(ciTimeData)); if (chart1) { doc.addImage(chart1, 'PNG', currentX, finalY, plotWidth, plotHeight); currentX += plotWidth + 10; rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } const chart2 = await generateChart('isoTimeChart', isoTimeData, 'EFS vs. Time', 'Time (min)', 'EFS', saturatingRegression(isoTimeData, true) || polynomialRegression(isoTimeData)); if (chart2) { doc.addImage(chart2, 'PNG', currentX, finalY, plotWidth, plotHeight); rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } finalY += rowMaxHeight + 10; currentX = margin; rowMaxHeight = 0; const chart3 = await generateChart('sbrIsoChart', sbrIsoData, 'LSLR vs. EFS', 'LSLR', 'EFS'); if (chart3) { doc.addImage(chart3, 'PNG', currentX, finalY, plotWidth, plotHeight); currentX += plotWidth + 10; rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } const chart4 = await generateChart('isoCiChart', isoCiData, 'EFS vs. CI', 'Contrast Index (CI)', 'EFS'); if (chart4) { doc.addImage(chart4, 'PNG', currentX, finalY, plotWidth, plotHeight); rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } finalY += rowMaxHeight + 10; currentX = margin; rowMaxHeight = 0; const chart5 = await generateChart('sbrCiChart', sbrCiData, 'LSLR vs. CI', 'Contrast Index (CI)', 'LSLR'); if (chart5) { const centeredX = margin + (contentWidth - plotWidth) / 2; doc.addImage(chart5, 'PNG', centeredX, finalY, plotWidth, plotHeight); }
             }
             if (curvesData.length > 0) {
                 doc.addPage(); finalY = 20; finalY = pdfSectionHeading('Raw Density Data', finalY); finalY += 2; 
@@ -4192,6 +5000,7 @@
 
                 // Expand the Q1-Q4 info fold-downs for the capture; restored below
                 const collapsedTrInfo = Array.from(trPanel.querySelectorAll('.ti-lines.collapsed, .ti-toggle.collapsed'));
+                await exportProgress.set(0.85, 'Capturing tone reproduction diagram…');
                 collapsedTrInfo.forEach(el => el.classList.remove('collapsed'));
 
                 // Ensure TR charts are initialized
@@ -4240,7 +5049,19 @@
                             scale: 2,
                             backgroundColor: '#ffffff',
                             useCORS: true,
-                            logging: false
+                            logging: false,
+                            // html2canvas cannot render writing-mode: vertical-rl —
+                            // convert the side axis labels to plain rotated text.
+                            onclone: (clonedDoc) => {
+                                clonedDoc.querySelectorAll('.tr-side-label').forEach(el => {
+                                    const isRight = el.classList.contains('tr-side-right');
+                                    el.style.writingMode = 'horizontal-tb';
+                                    el.style.transformOrigin = 'center center';
+                                    el.style.transform = isRight
+                                        ? 'translate(calc(50% - 8px), -50%) rotate(90deg)'
+                                        : 'translate(calc(-50% + 8px), -50%) rotate(-90deg)';
+                                });
+                            }
                         });
                         const imgData = canvas.toDataURL('image/jpeg', 0.88);
 
@@ -4314,11 +5135,15 @@
                 doc.text(`${i} / ${totalPages}`, pageW / 2, pageH - 8, { align: 'center' });
             }
 
+            await exportProgress.set(0.97, 'Writing file…');
             doc.save('film-curve-analysis.pdf');
+            } finally { exportProgress.hide(); }
         };
 
         // --- PAPER CURVES PDF EXPORT ---
         const exportPaperPDF = async () => {
+            exportProgress.show('Exporting paper curves PDF');
+            try {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
             const pageW = doc.internal.pageSize.getWidth();
@@ -4368,10 +5193,20 @@
             const paperDil = document.getElementById('paperDilution').value;
             const paperTemp = document.getElementById('paperTemp').value;
 
+            // Shrink-to-fit title: step the font down until it fits the content
+            // width on at most two centered lines — long names must never clip.
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(18);
             doc.setTextColor(29, 29, 31);
-            doc.text(paperName, pageW / 2, 20, { align: 'center' });
+            let ptSize = 18, ptLines;
+            for (;;) {
+                doc.setFontSize(ptSize);
+                ptLines = doc.splitTextToSize(paperName, contentWidth);
+                if (ptLines.length <= (ptSize <= 13 ? 2 : 1) || ptSize <= 11) break;
+                ptSize -= 1;
+            }
+            ptLines = ptLines.slice(0, 2);
+            ptLines.forEach((ln, i) => doc.text(ln, pageW / 2, 20 + i * (ptSize * 0.45), { align: 'center' }));
+            const pTitleBottom = 20 + (ptLines.length - 1) * (ptSize * 0.45);
 
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8.5);
@@ -4379,7 +5214,7 @@
 
             const subtitleParts = [paperDev, paperDil, paperTemp].filter(s => s && s.trim());
             if (subtitleParts.length > 0) {
-                doc.text(subtitleParts.join(' · '), pageW / 2, 27, { align: 'center' });
+                doc.text(doc.splitTextToSize(subtitleParts.join(' · '), contentWidth)[0], pageW / 2, pTitleBottom + 7, { align: 'center' });
             }
 
             const docName = document.getElementById('docName').value;
@@ -4387,13 +5222,13 @@
             if (docName || docDate) {
                 const leftText = docName ? `Analyst: ${docName}` : '';
                 const rightText = docDate ? `Date: ${new Date(docDate).toLocaleString()}` : '';
-                if (leftText) doc.text(leftText, margin, 33);
-                if (rightText) doc.text(rightText, pageW - margin, 33, { align: 'right' });
+                if (leftText) doc.text(leftText, margin, pTitleBottom + 13);
+                if (rightText) doc.text(rightText, pageW - margin, pTitleBottom + 13, { align: 'right' });
             }
 
             doc.setDrawColor(29, 29, 31);
             doc.setLineWidth(0.3);
-            const ruleY = (docName || docDate) ? 36 : 31;
+            const ruleY = (docName || docDate) ? pTitleBottom + 16 : pTitleBottom + 11;
             doc.line(margin, ruleY, pageW - margin, ruleY);
             finalY = ruleY + 3;
 
@@ -4404,6 +5239,7 @@
                 paperChart.options.devicePixelRatio = 3;
                 paperChart.update('none');
                 const imgHeight = paperCanvas.height * contentWidth / paperCanvas.width;
+                await exportProgress.set(0.30, 'Rendering paper chart…');
                 doc.addImage(paperCanvas.toDataURL('image/png'), 'PNG', margin, finalY, contentWidth, imgHeight);
                 paperChart.options.devicePixelRatio = origDPR;
                 paperChart.update('none');
@@ -4563,7 +5399,9 @@
 
             const filename = [paperName, paperDev].filter(s => s && s.trim())
                 .join('_').replace(/[^a-zA-Z0-9_\-]+/g, '_').replace(/_+/g, '_') || 'paper_curves';
+            await exportProgress.set(0.95, 'Writing file…');
             doc.save(filename + '.pdf');
+            } finally { exportProgress.hide(); }
         };
 
         const exportToJSON = () => {
@@ -4595,7 +5433,12 @@
                     paperShowPoints: document.getElementById('paperShowPoints').checked,
                     paperNotes: document.getElementById('paperNotes').value,
                     trSceneLslr: document.getElementById('trSceneLslr').value,
+                    trFlareMode: document.getElementById('trFlareMode').value,
+                    trFlareSlider: document.getElementById('trFlareSlider').value,
+                    trPlacement: document.getElementById('trPlacement').value,
+                    trSubjectScale: document.getElementById('trSubjectScale').value,
                     trSpeedMethod: document.getElementById('trSpeedMethod').value,
+                    trFilmAnchor: document.getElementById('trFilmAnchor').value,
                     trPaperAnchor: document.getElementById('trPaperAnchor').value,
                     trAnchorPct: document.getElementById('trAnchorPct').value
                 },
@@ -4655,6 +5498,7 @@
                     showSpeedPoint: el.querySelector('.show-speedpoint').checked,
                     showCI: el.querySelector('.show-ci').checked,
                     showDX: el.querySelector('.show-dx').checked,
+                    showGamma: el.querySelector('.show-gamma')?.checked,
                     showIsoRef: el.querySelector('.show-iso-ref')?.checked
                 });
             });
@@ -4808,6 +5652,7 @@
             if (files.length < 2) { alert('Please select at least 2 JSON files to compare.'); event.target.value = ''; return; }
             if (files.length > 10) { alert('Maximum 10 files can be compared.'); event.target.value = ''; return; }
 
+            exportProgress.show('Building film comparison PDF');
             const compareColors = ['#8b2500', '#00457c', '#248a3d', '#6b3fa0', '#b25000', '#1d1d1f', '#0d7377', '#a83279', '#4a6741', '#64748b'];
 
             // Read all JSON files
@@ -4867,7 +5712,8 @@
                     const ci = ciResult ? ciResult.ci : null;
                     const matchedSbr = calculateSBR(ci, targetLer, flareLogH, flareModel);
                     const dxParams = calculateDeltaXParams(points);
-                    const gamma = calculateGamma(points, parseFloat(c.gammaStart) || 0.3, parseFloat(c.gammaEnd) || 1.8);
+                    const gammaResult = resolveGamma(points, c.gammaStart, c.gammaEnd);
+                    const gamma = gammaResult ? gammaResult.gamma : null;
 
                     return { name: c.name, time, points, ci, matchedSbr, dxParams, speedPoint: null, gamma, calculatedIso: null, isReference: false };
                 }).filter(Boolean);
@@ -5189,7 +6035,10 @@
             const plotWidth = (contentWidth / 2) - 4;
             const plotHeight = plotWidth * 0.65;
             const chartImages = [];
+            let cmpChartIdx = 0;
             for (const def of chartDefs) {
+                await exportProgress.set(0.15 + 0.75 * (cmpChartIdx++ / chartDefs.length),
+                    `Rendering chart ${cmpChartIdx} of ${chartDefs.length}…`);
                 const img = await generateCompareChart(def);
                 if (img) chartImages.push(img);
             }
@@ -5426,6 +6275,7 @@
                 // Clean up any off-screen plot container left behind by the error
                 document.querySelectorAll('body > div[style*="-9999px"]').forEach(el => el.remove());
             } finally {
+                exportProgress.hide();
                 event.target.value = '';
             }
         };
@@ -5621,7 +6471,7 @@
                         </div>
                         <div class="flex items-center gap-5 text-sm">
                             <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="paper-show accent-[#1d1d1f]" ${isShow ? 'checked' : ''}> Show</label>
-                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="paper-smooth accent-[#1d1d1f]" ${info.smooth ? 'checked' : ''}> Smooth</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer" title="Tukey 3RSSH resistant smoothing of the raw densities — removes outlier readings without smearing neighbours."><input type="checkbox" class="paper-smooth accent-[#1d1d1f]" ${info.smooth === false ? '' : 'checked'}> Smooth</label>
                             <label class="flex items-center gap-1.5 cursor-pointer" title="Use this grade in Tone Reproduction Q3"><input type="radio" name="paperForTR" class="paper-tr-radio accent-[#1d1d1f]" value="${pcId}" ${isForTR ? 'checked' : ''}> Use for TR</label>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
@@ -5723,7 +6573,9 @@
                 if (densities.length < 3) return;
 
                 const shouldSmooth = g.querySelector('.paper-smooth')?.checked || false;
+                let rawDensities = null; // pre-smoothing readings, kept for display
                 if (shouldSmooth) {
+                    rawDensities = densities.slice();
                     densities = smoothData(densities);
                 }
 
@@ -5743,6 +6595,12 @@
                 const points = [];
                 for (let i = 0; i < densities.length; i++) points.push({ d: xVals[i], pd: densities[i] });
                 points.sort((a, b) => a.d - b.d);
+                let rawPts = null;
+                if (rawDensities) {
+                    rawPts = [];
+                    for (let i = 0; i < rawDensities.length; i++) rawPts.push({ d: xVals[i], pd: rawDensities[i] });
+                    rawPts.sort((a, b) => a.d - b.d);
+                }
 
                 // Paper parameters
                 const dmax = Math.max(...points.map(p => p.pd));
@@ -5759,7 +6617,7 @@
                 // LER = d_T - d_S (log exposure range in step density units)
                 const ler = (dS !== null && dT !== null) ? Math.abs(dT - dS) : null;
 
-                paperCurvesData.push({ id, name, color, show, points, forTR, dmax, dmin, dS, dT, ler, c, m, y });
+                paperCurvesData.push({ id, name, color, show, points, rawPoints: rawPts, forTR, dmax, dmin, dS, dT, ler, c, m, y });
 
                 if (forTR) {
                     const usePaperEl = document.getElementById('trUseMeasuredPaper');
@@ -5988,6 +6846,17 @@
                         backgroundColor: curve.color, borderColor: curve.color,
                         radius: 3.5, hoverRadius: 5, pointStyle: 'circle', order: 1
                     });
+                    // Raw (pre-smoothing) readings as faint hollow markers — keeps
+                    // the smoother's effect visible, outliers stand out from the line.
+                    if (curve.rawPoints) {
+                        datasets.push({
+                            label: curve.name + ' (raw)', type: 'scatter',
+                            data: curve.rawPoints.map(p => ({ x: p.d, y: p.pd })),
+                            backgroundColor: 'transparent',
+                            borderColor: hexToRgba(curve.color, 0.4), borderWidth: 1.25,
+                            radius: 2.5, hoverRadius: 4, pointStyle: 'circle', order: 3
+                        });
+                    }
                 }
                 // S and T markers
                 const stPoints = [];
@@ -6018,7 +6887,14 @@
                         legend: {
                             display: visibleCurves.length > 1,
                             labels: {
-                                filter: item => !item.text.includes('(S/T)') && (showPts ? !item.text.includes('(line)') : item.text.includes('(line)')),
+                                // Filter on the ORIGINAL dataset label: generateLabels runs
+                                // first and strips " (line)", so matching on item.text would
+                                // let both line and point datasets through (duplicate entries).
+                                filter: (item, data) => {
+                                    const lbl = data.datasets[item.datasetIndex]?.label || '';
+                                    if (lbl.includes('(S/T)') || lbl.includes('(raw)')) return false;
+                                    return showPts ? !lbl.includes('(line)') : lbl.includes('(line)');
+                                },
                                 generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart).map(l => {
                                     l.text = l.text.replace(' (line)', '');
                                     return l;
@@ -6156,8 +7032,25 @@
                     if (data.globals.trSceneLslr) {
                         document.getElementById('trSceneLslr').value = data.globals.trSceneLslr;
                     }
+                    if (data.globals.trPlacement) {
+                        document.getElementById('trPlacement').value = data.globals.trPlacement;
+                    }
+                    if (data.globals.trFlareMode) {
+                        document.getElementById('trFlareMode').value = data.globals.trFlareMode;
+                        if (data.globals.trFlareSlider !== undefined) document.getElementById('trFlareSlider').value = data.globals.trFlareSlider;
+                        const custom = data.globals.trFlareMode === 'custom';
+                        document.getElementById('trFlareSlider').disabled = !custom;
+                        document.getElementById('trFlareSliderRow').classList.toggle('opacity-50', !custom);
+                        document.getElementById('trFlareVal').textContent = parseFloat(document.getElementById('trFlareSlider').value).toFixed(2);
+                    }
+                    if (data.globals.trSubjectScale) {
+                        document.getElementById('trSubjectScale').value = data.globals.trSubjectScale;
+                    }
                     if (data.globals.trSpeedMethod) {
                         document.getElementById('trSpeedMethod').value = data.globals.trSpeedMethod;
+                    }
+                    if (data.globals.trFilmAnchor) {
+                        document.getElementById('trFilmAnchor').value = data.globals.trFilmAnchor;
                     }
                     if (data.globals.trPaperAnchor) {
                         document.getElementById('trPaperAnchor').value = data.globals.trPaperAnchor;
@@ -6253,128 +7146,189 @@
             id: 'curveVisualizers',
             afterDraw: (chart) => {
                 const ctx = chart.ctx;
+                const area = chart.chartArea;
                 const isStandardIsoMode = document.querySelector('input[name="isoMethod"]:checked').value === 'standard';
 
-                chart.data.datasets.forEach((dataset) => {
+                // --- shared helpers: pill badges, dimension lines, halo markers ---
+                const drawBadge = (text, cx, cy, color, align = 'center') => {
+                    ctx.save();
+                    ctx.font = "600 10px -apple-system, 'SF Pro Text', sans-serif";
+                    const padX = 6, h = 17;
+                    const w = ctx.measureText(text).width + padX * 2;
+                    let x = align === 'left' ? cx : (align === 'right' ? cx - w : cx - w / 2);
+                    let y = cy - h / 2;
+                    x = Math.max(area.left + 2, Math.min(x, area.right - w - 2));
+                    y = Math.max(area.top + 2, Math.min(y, area.bottom - h - 2));
+                    ctx.shadowColor = 'rgba(0,0,0,0.12)';
+                    ctx.shadowBlur = 4;
+                    ctx.shadowOffsetY = 1;
+                    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, w, h, h / 2);
+                    ctx.fill();
+                    ctx.shadowColor = 'transparent';
+                    ctx.strokeStyle = hexToRgba(color, 0.35);
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.fillStyle = color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(text, x + w / 2, y + h / 2 + 0.5);
+                    ctx.restore();
+                };
+                const arrowHead = (x, y, angle, color, size = 5) => {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(angle);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-size, -size * 0.55);
+                    ctx.lineTo(-size, size * 0.55);
+                    ctx.closePath();
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.restore();
+                };
+                // Technical dimension line: arrowheads at both ends + small end ticks
+                const dimLine = (x1, y1, x2, y2, color) => {
+                    ctx.save();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1.25;
+                    ctx.setLineDash([]);
+                    const ang = Math.atan2(y2 - y1, x2 - x1);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    // end ticks perpendicular to the line
+                    const tx = Math.cos(ang + Math.PI / 2) * 4, ty = Math.sin(ang + Math.PI / 2) * 4;
+                    ctx.beginPath();
+                    ctx.moveTo(x1 - tx, y1 - ty); ctx.lineTo(x1 + tx, y1 + ty);
+                    ctx.moveTo(x2 - tx, y2 - ty); ctx.lineTo(x2 + tx, y2 + ty);
+                    ctx.stroke();
+                    arrowHead(x1, y1, ang + Math.PI, color);
+                    arrowHead(x2, y2, ang, color);
+                    ctx.restore();
+                };
+                // Marker with a white halo so it stays crisp on top of the curve
+                const haloMarker = (x, y, color, shape = 'circle', r = 4.5) => {
+                    ctx.save();
+                    ctx.setLineDash([]);
+                    const path = () => {
+                        ctx.beginPath();
+                        if (shape === 'diamond') {
+                            ctx.moveTo(x, y - r - 1);
+                            ctx.lineTo(x + r + 1, y);
+                            ctx.lineTo(x, y + r + 1);
+                            ctx.lineTo(x - r - 1, y);
+                            ctx.closePath();
+                        } else {
+                            ctx.arc(x, y, r, 0, Math.PI * 2);
+                        }
+                    };
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 4;
+                    path();
+                    ctx.stroke();
+                    ctx.fillStyle = '#ffffff';
+                    path();
+                    ctx.fill();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    path();
+                    ctx.stroke();
+                    ctx.restore();
+                };
+
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
                     const curve = curvesData.find(c => c.id === dataset.curveId);
                     if (!curve) return;
+                    // A curve hidden via the legend must not leave its CI/ΔX overlays behind
+                    if (!chart.isDatasetVisible(datasetIndex)) return;
                     const getPixel = (point) => ({ x: chart.scales.x.getPixelForValue(point.x), y: chart.scales.y.getPixelForValue(point.y) });
 
                     if (curve.isReference && isStandardIsoMode && curve.showIsoRef) {
-                        const { hm, hn } = curve.dxParams;
+                        const { hm, hn, deltaD } = curve.dxParams;
                         if (!hm || !hn) return;
                         const hmPx = getPixel(hm);
                         const hnPx = getPixel(hn);
+                        const refColor = '#16a34a';
                         ctx.save();
-                        const refColor = '#16a34a'; 
-                        ctx.strokeStyle = refColor; 
-                        ctx.lineWidth = 2;
-                        ctx.setLineDash([4, 4]); // Dotted line
-                        ctx.beginPath(); 
-                        ctx.moveTo(hmPx.x, hmPx.y); 
-                        ctx.lineTo(hnPx.x, hnPx.y); 
-                        ctx.lineTo(hmPx.x, hnPx.y); 
-                        ctx.closePath(); 
+                        // Soft fill of the ISO triangle
+                        ctx.beginPath();
+                        ctx.moveTo(hmPx.x, hmPx.y);
+                        ctx.lineTo(hnPx.x, hnPx.y);
+                        ctx.lineTo(hmPx.x, hnPx.y);
+                        ctx.closePath();
+                        ctx.fillStyle = hexToRgba(refColor, 0.07);
+                        ctx.fill();
+                        ctx.strokeStyle = refColor;
+                        ctx.lineWidth = 1.5;
+                        ctx.setLineDash([5, 4]);
                         ctx.stroke();
                         ctx.restore();
+                        haloMarker(hmPx.x, hmPx.y, refColor);
+                        drawBadge(`EFS Ref · ΔD = ${deltaD !== null ? deltaD.toFixed(2) : '—'}`, (hmPx.x + hnPx.x) / 2 - 10, (hmPx.y + hnPx.y) / 2 - 12, refColor);
                     } else if (curve.showDx && curve.dxParams && curve.dxParams.hm) {
-                         const { hm, hn, deltaD, deltaX, hfg } = curve.dxParams; 
-                         if (!hm || !hn || !hfg) return; 
-                         const hmPx = getPixel(hm); 
-                         const hnPx = getPixel(hn); 
-                         const hfgPx = getPixel(hfg); 
+                         const { hm, hn, deltaD, deltaX, hfg } = curve.dxParams;
+                         if (!hm || !hn || !hfg) return;
+                         const hmPx = getPixel(hm);
+                         const hnPx = getPixel(hn);
+                         const hfgPx = getPixel(hfg);
 
                          ctx.save();
-                         ctx.font = "600 10px -apple-system, 'SF Pro Text', sans-serif";
 
-                         // --- Step 1: Mark the Fixed Density point (Hm) on the curve ---
-                         // Open circle marker at 0.10 above B+F
-                         ctx.beginPath();
-                         ctx.arc(hmPx.x, hmPx.y, 5, 0, Math.PI * 2);
-                         ctx.strokeStyle = '#d70015';
-                         ctx.lineWidth = 1.5;
-                         ctx.setLineDash([]);
-                         ctx.stroke();
-                         // Label
-                         ctx.fillStyle = '#d70015';
-                         ctx.textAlign = 'left';
-                         ctx.fillText('Hm (D=B+F+0.10)', hmPx.x + 8, hmPx.y - 6);
-
-                         // --- Step 2: Measurement window — the ΔD triangle ---
-                         ctx.strokeStyle = '#424245';
-                         ctx.fillStyle = '#424245';
-                         ctx.lineWidth = 1;
-                         ctx.setLineDash([3, 3]);
-
-                         // Horizontal line: Hm → Hn (1.30 log H)
+                         // --- Measurement window: soft-filled ΔD triangle with dashed guides ---
                          ctx.beginPath();
                          ctx.moveTo(hmPx.x, hmPx.y);
                          ctx.lineTo(hnPx.x, hmPx.y);
-                         ctx.stroke();
-                         // Label centered above
-                         ctx.textAlign = 'center';
-                         ctx.fillText('Δlog H = 1.30', (hmPx.x + hnPx.x) / 2, hmPx.y - 6);
+                         ctx.lineTo(hnPx.x, hnPx.y);
+                         ctx.closePath();
+                         ctx.fillStyle = 'rgba(66,66,69,0.05)';
+                         ctx.fill();
 
-                         // Vertical line: up from baseline to Hn on curve
+                         ctx.strokeStyle = 'rgba(66,66,69,0.5)';
+                         ctx.lineWidth = 1;
+                         ctx.setLineDash([4, 3]);
                          ctx.beginPath();
-                         ctx.moveTo(hnPx.x, hmPx.y);
+                         ctx.moveTo(hmPx.x, hmPx.y);
+                         ctx.lineTo(hnPx.x, hmPx.y);
                          ctx.lineTo(hnPx.x, hnPx.y);
                          ctx.stroke();
-                         // ΔD label rotated along vertical
-                         ctx.save();
-                         ctx.translate(hnPx.x + 12, (hmPx.y + hnPx.y) / 2);
-                         ctx.rotate(-Math.PI / 2);
-                         ctx.textAlign = 'center';
-                         ctx.fillText(`ΔD = ${deltaD.toFixed(2)}`, 0, 0);
-                         ctx.restore();
-
-                         // Small tick at Hn on curve
                          ctx.setLineDash([]);
+
+                         // Baseline span label
+                         drawBadge('Δlog H = 1.30', (hmPx.x + hnPx.x) / 2, hmPx.y - 12, '#424245');
+                         // ΔD rise label beside the vertical leg
+                         drawBadge(`ΔD = ${deltaD.toFixed(2)}`, hnPx.x + 8, (hmPx.y + hnPx.y) / 2, '#424245', 'left');
+
+                         // Small dot where the window meets the curve at Hn
                          ctx.beginPath();
                          ctx.arc(hnPx.x, hnPx.y, 2.5, 0, Math.PI * 2);
                          ctx.fillStyle = '#424245';
                          ctx.fill();
 
-                         // --- Step 3: ΔX shift arrow from Hm to Hfg ---
-                         const arrowY = hmPx.y + 18;
-                         ctx.strokeStyle = '#248a3d';
-                         ctx.fillStyle = '#248a3d';
-                         ctx.lineWidth = 1.5;
+                         // --- Hm: the fixed density point (B+F + 0.10) ---
+                         haloMarker(hmPx.x, hmPx.y, '#d70015');
+                         drawBadge('Hm · B+F +0.10', hmPx.x + 12, hmPx.y - 17, '#d70015', 'left');
+
+                         // --- ΔX shift: dimension line below the baseline, connector up to Hfg ---
+                         const arrowY = hmPx.y + 20;
+                         dimLine(hfgPx.x, arrowY, hmPx.x, arrowY, '#248a3d');
+                         drawBadge(`ΔX = ${deltaX.toFixed(2)}`, (hmPx.x + hfgPx.x) / 2, arrowY + 14, '#248a3d');
+                         // dotted connector from the dimension line up to the speed point
+                         ctx.strokeStyle = hexToRgba('#248a3d', 0.45);
+                         ctx.lineWidth = 1;
+                         ctx.setLineDash([2, 3]);
+                         ctx.beginPath();
+                         ctx.moveTo(hfgPx.x, arrowY - 4);
+                         ctx.lineTo(hfgPx.x, hfgPx.y + 7);
+                         ctx.stroke();
                          ctx.setLineDash([]);
 
-                         // Horizontal line
-                         ctx.beginPath();
-                         ctx.moveTo(hmPx.x, arrowY);
-                         ctx.lineTo(hfgPx.x, arrowY);
-                         ctx.stroke();
-
-                         // Arrowhead pointing left at hfg
-                         ctx.beginPath();
-                         ctx.moveTo(hfgPx.x, arrowY);
-                         ctx.lineTo(hfgPx.x + 6, arrowY - 3);
-                         ctx.lineTo(hfgPx.x + 6, arrowY + 3);
-                         ctx.closePath();
-                         ctx.fill();
-
-                         // ΔX label above arrow
-                         ctx.font = "600 10px -apple-system, 'SF Pro Text', sans-serif";
-                         ctx.textAlign = 'center';
-                         ctx.fillText(`ΔX = ${deltaX.toFixed(2)}`, (hmPx.x + hfgPx.x) / 2, arrowY - 6);
-
-                         // --- Step 4: Mark the corrected speed point (Hfg) on the curve ---
-                         // Filled diamond marker
-                         const dx = 5;
-                         ctx.beginPath();
-                         ctx.moveTo(hfgPx.x, hfgPx.y - dx);
-                         ctx.lineTo(hfgPx.x + dx, hfgPx.y);
-                         ctx.lineTo(hfgPx.x, hfgPx.y + dx);
-                         ctx.lineTo(hfgPx.x - dx, hfgPx.y);
-                         ctx.closePath();
-                         ctx.fillStyle = '#248a3d';
-                         ctx.fill();
-                         // Label
-                         ctx.textAlign = 'right';
-                         ctx.fillText('Speed Point (Hfg)', hfgPx.x - 8, hfgPx.y - 6);
+                         // --- Hfg: the Delta-X speed point ---
+                         haloMarker(hfgPx.x, hfgPx.y, '#248a3d', 'diamond');
+                         drawBadge('Speed Point Hfg', hfgPx.x - 10, hfgPx.y - 14, '#248a3d', 'right');
 
                          ctx.restore();
                     }
@@ -6383,43 +7337,63 @@
                         const { logHCenter, pLow, pHigh } = curve.ciParams;
                         const dMin = curve.points[0].y;
                         const centerPx = { x: chart.scales.x.getPixelForValue(logHCenter), y: chart.scales.y.getPixelForValue(dMin) };
-                        const pLowPx = getPixel(pLow); 
+                        const pLowPx = getPixel(pLow);
                         const pHighPx = getPixel(pHigh);
-                        
+
                         const radiusX_small = chart.scales.x.getPixelForValue(logHCenter + 0.2) - centerPx.x;
                         const radiusY_small = centerPx.y - chart.scales.y.getPixelForValue(dMin + 0.2);
                         const radiusX_large = chart.scales.x.getPixelForValue(logHCenter + 2.2) - centerPx.x;
                         const radiusY_large = centerPx.y - chart.scales.y.getPixelForValue(dMin + 2.2);
 
                         ctx.save();
-                        ctx.strokeStyle = hexToRgba(curve.color, 0.7); 
-                        ctx.lineWidth = 1; 
-                        ctx.setLineDash([3, 3]);
 
-                        // Draw the arcs as ellipses
+                        // Short arc segments around the actual intersections only —
+                        // the full quarter-circle swept the whole chart and plunged
+                        // vertically past the data ("folds down" artifact).
+                        const arcSegment = (rx, ry, pPx, halfSpan) => {
+                            const t = Math.atan2((pPx.y - centerPx.y) / ry, (pPx.x - centerPx.x) / rx);
+                            ctx.beginPath();
+                            ctx.ellipse(centerPx.x, centerPx.y, rx, ry, 0, t - halfSpan, t + halfSpan);
+                            ctx.stroke();
+                        };
+                        ctx.strokeStyle = hexToRgba(curve.color, 0.55);
+                        ctx.lineWidth = 1;
+                        ctx.setLineDash([4, 3]);
+                        arcSegment(radiusX_small, radiusY_small, pLowPx, 0.45);
+                        arcSegment(radiusX_large, radiusY_large, pHighPx, 0.12);
+
+                        // Radii from the arc centre to both intersections
+                        ctx.strokeStyle = hexToRgba(curve.color, 0.3);
                         ctx.beginPath();
-                        ctx.ellipse(centerPx.x, centerPx.y, radiusX_small, radiusY_small, 0, Math.PI * 1.5, Math.PI * 2);
-                        ctx.stroke();
-                        ctx.beginPath();
-                        ctx.ellipse(centerPx.x, centerPx.y, radiusX_large, radiusY_large, 0, Math.PI * 1.5, Math.PI * 2);
-                        ctx.stroke();
-                        
-                        // Draw the radii lines
-                        ctx.beginPath(); 
-                        ctx.moveTo(centerPx.x, centerPx.y); 
+                        ctx.moveTo(centerPx.x, centerPx.y);
                         ctx.lineTo(pLowPx.x, pLowPx.y);
-                        ctx.moveTo(centerPx.x, centerPx.y); 
-                        ctx.lineTo(pHighPx.x, pHighPx.y); 
+                        ctx.moveTo(centerPx.x, centerPx.y);
+                        ctx.lineTo(pHighPx.x, pHighPx.y);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Arc centre cross
+                        ctx.strokeStyle = hexToRgba(curve.color, 0.7);
+                        ctx.lineWidth = 1.25;
+                        ctx.beginPath();
+                        ctx.moveTo(centerPx.x - 4, centerPx.y); ctx.lineTo(centerPx.x + 4, centerPx.y);
+                        ctx.moveTo(centerPx.x, centerPx.y - 4); ctx.lineTo(centerPx.x, centerPx.y + 4);
                         ctx.stroke();
 
-                        // Draw the main CI line
-                        ctx.lineWidth = 2; 
-                        ctx.setLineDash([]);
-                        ctx.beginPath(); 
-                        ctx.moveTo(pLowPx.x, pLowPx.y); 
-                        ctx.lineTo(pHighPx.x, pHighPx.y); 
+                        // The CI chord itself
+                        ctx.strokeStyle = curve.color;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(pLowPx.x, pLowPx.y);
+                        ctx.lineTo(pHighPx.x, pHighPx.y);
                         ctx.stroke();
                         ctx.restore();
+
+                        haloMarker(pLowPx.x, pLowPx.y, curve.color, 'circle', 3.5);
+                        haloMarker(pHighPx.x, pHighPx.y, curve.color, 'circle', 3.5);
+                        if (curve.ci) {
+                            drawBadge(`CI = ${curve.ci.toFixed(2)}`, (pLowPx.x + pHighPx.x) / 2 - 14, (pLowPx.y + pHighPx.y) / 2 - 14, curve.color);
+                        }
                     }
                 });
             }
@@ -6454,13 +7428,17 @@
                         if (!d || !d.label) return;
                         const px = point.x, py = point.y;
 
-                        // Draw dot
+                        // Draw the endpoint dot only — the static value boxes are replaced
+                        // by the live hover trace, which reads all four curves on demand.
                         ctx.save();
                         ctx.beginPath();
-                        ctx.arc(px, py, 4, 0, Math.PI * 2);
+                        ctx.arc(px, py, 3.5, 0, Math.PI * 2);
                         ctx.fillStyle = '#1d1d1f';
                         ctx.fill();
+                        ctx.restore();
+                        return;
 
+                        // (legacy static label rendering below — intentionally unreachable)
                         // Measure label
                         ctx.font = "bold 9px -apple-system, 'SF Pro Text', sans-serif";
                         const textW = ctx.measureText(d.label).width;
@@ -6590,15 +7568,20 @@
                     ctx.restore();
                 }
                 if (zoneData) {
-                    const { shadowR, numZones } = zoneData;
+                    const { shadowR, numZones, shadowZone = 1, mode = 'zone' } = zoneData;
                     const xScale = chart.scales.x;
                     const stripH = 18;
                     const stripY = area.top;
 
                     ctx.save();
                     for (let z = 0; z < numZones; z++) {
-                        const rLeft = shadowR - (z - 1.5) * 0.301;
-                        const rRight = shadowR - (z - 0.5) * 0.301;
+                        // Zone mode: bands anchored so the placed shadow zone sits at shadowR.
+                        // Reflectance mode: bands anchored at the highlight (RD 0), scene-intrinsic.
+                        const center = mode === 'zone'
+                            ? shadowR - (z - shadowZone) * 0.301
+                            : z * 0.301;
+                        const rLeft = center + 0.1505;
+                        const rRight = center - 0.1505;
 
                         const pxLeft = xScale.getPixelForValue(rLeft);
                         const pxRight = xScale.getPixelForValue(rRight);
@@ -6615,8 +7598,14 @@
                             ctx.fillStyle = 'rgba(0,0,0,0.45)';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
-                            const roman = ['0','I','II','III','IV','V','VI','VII','VIII','IX','X'][z] || z.toString();
-                            ctx.fillText(roman, cx, stripY + stripH / 2);
+                            let stripLabel;
+                            if (mode === 'zone') {
+                                stripLabel = ['0','I','II','III','IV','V','VI','VII','VIII','IX','X'][z] || z.toString();
+                            } else {
+                                const pct = 100 / Math.pow(2, z);
+                                stripLabel = pct >= 10 ? pct.toFixed(0) + '%' : pct.toFixed(1) + '%';
+                            }
+                            ctx.fillText(stripLabel, cx, stripY + stripH / 2);
                         }
                     }
                     ctx.strokeStyle = 'rgba(0,0,0,0.15)';
@@ -6634,9 +7623,136 @@
 
         let trChartQ1 = null, trChartQ2 = null, trChartQ3 = null, trChartQ4 = null;
         let measuredPaperData = null;        // Parsed measured paper curve: [{d, pd}] sorted by d ascending
+        let trAnchorExpStops = 0;            // Film-exposure offset (stops) the paper anchor was last applied at
         let interpolatedPaperLabel = '';      // Display label for interpolated curve info
         let interpolatedPaperLer = null;      // Actual LER of the interpolated/selected paper curve
         let trInitialized = false;
+        let trHoverCtx = null;               // Captured closures/constants for the live hover trace
+        let trHoverActiveR = null;           // Scene reflectance currently traced by the mouse (null = none)
+
+        // Draw the live four-quadrant trace for scene reflectance r onto the overlay
+        // canvas that spans the grid. Walks scene → logH → neg density → print density
+        // and lights up the corresponding point on all four curves, with a readout box.
+        const renderTrHoverTrace = (r) => {
+            const overlay = document.getElementById('trHoverOverlay');
+            const wrapper = overlay ? overlay.parentElement : null;
+            if (!overlay || !wrapper || !trHoverCtx || !trChartQ1) return;
+            const ctxH = trHoverCtx;
+
+            // Clamp r to the scene range
+            r = Math.max(ctxH.highlightReflectance, Math.min(ctxH.shadowReflectance, r));
+
+            // Walk the chain
+            const lh = ctxH.calcQ1Y(r);
+            const nd = trInterpolate(lh, 'y', 'x', ctxH.q2Points, true);
+            if (nd === null) return;
+            const pd = ctxH.getPrintDensity(nd);
+            const idealY = ctxH.sceneLineY ? ctxH.sceneLineY(r) : null;
+
+            // Size the overlay backing store to match its CSS box (retina-aware)
+            const wRect = wrapper.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            if (overlay.width !== Math.round(wRect.width * dpr) || overlay.height !== Math.round(wRect.height * dpr)) {
+                overlay.width = Math.round(wRect.width * dpr);
+                overlay.height = Math.round(wRect.height * dpr);
+            }
+            const g = overlay.getContext('2d');
+            g.setTransform(dpr, 0, 0, dpr, 0, 0);
+            g.clearRect(0, 0, wRect.width, wRect.height);
+
+            // Map a data point in a given chart to overlay (wrapper) pixel coords
+            const toOverlay = (chart, xVal, yVal) => {
+                const cRect = chart.canvas.getBoundingClientRect();
+                return {
+                    x: (cRect.left - wRect.left) + chart.scales.x.getPixelForValue(xVal),
+                    y: (cRect.top - wRect.top) + chart.scales.y.getPixelForValue(yVal)
+                };
+            };
+            const accent = '#0a84ff';
+
+            g.save();
+            g.strokeStyle = accent;
+            g.fillStyle = accent;
+            g.lineWidth = 1.25;
+            g.setLineDash([4, 3]);
+
+            const seg = (chart, x1, y1, x2, y2) => {
+                const a = toOverlay(chart, x1, y1), b = toOverlay(chart, x2, y2);
+                g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke();
+            };
+            const dot = (chart, xVal, yVal) => {
+                const pt = toOverlay(chart, xVal, yVal);
+                g.setLineDash([]);
+                g.beginPath(); g.arc(pt.x, pt.y, 3.5, 0, Math.PI * 2);
+                g.fillStyle = '#fff'; g.fill();
+                g.lineWidth = 2; g.strokeStyle = accent; g.stroke();
+                g.setLineDash([4, 3]); g.lineWidth = 1.25;
+                return pt;
+            };
+
+            const sceneMax = ctxH.sceneMax, axisLogHMax = ctxH.axisLogHMax;
+            // Q1 (BR): drop from top → camera curve → across to right edge
+            seg(trChartQ1, r, axisLogHMax, r, lh);
+            seg(trChartQ1, r, lh, sceneMax, lh);
+            // Q2 (BL): from right edge → film curve → up to top edge
+            seg(trChartQ2, 0, lh, nd, lh);
+            seg(trChartQ2, nd, lh, nd, axisLogHMax);
+            // Q3 (TL): from bottom edge → paper curve → across to left edge
+            seg(trChartQ3, nd, 0, nd, pd);
+            seg(trChartQ3, nd, pd, 0, pd);
+            // Q4 (TR): from print density across to reproduction point → down to axis
+            seg(trChartQ4, sceneMax, pd, r, pd);
+            seg(trChartQ4, r, pd, r, 0);
+
+            const p1 = dot(trChartQ1, r, lh);
+            dot(trChartQ2, nd, lh);
+            dot(trChartQ3, nd, pd);
+            const p4 = dot(trChartQ4, r, pd);
+            g.restore();
+
+            // Readout box near the Q4 reproduction dot
+            const gradTxt = (ctxH.sceneShadowTarget !== undefined && idealY !== null)
+                ? null : null;
+            const lines = [
+                ['Scene', r.toFixed(2)],
+                ['log H', lh.toFixed(2)],
+                ['Neg D', nd.toFixed(2)],
+                ['Print D', pd.toFixed(2)]
+            ];
+            g.save();
+            g.font = "11px 'SF Mono', ui-monospace, Menlo, monospace";
+            const boxW = 98, lineH = 15, boxH = lines.length * lineH + 10;
+            let bx = p4.x + 12, by = p4.y - boxH - 8;
+            if (bx + boxW > wRect.width - 2) bx = p4.x - boxW - 12;
+            if (bx < 2) bx = 2;
+            if (by < 2) by = p4.y + 12;
+            if (by + boxH > wRect.height - 2) by = wRect.height - boxH - 2;
+            g.fillStyle = 'rgba(255,255,255,0.95)';
+            g.strokeStyle = 'rgba(10,132,255,0.4)';
+            g.lineWidth = 1;
+            g.beginPath(); g.roundRect(bx, by, boxW, boxH, 7); g.fill(); g.stroke();
+            g.textBaseline = 'middle';
+            lines.forEach((ln, i) => {
+                const yy = by + 10 + i * lineH + 3;
+                g.fillStyle = '#6e6e73';
+                g.textAlign = 'left';
+                g.fillText(ln[0], bx + 8, yy);
+                g.fillStyle = '#0a84ff';
+                g.textAlign = 'right';
+                g.fillText(ln[1], bx + boxW - 8, yy);
+            });
+            g.textAlign = 'left';
+            g.restore();
+        };
+
+        const clearTrHoverTrace = () => {
+            trHoverActiveR = null;
+            const overlay = document.getElementById('trHoverOverlay');
+            if (overlay && overlay.getContext) {
+                const g = overlay.getContext('2d');
+                g.clearRect(0, 0, overlay.width, overlay.height);
+            }
+        };
 
         // Generic interpolation with optional linear extrapolation (used throughout TR)
         const trInterpolate = (val, knownKey, unknownKey, data, extrapolate = false) => {
@@ -6848,6 +7964,60 @@
             trChartQ1 = makeTRChart('trQ1', -0.6, 2.7, 0, 3.3, true, 'right', 'bottom', false, false);
 
             // Q1 Y-axis: log H (relative until user provides sensitometer exposure)
+
+            // --- Live hover trace across all four quadrants ---
+            // The mouse position is resolved to a single scene reflectance r using the
+            // shared axis of whichever quadrant the cursor is over, then the whole chain
+            // is traced. Q1/Q4 read scene luminance off x; Q2 reads logH off y; Q3 reads
+            // neg density off x. All four collapse to the same r, so the trace is coherent
+            // no matter where you hover.
+            const wrapper = document.querySelector('.tr-grid-wrapper');
+            const resolveR = (chart, quadrant, offX, offY) => {
+                if (!trHoverCtx) return null;
+                if (quadrant === 'q1' || quadrant === 'q4') {
+                    return chart.scales.x.getValueForPixel(offX);
+                }
+                if (quadrant === 'q2') {
+                    const lh = chart.scales.y.getValueForPixel(offY);
+                    return trHoverCtx.inverseCamera(lh);
+                }
+                if (quadrant === 'q3') {
+                    const nd = chart.scales.x.getValueForPixel(offX);
+                    const lh = trInterpolate(nd, 'x', 'y', trHoverCtx.q2Points, true);
+                    return lh === null ? null : trHoverCtx.inverseCamera(lh);
+                }
+                return null;
+            };
+            const cellMap = [
+                { id: 'trQ1', q: 'q1', chart: () => trChartQ1 },
+                { id: 'trQ2', q: 'q2', chart: () => trChartQ2 },
+                { id: 'trQ3', q: 'q3', chart: () => trChartQ3 },
+                { id: 'trQ4', q: 'q4', chart: () => trChartQ4 }
+            ];
+            const onTrMove = (e) => {
+                if (!trHoverCtx) return;
+                let handled = false;
+                for (const cm of cellMap) {
+                    const chart = cm.chart();
+                    if (!chart) continue;
+                    const rect = chart.canvas.getBoundingClientRect();
+                    if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                        e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                        const r = resolveR(chart, cm.q, e.clientX - rect.left, e.clientY - rect.top);
+                        if (r !== null && isFinite(r)) {
+                            trHoverActiveR = r;
+                            renderTrHoverTrace(r);
+                            handled = true;
+                        }
+                        break;
+                    }
+                }
+                if (!handled) clearTrHoverTrace();
+            };
+            if (wrapper) {
+                wrapper.addEventListener('mousemove', onTrMove);
+                wrapper.addEventListener('mouseleave', clearTrHoverTrace);
+            }
         };
 
         // Populate the TR curve selector dropdown
@@ -7076,6 +8246,12 @@
                 effFlare = flareLogHVal;
             }
 
+            // TR-local flare override — lets the user play with flare without
+            // touching the flare model that drives the Curves-tab aims
+            if (document.getElementById('trFlareMode').value === 'custom') {
+                effFlare = parseFloat(document.getElementById('trFlareSlider').value) || 0;
+            }
+
             const flareStopsApprox = effFlare / 0.301;
 
             // --- CALCULATE DIAGRAM ---
@@ -7122,6 +8298,18 @@
             const shadowReflectance = sceneLslr;
             const sceneStops = shadowReflectance / 0.301;
 
+            // Range placement: which Zone the no-flare shadow (or highlight) lands on.
+            // Zone I = the speed point (default). Placing the shadow on Zone III lifts
+            // the whole range 2 stops; placing the highlight pins the top end instead,
+            // giving a (possibly fractional) shadow zone. Zone V stays coupled to the
+            // metered exposure — the ruler and the exposure shift together.
+            const placementSel = document.getElementById('trPlacement').value || 's1';
+            const placementZoneNum = parseFloat(placementSel.slice(1));
+            const shadowZone = placementSel[0] === 'h'
+                ? placementZoneNum - sceneStops
+                : placementZoneNum;
+            const placementOffset = (shadowZone - 1) * 0.301;
+
             // Camera flare model — adds stray light to all luminances
             const L_shadow = Math.pow(10, -shadowReflectance);
             const L_flare = L_shadow * (Math.pow(2, flareStopsApprox) - 1);
@@ -7134,12 +8322,30 @@
             // With flare:    calcQ1Y(0) ≈ speedPoint + shadowR (highlight barely moves)
             //                calcQ1Y(shadowR) > speedPoint (shadow lifts — flare effect)
             //
-            // K = speedPoint + shadowR - log10(1 + L_flare)
-            const highlightLogH_noFlare = speedPoint + shadowReflectance;
+            // K = speedPoint + placement + shadowR - log10(1 + L_flare)
+            //
+            // Film anchor choice:
+            //  'speed'   — placed shadow zone sits on the speed point (0.10 over Fb+f by
+            //              default). The classic Zone-I placement; the no-flare curve lines
+            //              up with the 0.10 point by construction.
+            //  'metered' — the metered gray lands at the metered exposure point. Per ISO,
+            //              a meter delivers Hg = 8/S while the speed point is Hm = 0.8/S,
+            //              so the metered gray sits exactly 1.0 log H (3 1/3 stops) above
+            //              the fixed-density speed point — 2/3 stop less shadow exposure
+            //              than Zone-I placement implies.
+            const filmAnchorMode = document.getElementById('trFilmAnchor').value;
+            let camConstant_noFlare;
+            if (filmAnchorMode === 'metered') {
+                const anchorGrayPct = parseFloat(document.getElementById('trMeteredGray').value) || 12;
+                const anchorZoneVCenter = shadowReflectance - ((5 - shadowZone) * 0.301);
+                const anchorMeteredR = anchorZoneVCenter - Math.log10(anchorGrayPct / 12);
+                const meteredExpLogH = noFlareSpeedLogH + 1.0; // Hg = 10·Hm
+                camConstant_noFlare = meteredExpLogH + anchorMeteredR;
+            } else {
+                camConstant_noFlare = speedPoint + placementOffset + shadowReflectance;
+            }
+            const highlightLogH_noFlare = camConstant_noFlare; // no-flare calcQ1Y(0)
             const baseCamConstant = highlightLogH_noFlare - Math.log10(1 + L_flare);
-
-            // No-flare reference
-            const camConstant_noFlare = speedPoint + shadowReflectance;
 
             // Base Q1 equation (0-stop film exposure) for paper anchoring
             const baseCalcQ1Y = (r) => Math.log10(Math.pow(10, -r) + L_flare) + baseCamConstant;
@@ -7150,17 +8356,23 @@
             const baseD_at_shadow = trInterpolate(baseLogH_at_shadow, 'x', 'y', filmPoints, true);
             const baseD_at_highlight = trInterpolate(baseLogH_at_highlight, 'x', 'y', filmPoints, true);
 
-            // EI offset: how much Zone I lifted above the speed point from flare
+            // EI offset: how much flare lifted the shadow above its placed position.
+            // speedPointDensity stays at the true speed point — it positions the Q2 marker
+            // and must not move with placement; the flare ΔD compares against the placed shadow.
+            // No-flare shadow position under the chosen film anchor (equals
+            // speedPoint + placementOffset when anchored on the speed point).
+            const placedShadowLogH = camConstant_noFlare - shadowReflectance;
             const speedPointDensity = trInterpolate(speedPoint, 'x', 'y', filmPoints, true);
-            const flareEiOffsetLogH = baseLogH_at_shadow - speedPoint;
+            const placedShadowDensity = trInterpolate(placedShadowLogH, 'x', 'y', filmPoints, true);
+            const flareEiOffsetLogH = baseLogH_at_shadow - placedShadowLogH;
             const flareEiOffsetStops = flareEiOffsetLogH / 0.301;
-            const flareDensityOffset = (baseD_at_shadow !== null && speedPointDensity !== null)
-                ? (baseD_at_shadow - speedPointDensity) : 0;
+            const flareDensityOffset = (baseD_at_shadow !== null && placedShadowDensity !== null)
+                ? (baseD_at_shadow - placedShadowDensity) : 0;
 
             const eiOffsetEl = document.getElementById('trEiOffset');
             if (eiOffsetEl) {
                 if (flareEiOffsetStops > 0.05) {
-                    eiOffsetEl.textContent = `+${flareEiOffsetStops.toFixed(2)} logH  ΔD +${flareDensityOffset.toFixed(2)}`;
+                    eiOffsetEl.textContent = `+${flareEiOffsetStops.toFixed(2)} stops  ΔD +${flareDensityOffset.toFixed(2)}`;
                     eiOffsetEl.style.color = '#060';
                 } else {
                     eiOffsetEl.textContent = '—';
@@ -7187,13 +8399,30 @@
             const anchorPct = parseFloat(document.getElementById('trAnchorPct').value) || 90;
             let enlargerConstant, paperOffset = 0;
 
+            // The paper anchor is applied at the exposure it was last re-anchored to
+            // (default 0 stops). Manual film-exposure moves show as print changes until
+            // the user explicitly re-anchors — then the paper follows the new negative.
+            const anchorCalcQ1Y = (r) => Math.log10(Math.pow(10, -r) + L_flare) + baseCamConstant + trAnchorExpStops * 0.301;
+            const anchorD_at_shadow = trInterpolate(anchorCalcQ1Y(shadowReflectance), 'x', 'y', filmPoints, true);
+            const anchorD_at_highlight = trInterpolate(anchorCalcQ1Y(highlightReflectance), 'x', 'y', filmPoints, true);
+
+            const reanchorInfoEl = document.getElementById('trReanchorInfo');
+            if (reanchorInfoEl) {
+                const fmtStops = (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
+                if (Math.abs(filmExpStops - trAnchorExpStops) < 0.01) {
+                    reanchorInfoEl.textContent = trAnchorExpStops !== 0 ? `Paper anchored at ${fmtStops(trAnchorExpStops)} stops` : '';
+                } else {
+                    reanchorInfoEl.textContent = `Anchor at ${fmtStops(trAnchorExpStops)} stops · exposure now ${fmtStops(filmExpStops)}`;
+                }
+            }
+
             // Paper exposure slider: independently shifts the paper curve
             const paperExpStops = parseFloat(document.getElementById('trPaperExpSlider').value) || 0;
             const paperExpOffset = paperExpStops * 0.301;
 
             if (paperAnchorMode === 'highlight') {
                 // Highlight: highest neg density → paper Dmin + 0.04 (just above base+fog)
-                const anchorNegD = baseD_at_highlight;
+                const anchorNegD = anchorD_at_highlight;
                 const targetPrintD = paperDmin + 0.04;
 
                 if (useMeasuredPaper) {
@@ -7209,7 +8438,7 @@
             } else {
                 // Shadow: actual shadow neg density → %Dmax on paper
                 // Pin the shadow end of the scene to the target print density
-                const anchorNegD = baseD_at_shadow;
+                const anchorNegD = anchorD_at_shadow;
                 const targetPrintD = (anchorPct / 100) * paperDmax;
 
                 if (useMeasuredPaper) {
@@ -7273,6 +8502,16 @@
             // Q1: Camera / Flare curve
             for (let r = highlightReflectance; r <= shadowReflectance + 0.1; r += 0.03) {
                 q1Line.push({ x: r, y: calcQ1Y(r) });
+            }
+
+            // Q1: No-flare reference — where exposure would fall without flare.
+            // A straight 45° line in log-log space: y = -r + K(no flare) + film exposure.
+            const showNoFlareRef = document.getElementById('trShowNoFlare').checked && effFlare > 0.005;
+            const q1NoFlareLine = [];
+            if (showNoFlareRef) {
+                for (let r = highlightReflectance; r <= shadowReflectance + 0.1; r += 0.1) {
+                    q1NoFlareLine.push({ x: r, y: -r + camConstant_noFlare + filmExpOffset });
+                }
             }
 
             // Q2: Film curve (full extent using actual data range)
@@ -7401,6 +8640,7 @@
             let qLinearTarget = null;
             let qShape = null;
             let bswResult = null;
+            let simondsResult = null;   // genuine Simonds (1961) Q + y-diagnostics
             const q4OptimumCurve = [];  // Fixed target overlay (the aim)
 
             if (q4ReproCurve.length >= 5) {
@@ -7413,17 +8653,23 @@
 
                     // --- TIER 1: Fixed target comparison ---
 
-                    // Brightness preference: the optimum uses a compressed density
-                    // range, sitting BELOW the scene line in Q4.
-                    // Factor 0.90: preferred reproduction spans ~90% of Drange.
-                    const brightnessFactor = 0.90;
-                    const optimumDrange = Drange * brightnessFactor;
+                    // Aim anchoring per the preferred-reproduction literature:
+                    // scene highlight (edge of detail in white) → 0.04 above paper
+                    // base (Holm 1994 Table 4, Zone 9; also the ISO 6846 LER
+                    // convention), scene shadow (edge of detail in black) →
+                    // 90% of Dmax (Holm 1994: Zone 1 = 1.9 on a 2.1 Dmax paper;
+                    // sceneShadowTarget already carries the 0.90 factor).
+                    const aimDmin = Dmin + 0.04;
+                    const optimumDrange = Dmax - aimDmin;
 
-                    // Reference target: logistic S-curve scaled to scene/paper endpoints
+                    // Reference target: logistic S-curve scaled to scene/paper
+                    // endpoints. Template mid/avg gradient ratio 1.158 matches
+                    // the preferred reproduction (midtone gamma 1.15, average
+                    // gradient 0.98 → ratio ≈1.17; Holm 1994 after Jones/Nelson).
                     const targetOptimumD = (r) => {
                         const t = Math.max(0, Math.min(1, (r - highlightReflectance) / sceneRange));
                         const s = logisticSCurveTemplate(t);
-                        return Dmin + optimumDrange * s;
+                        return aimDmin + optimumDrange * s;
                     };
                     // Linear (scene-faithful) target: full density range
                     const targetLinearD = (r) => {
@@ -7460,6 +8706,22 @@
                         const t = i / 40;
                         const r = highlightReflectance + t * sceneRange;
                         q4OptimumCurve.push({ x: r, y: targetOptimumD(r) });
+                    }
+
+                    // --- Genuine Simonds (1961) quality index ---
+                    // Sample actual and aim at 12 equally spaced log-luminance
+                    // steps, darkest shadow (step 1) → brightest highlight
+                    // (step 12), matching Simonds' sampling exactly. Deviations
+                    // stay in absolute density units — the currency of his vectors.
+                    const simondsDeltas = [];
+                    for (let i = 0; i < 12; i++) {
+                        const r = shadowReflectance - (i / 11) * sceneRange;
+                        const actualD = trInterpolate(r, 'x', 'y', q4ReproCurve, true);
+                        if (actualD === null) break;
+                        simondsDeltas.push(actualD - targetOptimumD(r));
+                    }
+                    if (simondsDeltas.length === 12) {
+                        simondsResult = simondsQualityRating(simondsDeltas);
                     }
 
                     // --- TIER 2: BSW Decomposition (diagnostic) ---
@@ -7580,11 +8842,12 @@
 
             // --- Metered trace ---
             // Originates from Zone V on the zone ruler = shadow - 4 stops.
-            // The user's % gray input offsets from 12.6% (the standard Zone V gray).
+            // The user's % gray input offsets from 12% — the meter's calibrated reflectance
+            // (RD 0.92 ≈ 12%, per Connelly / "Defining K"), not the 12.6% arithmetic shortcut.
             const showMetered = document.getElementById('trShowMetered').checked;
-            const meteredGrayPct = parseFloat(document.getElementById('trMeteredGray').value) || 12.6;
-            const meteredOffset = Math.log10(meteredGrayPct / 12.6); // offset from Zone V
-            const zoneVCenter = shadowReflectance - (4 * 0.301); // Zone V center on the ruler
+            const meteredGrayPct = parseFloat(document.getElementById('trMeteredGray').value) || 12;
+            const meteredOffset = Math.log10(meteredGrayPct / 12); // offset from Zone V
+            const zoneVCenter = shadowReflectance - ((5 - shadowZone) * 0.301); // Zone V center on the (placed) ruler
             const meteredR = zoneVCenter - meteredOffset;
             let meteredLogH = null, meteredNegD = null, meteredPrintD = null;
             let meteredDeltaFromExposure = null; // logH difference: metered vs actual film exposure
@@ -7671,6 +8934,13 @@
                 trChartQ1.data.datasets[q1DsLen] = {
                     data: mQ1Pts, borderColor: meteredColor, backgroundColor: meteredColor,
                     pointRadius: 5, pointStyle: 'circle', showLine: false, borderWidth: 0
+                };
+                q1DsLen++;
+            }
+            if (showNoFlareRef) {
+                trChartQ1.data.datasets[q1DsLen] = {
+                    data: q1NoFlareLine, borderColor: 'rgba(29,29,31,0.35)', borderWidth: 1.25,
+                    borderDash: [6, 4], pointRadius: 0, tension: 0
                 };
                 q1DsLen++;
             }
@@ -7847,8 +9117,14 @@
             const flareFactorLinear = Math.pow(10, effFlare);
             const q1Info = [];
             q1Info.push(`Scene LSLR:${sceneLslr.toFixed(2)}`);
+            if (placementSel !== 's1') {
+                const placeLabelMap = { s2:'Shadow @ II', s3:'Shadow @ III', s4:'Shadow @ IV', h7:'Highlight @ VII', h8:'Highlight @ VIII', h9:'Highlight @ IX', h10:'Highlight @ X' };
+                q1Info.push(`Place:${placeLabelMap[placementSel] || placementSel} (${placementOffset >= 0 ? '+' : ''}${placementOffset.toFixed(2)} logH)`);
+            }
             q1Info.push(`Speed:${speedMethodLabels[trSpeedMethod] || trSpeedMethod}`);
+            q1Info.push(`Anchor:${filmAnchorMode === 'metered' ? 'Metered exposure (Hg = Hm+1.0)' : 'Speed point (0.10)'}`);
             q1Info.push(`Flare:${effFlare.toFixed(2)} logH`);
+            if (showNoFlareRef) q1Info.push('No-flare ref: dashed');
             if (flareEiOffsetStops > 0.05) q1Info.push(`Offset:+${flareEiOffsetLogH.toFixed(2)} logH (ΔD ${flareDensityOffset.toFixed(2)})`);
             if (filmExpStops !== 0) q1Info.push(`Film Exp:${filmExpStops > 0 ? '+' : ''}${filmExpStops.toFixed(1)} stops`);
             if (showMetered && meteredLogH !== null) {
@@ -7902,6 +9178,17 @@
             q4Info.push(`LSLR:${sceneLslr.toFixed(2)}`);
             q4Info.push(`Film DR:${filmDR.toFixed(2)}`);
             q4Info.push(`Paper LER:${actualPaperLer.toFixed(2)}`);
+            if (simondsResult) {
+                const tier = simondsRatingTier(simondsResult.q);
+                const approx = simondsResult.residRms > 0.04 ? '*' : '';
+                q4Info.push(`Q (Simonds):${Math.round(simondsResult.q)}${approx} · ${tier.label}`);
+                q4Info.push(`  ${tier.jnd < 0.5 ? '<½' : '~' + tier.jnd.toFixed(1)} JND from optimum`);
+                // y-diagnostics: WHICH kind of departure (Simonds' three vectors)
+                q4Info.push(`  y1:${simondsResult.y1 >= 0 ? '+' : ''}${simondsResult.y1.toFixed(2)} dens/contr`
+                    + `  y2:${simondsResult.y2 >= 0 ? '+' : ''}${simondsResult.y2.toFixed(2)} tilt`
+                    + `  y3:${simondsResult.y3 >= 0 ? '+' : ''}${simondsResult.y3.toFixed(2)} curv`);
+                if (approx) q4Info.push(`  *shape outside Simonds' print family — approximate`);
+            }
             if (qTarget !== null) q4Info.push(`Q-Target:${qTarget}`);
             if (qLinearTarget !== null) q4Info.push(`Q-Linear:${qLinearTarget}`);
             if (qShape !== null) q4Info.push(`Q-Shape:${qShape}`);
@@ -7941,12 +9228,34 @@
             }
             renderTrInfoBlock('trInfoQ4', q4Info);
             trChartQ4._zoneStrip = null;
-            trChartQ1._zoneStrip = { shadowR: shadowReflectance, numZones: 11 };
+            trChartQ1._zoneStrip = {
+                shadowR: shadowReflectance,
+                numZones: 11,
+                shadowZone,
+                mode: document.getElementById('trSubjectScale').value || 'zone'
+            };
 
             trChartQ1.update();
             trChartQ2.update();
             trChartQ3.update();
             trChartQ4.update();
+
+            // Store everything the live hover trace needs to walk the scene→print
+            // chain for an arbitrary scene reflectance r. Captured as closures so the
+            // overlay can trace any point without recomputing the whole diagram.
+            trHoverCtx = {
+                calcQ1Y, getPrintDensity, sceneLineY,
+                q2Points, L_flare, camConstant,
+                shadowReflectance, highlightReflectance,
+                sceneMin, sceneMax, axisLogHMax,
+                sceneShadowTarget, sceneHighlightTarget,
+                // inverse of calcQ1Y: given logH, recover scene reflectance r
+                inverseCamera: (lh) => {
+                    const inside = Math.pow(10, lh - camConstant) - L_flare;
+                    return inside > 0 ? -Math.log10(inside) : null;
+                }
+            };
+            if (trHoverActiveR !== null) renderTrHoverTrace(trHoverActiveR);
         };
 
         // --- INITIALIZATION ---
@@ -7955,7 +9264,7 @@
             autoTableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js';
             document.head.appendChild(autoTableScript);
             
-            Chart.register(visualizerPlugin, whiteBackgroundPlugin, filmHoverPlugin);
+            Chart.register(visualizerPlugin, whiteBackgroundPlugin, filmHoverPlugin, gammaPickPlugin, gammaBandPlugin);
             initializeChart();
             addCurveBtn.addEventListener('click', () => addCurve());
 
@@ -7976,6 +9285,7 @@
             // Tone Reproduction listeners
             document.getElementById('trCurveSelect').addEventListener('change', () => {
                 if (!trInitialized) initTRCharts();
+                trAnchorExpStops = 0; // new source curve — anchor back to the 0-stop baseline
                 // Auto-fill Scene LSLR from the selected curve's matched LSLR
                 const lslrField = document.getElementById('trSceneLslr');
                 const selVal = document.getElementById('trCurveSelect').value;
@@ -8008,12 +9318,28 @@
                 updateToneReproduction();
             });
             document.getElementById('trShowGradient').addEventListener('change', updateToneReproduction);
+            document.getElementById('trShowNoFlare').addEventListener('change', updateToneReproduction);
             document.getElementById('trShowMetered').addEventListener('change', updateToneReproduction);
             document.getElementById('trMeteredGray').addEventListener('input', updateToneReproduction);
             document.getElementById('trSceneLslr').addEventListener('input', updateToneReproduction);
+            const syncTrFlareUI = () => {
+                const custom = document.getElementById('trFlareMode').value === 'custom';
+                document.getElementById('trFlareSlider').disabled = !custom;
+                document.getElementById('trFlareSliderRow').classList.toggle('opacity-50', !custom);
+                document.getElementById('trFlareVal').textContent = parseFloat(document.getElementById('trFlareSlider').value).toFixed(2);
+            };
+            document.getElementById('trFlareMode').addEventListener('change', () => { syncTrFlareUI(); updateToneReproduction(); });
+            document.getElementById('trFlareSlider').addEventListener('input', () => { syncTrFlareUI(); updateToneReproduction(); });
+            document.getElementById('trPlacement').addEventListener('change', updateToneReproduction);
+            document.getElementById('trSubjectScale').addEventListener('change', updateToneReproduction);
             document.getElementById('trSpeedMethod').addEventListener('change', updateToneReproduction);
+            document.getElementById('trFilmAnchor').addEventListener('change', updateToneReproduction);
             document.getElementById('trPaperAnchor').addEventListener('change', updateToneReproduction);
             document.getElementById('trAnchorPct').addEventListener('input', updateToneReproduction);
+            document.getElementById('trReanchorBtn').addEventListener('click', () => {
+                trAnchorExpStops = parseFloat(document.getElementById('trFilmExpSlider').value) || 0;
+                updateToneReproduction();
+            });
 
             // --- ANALYSIS PLOTS ---
             let analysisChart = null;
@@ -8120,8 +9446,16 @@
                     return;
                 }
 
-                // Build regression
-                const regFn = polynomialRegression(data);
+                // Build regression — time-based plots use the monotone saturating fit
+                // (development physics); the cross plots keep the free polynomial.
+                let regFn;
+                if (currentAnalysisPlot === 'ciTime') {
+                    regFn = saturatingRegression(data) || polynomialRegression(data);
+                } else if (currentAnalysisPlot === 'efsTime') {
+                    regFn = saturatingRegression(data, true) || polynomialRegression(data);
+                } else {
+                    regFn = polynomialRegression(data);
+                }
                 apRegressionFn = regFn;
                 apDataMinX = Math.min(...data.map(p => p.x));
                 apDataMaxX = Math.max(...data.map(p => p.x));
@@ -8353,6 +9687,7 @@
             yAxisStepInput.addEventListener('input', updateChartDebounced);
             showGridToggle.addEventListener('change', updateChartAndCalculations);
             showPointsToggle.addEventListener('change', updateChartAndCalculations);
+            document.getElementById('showGradientToggle').addEventListener('change', updateChartAndCalculations);
             document.getElementById('showIso6CurveToggle').addEventListener('change', updateChartAndCalculations);
             squareGridToggle.addEventListener('change', updateChartAndCalculations);
             document.getElementById('zoneTableMethod').addEventListener('change', () => {
@@ -8476,6 +9811,7 @@
                 { id: 'yAxisStep', type: 'number' },
                 { id: 'showGridToggle', type: 'checkbox' },
                 { id: 'showPointsToggle', type: 'checkbox' },
+                { id: 'showGradientToggle', type: 'checkbox' },
                 { id: 'squareGridToggle', type: 'checkbox' },
                 { id: 'showIso6CurveToggle', type: 'checkbox' },
                 { id: 'plotSingleCurvesCheckbox', type: 'checkbox' },
@@ -8499,10 +9835,16 @@
                 { id: 'paperNotes', type: 'textarea' },
                 { id: 'trPaperMode', type: 'select' },
                 { id: 'trSceneLslr', type: 'number' },
+                { id: 'trFlareMode', type: 'select' },
+                { id: 'trFlareSlider', type: 'number' },
+                { id: 'trPlacement', type: 'select' },
+                { id: 'trSubjectScale', type: 'select' },
                 { id: 'trSpeedMethod', type: 'select' },
+                { id: 'trFilmAnchor', type: 'select' },
                 { id: 'trPaperAnchor', type: 'select' },
                 { id: 'trAnchorPct', type: 'number' },
                 { id: 'trShowMetered', type: 'checkbox' },
+                { id: 'trShowNoFlare', type: 'checkbox' },
                 { id: 'trMeteredGray', type: 'number' },
                 { id: 'trShowGradient', type: 'checkbox' },
             ];
@@ -8547,6 +9889,13 @@
 
             // Load saved state before first render
             loadState();
+            // Sync TR flare slider enabled-state after restore
+            {
+                const custom = document.getElementById('trFlareMode').value === 'custom';
+                document.getElementById('trFlareSlider').disabled = !custom;
+                document.getElementById('trFlareSliderRow').classList.toggle('opacity-50', !custom);
+                document.getElementById('trFlareVal').textContent = parseFloat(document.getElementById('trFlareSlider').value).toFixed(2);
+            }
             // Sync paper mode panel visibility after restore
             const trUsePaperChecked = document.getElementById('trUseMeasuredPaper').checked;
             document.getElementById('trPaperModePanel').style.display = trUsePaperChecked ? '' : 'none';
