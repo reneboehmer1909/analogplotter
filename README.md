@@ -6,59 +6,56 @@ Analogplotter turns densitometer readings into characteristic curves and reads e
 
 ![Characteristic curves of a development series](screenshots/curves.png)
 
-## Features
+## Introduction
 
-### Film curves
-- **H&D characteristic curves** from step-wedge readings — automatic 0.15 steps, custom log H, step-tablet densities (relative testing), or absolute lux·seconds (absolute testing with real ISO determination)
-- **Contrast metrics**: Contrast Index (Kodak concentric-arc method), gamma, Ḡ
-- **Film speed three ways**: fixed density 0.10 over B+F (ISO 6), Delta-X criterion (Nelson & Simonds), fractional gradient (Jones 0.3Ḡ) — plus a synthetic interpolated ΔD = 0.80 curve per ISO 6:1993 Annex A
-- **Development aims**: required CI, dev time and EI for N−2 … N+3 expansions/contractions, with fixed or dynamic flare models
-- Crosshair hover readout, live value counters, tolerant paste (any separator), undo for deletions, and automatic session recovery — your data survives a reload
+This is a tool made to help you understand your process. Enter your exposure as the X axis and your measured densities as the Y axis. Compare and analyze the tested Films behavior. Analogplotter allows you to enter your paper curves too. Based on this it will simulate the tonal compression and quality of transfer to the end medium (your paper). This tool requires you to already have a good understanding of the underlying processes. It will not help you all that much to learn the basics, but will reward you more and more in your journey of learning, when you begin to see the value in certain features. It might seem confusing at first but becomes simple over time.
 
-### Tone reproduction
-The classical Jones four-quadrant diagram, computed from **your measured film and paper curves**: camera flare → film → paper → cumulative scene-to-print reproduction, with per-stop gradient analysis and quality metrics.
+## How to Use
 
-![Jones four-quadrant tone reproduction diagram](screenshots/tr.png)
+1. **Enter your X coordinates** under the **Exposure** tab. Select your exposure type: 
+   * **Relative Exposure:** Use this if you don't know the illuminance at the film plane in lux-seconds.
+   * **Absolute Exposure:** Use this if you have a calibrated exposure setup and know the exact lux-seconds at the film plane.
 
-### Paper curves
-Measure your darkroom papers grade by grade: LER, ISO(R)-style ranges, grade interpolation to a target LER, and CMY filtration bookkeeping — and feed the measured paper directly into the tone reproduction diagram.
+   ![Step 1 - Exposure Settings](1.png)
 
-### Analysis plots
-CI vs time, EFS vs time, EFS vs CI, LSLR relationships — the practical plots for choosing a development time.
+2. **Choose how film speed shall be determined.** Under the **EFS** (Effective Film Speed) tab, select your preferred method. I recommend **Delta X**. *(If you aren't sure which to pick, just use Delta X and continue).*
 
-![Analysis plots](screenshots/analysis.png)
+   ![Step 2 - EFS Method](2.png)
 
-### Reports
-One-click PDF reports: curve plots at 3× resolution, film characteristics, exposure & scene tables, development aims, tone reproduction pages, analysis plots, raw data, and a calculation-transparency section with references. JSON session export/import and BTZS `.pfc` import included.
+3. **Enter your details**, such as your name, the film type, and any other relevant metadata.
 
-### Built-in guide
-A short illustrated introduction explains absolute vs. relative testing, how to run a development series, and how the three speed criteria differ — with a one-click realistic example dataset.
+   ![Step 3 - Details Entry](3.png)
 
-![Introduction wizard — the three speed criteria](screenshots/wizard.png)
+4. **Add your first curve** under the **Curves** tab. Type your density measurements directly into the text field (format: `0.00, 0.00, ...`). 
+   * *Note:* If you use the [Dektronics Densitometer](https://github.com/dektronics/printalyzer-uvdensitometer), the software will automatically accept its USB output format. Enter your measurements as cleanly and accurately as possible—while the program automatically denoises the data, cleaner input yields better results.
 
-## Verified against the primary literature
+   ![Step 4 - Adding Curves](4.png)
 
-The core formulas were checked line by line against the original sources:
+5. **Review your curves.** After entering all of your test wedges (about 8 per session is recommended), you will see the curves generated in the main plot area. You can hover your mouse over the curves to read out the data. Display settings can be adjusted under the **Chart Grid Control** tab.
 
-- ISO 6:1993 — speed point, ΔD = 0.80 contrast condition, S = 0.8/Hm, third-stop rounding
-- Nelson & Simonds (1956) — Delta-X regression (coefficient-exact) and the 1.5 log H fractional-gradient interval
-- Niederpruem, Nelson & Yule (1966) — Contrast Index arc geometry
-- Jones & Condit (1941), Todd & Zakia (1964), Simonds (1963), Connelly (1968) — flare, scene statistics, speed method history
-- "What is Normal" developmental model — flare 0.40, LER 1.05, normal LSLR 2.20, CI 0.58
+   ![Step 5 - Reviewing Curves](5.png)
 
-Per ISO 6:1993 a true ISO speed exists only at ΔD = 0.80; the tool deliberately labels all other per-development values as effective speeds (EFS/EI).
+6. **Set your Flare model and Paper LER** (Log Exposure Range).
+   * **Flare:** Flare is introduced in every optical system and lifts the shadows based on the scene's contrast ratio (even with modern lenses). The tool is designed to account for this. **Dynamic Flare** automatically adjusts shadow lifting based on scene contrast, making it a great set-and-forget option. **Fixed Flare** allows you to enter a custom flare value that will be applied across all scenes. 
+   * **Paper LER:** This is the goal density range you want to achieve. It depends on your enlarger and the contrast grade where your paper performs best. Most users aim for an LER of 1.1 (typical for a diffuse enlarger).
 
-## Getting started
+   ![Step 6 - Flare and LER Settings](6.png)
 
-Open `index.html` in a desktop browser — that's it. First visit shows the guided introduction; the **?** button in the header reopens it anytime. Load the example dataset to explore before entering your own measurements.
+7. **Export your findings.** Once everything is set, you can export your data as a PDF or as a `.json` file. The JSON format allows you to share dynamic save files with friends, who can import them into their own instance of Analogplotter to interact with the data.
 
-**Requirements**: a modern desktop browser and an internet connection (Chart.js, Tailwind, jsPDF and html2canvas load from CDNs).
+   ![Step 7 - Exporting Findings](7.png)
 
-## The workflow in one paragraph
+8. **Analyze your results.** The tool will output data below your curves, telling you exactly how you need to expose and develop a given scene to achieve your defined density range.
 
-Expose several film strips identically through a step wedge, develop each for a different time, measure every step with a densitometer, and paste the readings in. You get a family of curves — a function of exposure vs. density — from which the tool derives contrast, speed, and the development time that matches your scene range, enlarger, and paper.
+   ![Step 8 - Analyzing Results](8.png)
 
----
+9. **Dive deeper with paper data.** If you want to go further, you can start entering your paper data using the same logic as the film curve plotting. This tool can help you find optimal settings for your CMY filter heads. *Tip: Place your test strip into the negative carrier so optical effects are factored into the curve sets.*
+
+   ![Step 9 - Paper Data](9.png)
+
+10. **Simulate the tonal transfer.** With data for both film and paper entered, navigate to the **Tone Reproduction** tab to simulate the entire tonal transfer. You can experiment with exposure, flare, and different curves to see how they behave in reality, deepening your understanding of the analog process.
+
+    ![Step 10 - Tonal Transfer](10.png)
 
 Made by René Böhmer · [analogworkshops.at](https://www.analogworkshops.at) · free to use
 
