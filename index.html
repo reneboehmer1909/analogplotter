@@ -962,7 +962,7 @@
                         </div>
                         <div>
                             <label class="font-medium text-xs" style="color:var(--text-muted);">Film Anchor</label>
-                            <select id="trFilmAnchor" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1" title="Speed point: placed shadow zone sits on the speed point (0.10 over Fb+f by default). Metered: the metered gray lands at the metered exposure point, 1.0 log H above the fixed-density speed point (Hg = 8/S vs Hm = 0.8/S).">
+                            <select id="trFilmAnchor" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1" title="Speed point: placed shadow zone sits on the speed point (0.10 over Fb+f by default). Metered: meter arithmetic — the metered gray sits at the standards-defined distance above the active speed point (Hg = 8/S: 3⅓ stops for Fixed Density, 4⅓ stops for Delta-X/Jones), so the no-flare shadow of the average scene lands exactly on the speed point.">
                                 <option value="speed">Speed point (0.10)</option>
                                 <option value="metered">Metered exposure</option>
                             </select>
@@ -1002,6 +1002,10 @@
                         <label class="flex items-center gap-1.5 text-xs cursor-pointer">
                             <input type="checkbox" id="trShowMetered" class="accent-[#1d1d1f]">
                             <span class="font-medium">Show Metered</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 text-xs cursor-pointer" title="Overlay the film curve's first derivative dD/d(log H) in Q2, shows where shadow detail starts to build">
+                            <input type="checkbox" id="trShowFilmGradient" class="accent-[#1d1d1f]">
+                            <span class="font-medium">Film Gradient (Q2)</span>
                         </label>
                         <div class="flex items-center gap-1">
                             <input type="number" id="trMeteredGray" min="1" max="99" step="0.1" value="12" class="w-14 p-1 border border-gray-300 rounded text-xs text-center font-mono" style="height:24px;">
@@ -1218,12 +1222,20 @@
                 <!-- Film-specific controls (hidden on Paper tab) -->
                 <div id="filmControlsBelow">
                 <!-- SHARED CONTROLS (always visible) -->
-                <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
+                <div class="grid grid-cols-4 gap-3 mb-4 text-sm">
                     <div>
                         <label class="font-medium text-xs" style="color:var(--text-muted);">Flare Model</label>
                         <select id="flareModelSelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1">
                             <option value="fixed" selected>Fixed Flare</option>
                             <option value="practical">Dynamic Flare</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-medium text-xs" style="color:var(--text-muted);">Lens</label>
+                        <select id="lensQualitySelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" title="Scales the flare component of the model. Mid-tier = the statistical average behind the model's base values. Modern multicoated designs flare ~25% less; vintage single/uncoated glass ~40% more.">
+                            <option value="vintage">Vintage (×1.40)</option>
+                            <option value="mid" selected>Mid-tier (×1.00)</option>
+                            <option value="modern">Modern (×0.75)</option>
                         </select>
                     </div>
                     <div>
@@ -1244,6 +1256,7 @@
                             <tr>
                                 <th class="py-2 px-2 text-left">Curve</th>
                                 <th class="py-2 px-2 text-left">Time</th>
+                                <th class="py-2 px-2 text-left" title="Base + fog: density of the first (least exposed) step">Fb+f</th>
                                 <th class="py-2 px-2 text-left">CI</th>
                                 <th class="py-2 px-2 text-left">ΔD</th>
                                 <th class="py-2 px-2 text-left">Gamma</th>
@@ -1334,6 +1347,7 @@
                         <label class="flex items-center space-x-2"><input type="checkbox" id="showPointsToggle" checked><span>Data Points</span></label>
                         <label class="flex items-center space-x-2"><input type="checkbox" id="squareGridToggle"><span>Square Grid</span></label>
                         <label class="flex items-center space-x-2" title="Overlay each curve's first derivative dD/d(log H) on a secondary axis, with the detected Gamma straight-line window shaded"><input type="checkbox" id="showGradientToggle"><span>Gradient dD/dlogH</span></label>
+                        <label class="flex items-center space-x-2" title="Subtract each curve's own base+fog (density of the least exposed step) so curves plot as density above Fb+f. All gradients, CI, and speed points are unaffected — they measure differences, not absolute density."><input type="checkbox" id="aboveFbfToggle"><span>D above Fb+f</span></label>
                     </div>
                     </div>
                 </div>
@@ -1844,19 +1858,36 @@
         // ~10 units ≈ just-noticeable quality difference (Simonds, 1963).
 
         /**
-         * Logistic S-curve reference template for tone reproduction quality.
-         * Normalized [0,1] → [0,1].  Provides ~1.15× midtone gradient
-         * expansion with compressed endpoint gradients, matching the
-         * perceptual preference described in Simonds (1963).
-         * k = 2.8 calibrated for midtone/average gradient ratio of 1.16.
+         * Preferred-reproduction template from measured aim data, not an
+         * analytic guess: Holm (1994) Table 4 preferred print densities,
+         * Zones 9 → 1 (edge of detail in white → edge of detail in black),
+         * normalized so t=0 maps to the Dmin+0.04 anchor (Zone 9) and t=1
+         * to the 90% Dmax anchor (Zone 1).
+         *
+         * Shape: strongly compressed highlights (local gradient ≈ 0.34 of
+         * the mean), midtone ≈ 1.14, rising toward ≈ 1.3 in the shadows —
+         * the asymmetric S of the Jones/Simonds preferred reproduction.
+         * A symmetric logistic (used previously, k = 2.8) matches the
+         * midtone-to-average ratio but is far too linear at the ends;
+         * genuinely excellent reproductions visibly crossed it.
          */
-        const logisticSCurveTemplate = (t) => {
+        const PREFERRED_AIM_POINTS = [
+            { x: 0.0,    y: 0.0 },      // Zone 9: D 0.04 (anchor)
+            { x: 0.125,  y: 0.0430 },   // Zone 8: D 0.12
+            { x: 0.25,   y: 0.1237 },   // Zone 7: D 0.27
+            { x: 0.375,  y: 0.2312 },   // Zone 6: D 0.47
+            { x: 0.5,    y: 0.3548 },   // Zone 5: D 0.70
+            { x: 0.5625, y: 0.4355 },   // Zone 4.5: D 0.85
+            { x: 0.625,  y: 0.5161 },   // Zone 4: D 1.00
+            { x: 0.75,   y: 0.6882 },   // Zone 3: D 1.32
+            { x: 0.875,  y: 0.8387 },   // Zone 2: D 1.60
+            { x: 1.0,    y: 1.0 }       // Zone 1: D 1.90 (anchor)
+        ];
+        let _prefAimSpline = null;
+        const preferredAimTemplate = (t) => {
+            if (!_prefAimSpline) _prefAimSpline = pchipInterpolator(PREFERRED_AIM_POINTS);
             const x = Math.max(0, Math.min(1, t));
-            const k = 2.8;
-            const sig = (v) => 1 / (1 + Math.exp(-v));
-            const s0 = sig(-k / 2);
-            const s1 = sig(k / 2);
-            return (sig(k * (x - 0.5)) - s0) / (s1 - s0);
+            return Math.max(0, Math.min(1, _prefAimSpline.at(x)));
         };
 
         /** Linear (scene-faithful) template.  Normalized [0,1] → [0,1]. */
@@ -2565,15 +2596,29 @@
             };
         };
 
+        // Lens-quality multiplier applied to the FLARE COMPONENT of both models.
+        // Mid-tier (×1.00) is the statistical average the base values come from;
+        // modern multicoated designs flare ~25% less, vintage single/uncoated
+        // glass ~40% more (coatings + element count dominate veiling flare).
+        const lensFlareFactor = () =>
+            ({ vintage: 1.40, mid: 1.00, modern: 0.75 })[document.getElementById('lensQualitySelect')?.value] ?? 1.0;
+
         const calculateSBR = (ci, targetLer, flareLogH, flareModel) => {
             if (!ci || ci === 0 || !targetLer) return null;
+            const lensK = lensFlareFactor();
             let lslr;
             if (flareModel === 'practical') {
                 const LER_BASELINE = 1.05;
                 let normalizedCI = ci * (LER_BASELINE / targetLer);
                 lslr = interpolateY(practicalFlareModelData, normalizedCI, 'ci', 'lslr');
+                if (lslr !== null) {
+                    // Scale only the model's implied flare, not the scene itself
+                    const pure = targetLer / ci;
+                    const flarePart = Math.max(0, lslr - pure);
+                    lslr = pure + flarePart * lensK;
+                }
             } else { // 'fixed' model
-                lslr = (targetLer / ci) + flareLogH;
+                lslr = (targetLer / ci) + flareLogH * lensK;
             }
             if (lslr === null) return null;
             return lslr / 0.301;
@@ -2693,7 +2738,12 @@
                     if (hx < minX - 1e-9 || hx > maxX + 1e-9) return;
                     const d = interpolateY(c.points, hx);
                     if (d === null) return;
-                    rows.push(`${c.name}  D ${d.toFixed(2)}`);
+                    // Local gradient at the cursor (PCHIP derivative, cached per
+                    // curve object — curve objects are rebuilt on every update,
+                    // so the cache can never go stale).
+                    if (c._hoverSpline === undefined) c._hoverSpline = pchipInterpolator(c.points);
+                    const g = c._hoverSpline ? c._hoverSpline.deriv(Math.max(c._hoverSpline.xMin, Math.min(c._hoverSpline.xMax, hx))) : null;
+                    rows.push(`${c.name}  D ${d.toFixed(2)}` + (g !== null ? `  g ${g.toFixed(2)}` : ''));
                     marks.push({ y: d, color: c.color });
                 });
                 if (rows.length === 1) return;
@@ -2973,6 +3023,10 @@
                             }
                         },
                         tooltip: {
+                            // Disabled: the custom crosshair readout (filmHoverPlugin)
+                            // already shows log H, density and gradient per curve —
+                            // two boxes on hover were redundant.
+                            enabled: false,
                             backgroundColor: 'rgba(26,26,26,0.92)',
                             titleFont: { family: "-apple-system, 'SF Pro Text', sans-serif", size: 12, weight: '600' },
                             bodyFont: { family: "'SF Mono', ui-monospace, Menlo, monospace", size: 12 },
@@ -3294,7 +3348,18 @@
                     }
                 }
                 if(points.length === 0) return;
-                
+
+                // Fb+f: density of the least exposed step (after smoothing).
+                // Optionally re-express the whole curve as density above Fb+f —
+                // every derived metric (CI, gamma, speed points, ΔD, G-bar, and
+                // even the tone-repro print densities via paper anchoring) is
+                // invariant under this shift, so it is purely a change of view.
+                const fbf = points[0].y;
+                if (document.getElementById('aboveFbfToggle')?.checked) {
+                    points = points.map(p => ({ x: p.x, y: p.y - fbf }));
+                    if (rawPoints) rawPoints = rawPoints.map(p => ({ x: p.x, y: p.y - fbf }));
+                }
+
                 const name = el.querySelector('.curve-name').value;
                 const time = parseFloat(el.querySelector('.curve-time').value);
                 const color = el.querySelector('.curve-color').value;
@@ -3315,7 +3380,7 @@
                 }
 
                 const curve = {
-                    id: el.id, name, time, points, rawPoints, color, style, ci, ciParams: ciResult, matchedSbr,
+                    id: el.id, name, time, points, rawPoints, fbf, color, style, ci, ciParams: ciResult, matchedSbr,
                     dxParams: dxParams,
                     speedPoint: null,
                     speedFallback: false,
@@ -3617,6 +3682,8 @@
                 } 
             });
             filmChart.options.scales.y.max = maxDensity > 0 ? Math.ceil((maxDensity + 0.1) * 2) / 2 : 2.5;
+            filmChart.options.scales.y.title.text = document.getElementById('aboveFbfToggle')?.checked
+                ? 'Density above Fb+f' : 'Density (D)';
 
             // Always add some breathing room on X axis
             const xPadding = (maxLogH - minLogH) * 0.04 || 0.15;
@@ -3815,6 +3882,7 @@
                     <tr>
                         <td class="py-1.5 px-2"><span class="font-medium font-sans" style="color:${c.color};">${escapeHtml(c.name)}</span></td>
                         <td class="py-1.5 px-2">${!isNaN(c.time) ? c.time : '—'}</td>
+                        <td class="py-1.5 px-2">${c.fbf !== undefined ? c.fbf.toFixed(2) : '—'}</td>
                         <td class="py-1.5 px-2">${c.ci ? c.ci.toFixed(2) : '—'}</td>
                         <td class="py-1.5 px-2">${deltaDText}</td>
                         <td class="py-1.5 px-2">${c.gamma ? c.gamma.toFixed(2) : '—'}</td>
@@ -3866,6 +3934,7 @@
                     <tr style="background: #e8f5ee; border-top: 2px solid #248a3d;">
                         <td class="py-1.5 px-2"><span class="font-semibold font-sans" style="color:#248a3d;">ISO 6 Speed (ΔD=0.80)</span></td>
                         <td class="py-1.5 px-2" style="color:#248a3d;">${synTimeText}</td>
+                        <td class="py-1.5 px-2" style="color:#248a3d;">—</td>
                         <td class="py-1.5 px-2" style="color:#248a3d;">${synCIText}</td>
                         <td class="py-1.5 px-2" style="color:#248a3d;">${synDeltaDText}</td>
                         <td class="py-1.5 px-2" style="color:#248a3d;">${synGammaText}</td>
@@ -3901,12 +3970,13 @@
                 let effFlareText = '—';
                 let lerCiText = '—';
                 if (c.ci) {
+                    const scrLensK = lensFlareFactor();
                     lerCiText = (targetLer / c.ci).toFixed(2);
                     if (flareModel === 'practical') {
                         const lslr = interpolateY(practicalFlareModelData, c.ci * (1.05 / targetLer), 'ci', 'lslr');
-                        if (lslr !== null) effFlareText = (lslr - (targetLer / c.ci)).toFixed(2);
+                        if (lslr !== null) effFlareText = (Math.max(0, lslr - (targetLer / c.ci)) * scrLensK).toFixed(2);
                     } else {
-                        effFlareText = flareLogH.toFixed(2);
+                        effFlareText = (flareLogH * scrLensK).toFixed(2);
                     }
                 }
                 exposureTable.innerHTML += `
@@ -4074,19 +4144,34 @@
             const flareModel = flareModelSelect.value;
             const speedMethod = speedMethodSelect.value;
 
-            // Calculate required CI for this LSLR
+            // Calculate required CI for this LSLR (lens factor scales the flare part)
+            const lensK = lensFlareFactor();
             let requiredCi = null;
-            let effFlare = flareLogH;
+            let effFlare = flareLogH * lensK;
             if (flareModel === 'practical') {
-                const practicalPts = practicalFlareModelData.map(p => ({ x: p.lslr, y: p.ci })).sort((a, b) => a.x - b.x);
-                const normalizedCi = interpolateY(practicalPts, lslrVal);
-                if (normalizedCi !== null) {
-                    requiredCi = normalizedCi / (1.05 / targetLer);
+                // Invert the lens-scaled model: find ci with
+                // pure(ci) + K·(lslr_model(ci) − pure(ci)) = lslrVal
+                const scaledLslr = (ci) => {
+                    const lm = interpolateY(practicalFlareModelData, ci * (1.05 / targetLer), 'ci', 'lslr');
+                    if (lm === null) return null;
+                    const pure = targetLer / ci;
+                    return pure + Math.max(0, lm - pure) * lensK;
+                };
+                let lo = 0.2, hi = 1.4;
+                for (let i = 0; i < 50; i++) {
+                    const mid = (lo + hi) / 2;
+                    const v = scaledLslr(mid);
+                    if (v === null) break;
+                    if (v > lslrVal) lo = mid; else hi = mid;  // lslr falls as ci rises
+                }
+                const ciSol = (lo + hi) / 2;
+                const check = scaledLslr(ciSol);
+                if (check !== null && Math.abs(check - lslrVal) < 0.05) {
+                    requiredCi = ciSol;
                     effFlare = lslrVal - (targetLer / requiredCi);
                 }
             } else {
-                if (lslrVal > flareLogH) requiredCi = targetLer / (lslrVal - flareLogH);
-                effFlare = flareLogH;
+                if (lslrVal > flareLogH * lensK) requiredCi = targetLer / (lslrVal - flareLogH * lensK);
             }
 
             if (requiredCi === null || requiredCi <= 0) {
@@ -4281,7 +4366,7 @@
             }
 
             // --- PDF: FILM CHARACTERISTICS TABLE ---
-            const filmTableHead = [['Curve', 'Time', 'CI', 'Delta D', 'Gamma', 'G-bar', 'EFS', 'FD EI', 'Delta X EI', 'Jones EI']];
+            const filmTableHead = [['Curve', 'Time', 'Fb+f', 'CI', 'Delta D', 'Gamma', 'G-bar', 'EFS', 'FD EI', 'Delta X EI', 'Jones EI']];
             await exportProgress.set(0.18, 'Building result tables…');
             const filmTableBody = curvesData.map(c => {
                 const deltaDText = (c.dxParams && c.dxParams.deltaD !== null) ? c.dxParams.deltaD.toFixed(2) : '—';
@@ -4292,7 +4377,8 @@
                 const efsExactText = c.calculatedIso ? c.calculatedIso.toFixed(1) : '—';
                 return [
                     { content: c.name, styles: { fontStyle: 'bold', textColor: c.color } },
-                    formatTime(c.time), 
+                    formatTime(c.time),
+                    c.fbf !== undefined ? c.fbf.toFixed(2) : '—',
                     c.ci ? c.ci.toFixed(2) : '—',
                     deltaDText,
                     c.gamma ? c.gamma.toFixed(2) : '—',
@@ -4347,7 +4433,8 @@
             }
 
             const speedMethodLabel = document.getElementById('speedMethodSelect').value === 'fractionalGradient' ? 'Jones' : document.getElementById('speedMethodSelect').value === 'deltaX' ? 'Delta X' : 'FD';
-            const expTableHead = [['Curve', 'Time', `EI (${speedMethodLabel})`, 'Eff. Flare', flareModel === 'practical' ? 'LSLR (Dynamic)' : `LSLR (Fixed ${parseFloat(flareLogHInput.value).toFixed(2)})`, 'Stops']];
+            const expLensK = lensFlareFactor();
+            const expTableHead = [['Curve', 'Time', `EI (${speedMethodLabel})`, 'Eff. Flare', flareModel === 'practical' ? 'LSLR (Dynamic)' : `LSLR (Fixed ${(parseFloat(flareLogHInput.value) * expLensK).toFixed(2)})`, 'Stops']];
             const expTableBody = curvesData.map(c => {
                 let effFlare = '—';
                 let lslrText = '—';
@@ -4356,12 +4443,14 @@
                     if (flareModel === 'practical') {
                         const lslr = interpolateY(practicalFlareModelData, c.ci * (1.05 / targetLer), 'ci', 'lslr');
                         if (lslr !== null) {
-                            effFlare = (lslr - (targetLer / c.ci)).toFixed(2);
-                            lslrText = lslr.toFixed(2);
-                            stopsText = (lslr / 0.301).toFixed(1);
+                            const pure = targetLer / c.ci;
+                            const f = Math.max(0, lslr - pure) * expLensK;
+                            effFlare = f.toFixed(2);
+                            lslrText = (pure + f).toFixed(2);
+                            stopsText = ((pure + f) / 0.301).toFixed(1);
                         }
                     } else {
-                        effFlare = parseFloat(flareLogHInput.value).toFixed(2);
+                        effFlare = (parseFloat(flareLogHInput.value) * expLensK).toFixed(2);
                         lslrText = c.matchedSbr ? (c.matchedSbr * 0.301).toFixed(2) : '—';
                         stopsText = c.matchedSbr ? c.matchedSbr.toFixed(1) : '—';
                     }
@@ -4469,13 +4558,14 @@
                         // Calculate LSLR for display so the user sees the full derivation
                         const normalLslr = normalSbr * 0.301;
                         let flareDetail;
+                        const devLensK = lensFlareFactor();
                         if (flareModel === 'practical') {
                             const normalizedCI = targetCi * (1.05 / targetLerForCalc);
                             const lslr_model = interpolateY(practicalFlareModelData, normalizedCI, 'ci', 'lslr');
-                            const effFlare = lslr_model ? (lslr_model - (targetLerForCalc / targetCi)).toFixed(2) : '?';
+                            const effFlare = lslr_model ? (Math.max(0, lslr_model - (targetLerForCalc / targetCi)) * devLensK).toFixed(2) : '?';
                             flareDetail = `Dynamic Flare ≈ ${effFlare}`;
                         } else {
-                            flareDetail = `Fixed Flare ${flareLogHForDev.toFixed(2)}`;
+                            flareDetail = `Fixed Flare ${(flareLogHForDev * devLensK).toFixed(2)}`;
                         }
                         zoneTargets = [
                             { sbr: parseFloat((normalSbr + 2).toFixed(2)), label: "N-2" },
@@ -4895,7 +4985,7 @@
                 '  Poor      : below 60 -- comparable to printing two paper grades off; obvious to essentially all observers.',
                 '',
                 'THE OPTIMUM AIM:',
-                'The aim is a logistic S-curve anchored per the preferred-reproduction literature: scene highlight at 0.04 above paper base (Holm 1994, Zone 9; the ISO 6846 LER convention) and scene shadow at 90 percent of paper Dmax (Holm 1994: Zone 1 = 1.9 on a 2.1 Dmax paper). Its midtone-to-average gradient ratio of 1.16 matches the preferred reproduction (midtone gradient 1.15, average 0.98 -- Holm 1994, after Jones and Nelson).',
+                'The aim is built directly from the preferred-reproduction data of Holm (1994, Table 4, after Jones and Nelson): the zone-by-zone preferred print densities from Zone 9 (edge of detail in white, 0.04 above paper base -- also the ISO 6846 LER convention) to Zone 1 (edge of detail in black, 90 percent of paper Dmax), interpolated with a monotone cubic and scaled to the measured paper. The resulting aim is an asymmetric S: strongly compressed highlights (local gradient about 0.34 of the mean), midtone gradient about 1.14 of the mean, rising toward 1.3 in the shadows.',
                 'When the Interpolated to Target LER paper mode is active, the paper curve used in the tone reproduction is blended from two measured grades to match the target LER exactly.',
                 '',
                 'SECONDARY DIAGNOSTICS:',
@@ -7644,7 +7734,7 @@
 
             // Walk the chain
             const lh = ctxH.calcQ1Y(r);
-            const nd = trInterpolate(lh, 'y', 'x', ctxH.q2Points, true);
+            const nd = trInterpolate(lh, 'y', 'x', ctxH.q2Points, false);
             if (nd === null) return;
             const pd = ctxH.getPrintDensity(nd);
             const idealY = ctxH.sceneLineY ? ctxH.sceneLineY(r) : null;
@@ -7983,7 +8073,7 @@
                 }
                 if (quadrant === 'q3') {
                     const nd = chart.scales.x.getValueForPixel(offX);
-                    const lh = trInterpolate(nd, 'x', 'y', trHoverCtx.q2Points, true);
+                    const lh = trInterpolate(nd, 'x', 'y', trHoverCtx.q2Points, false);
                     return lh === null ? null : trHoverCtx.inverseCamera(lh);
                 }
                 return null;
@@ -8234,20 +8324,22 @@
 
             // --- Flare for TR diagram ---
             const pureSceneRange = targetLerVal / ci;
+            const lensK = lensFlareFactor();
 
             if (flareModelVal === 'practical') {
                 const lslrCalc = interpolateY(practicalFlareModelData, ci * (1.05 / targetLerVal), 'ci', 'lslr');
                 if (lslrCalc !== null) {
-                    effFlare = lslrCalc - pureSceneRange;
+                    effFlare = Math.max(0, lslrCalc - pureSceneRange) * lensK;
                 } else {
-                    effFlare = flareLogHVal;
+                    effFlare = flareLogHVal * lensK;
                 }
             } else {
-                effFlare = flareLogHVal;
+                effFlare = flareLogHVal * lensK;
             }
 
             // TR-local flare override — lets the user play with flare without
-            // touching the flare model that drives the Curves-tab aims
+            // touching the flare model that drives the Curves-tab aims.
+            // The slider value is explicit and absolute: no lens scaling.
             if (document.getElementById('trFlareMode').value === 'custom') {
                 effFlare = parseFloat(document.getElementById('trFlareSlider').value) || 0;
             }
@@ -8328,19 +8420,28 @@
             //  'speed'   — placed shadow zone sits on the speed point (0.10 over Fb+f by
             //              default). The classic Zone-I placement; the no-flare curve lines
             //              up with the 0.10 point by construction.
-            //  'metered' — the metered gray lands at the metered exposure point. Per ISO,
-            //              a meter delivers Hg = 8/S while the speed point is Hm = 0.8/S,
-            //              so the metered gray sits exactly 1.0 log H (3 1/3 stops) above
-            //              the fixed-density speed point — 2/3 stop less shadow exposure
-            //              than Zone-I placement implies.
+            //  'metered' — METER ARITHMETIC, not zone arithmetic. The metered gray is
+            //              placed at the standards-defined distance above the ACTIVE
+            //              speed point: Hg = 8/S, so with S = 0.8/Hm (fixed density)
+            //              metered sits 10× = 1.00 log H (3 1/3 stops) above Hm, and
+            //              with S = 0.4/Hm (Delta-X / Jones) 20× = 1.30 log H (4 1/3
+            //              stops). The no-flare shadow of the average scene then lands
+            //              exactly ON the speed point, and a 2.20 scene splits 4 1/3
+            //              below / 3 above the meter reading — the odd third of a stop
+            //              falls on the shadow side, as meter calibration implies.
+            //              (The zone ruler remains a display overlay; Zone I→V = 4
+            //              stops is zone convention, not meter physics.)
             const filmAnchorMode = document.getElementById('trFilmAnchor').value;
+            // Hg − Hm in log H for the active TR speed criterion (8/S vs its constant)
+            const meterKm = (trSpeedMethod === 'fixedDensity') ? 1.00 : 1.30;
             let camConstant_noFlare;
             if (filmAnchorMode === 'metered') {
                 const anchorGrayPct = parseFloat(document.getElementById('trMeteredGray').value) || 12;
-                const anchorZoneVCenter = shadowReflectance - ((5 - shadowZone) * 0.301);
-                const anchorMeteredR = anchorZoneVCenter - Math.log10(anchorGrayPct / 12);
-                const meteredExpLogH = noFlareSpeedLogH + 1.0; // Hg = 10·Hm
-                camConstant_noFlare = meteredExpLogH + anchorMeteredR;
+                // Metered scene reflectance: meterKm above the scene shadow, plus the
+                // user's % gray offset from the 12% meter-calibration convention.
+                const anchorMeteredR = (shadowReflectance - meterKm) - Math.log10(anchorGrayPct / 12);
+                const meteredExpLogH = speedPoint + meterKm; // Hg for the active criterion
+                camConstant_noFlare = meteredExpLogH + anchorMeteredR + placementOffset;
             } else {
                 camConstant_noFlare = speedPoint + placementOffset + shadowReflectance;
             }
@@ -8353,8 +8454,8 @@
             // Base shadow/highlight — shadow rises with flare, highlight stays fixed
             const baseLogH_at_shadow = baseCalcQ1Y(shadowReflectance);  // > speedPoint when flare > 0
             const baseLogH_at_highlight = baseCalcQ1Y(highlightReflectance); // ≈ speedPoint + shadowR
-            const baseD_at_shadow = trInterpolate(baseLogH_at_shadow, 'x', 'y', filmPoints, true);
-            const baseD_at_highlight = trInterpolate(baseLogH_at_highlight, 'x', 'y', filmPoints, true);
+            const baseD_at_shadow = trInterpolate(baseLogH_at_shadow, 'x', 'y', filmPoints, false);
+            const baseD_at_highlight = trInterpolate(baseLogH_at_highlight, 'x', 'y', filmPoints, false);
 
             // EI offset: how much flare lifted the shadow above its placed position.
             // speedPointDensity stays at the true speed point — it positions the Q2 marker
@@ -8362,8 +8463,8 @@
             // No-flare shadow position under the chosen film anchor (equals
             // speedPoint + placementOffset when anchored on the speed point).
             const placedShadowLogH = camConstant_noFlare - shadowReflectance;
-            const speedPointDensity = trInterpolate(speedPoint, 'x', 'y', filmPoints, true);
-            const placedShadowDensity = trInterpolate(placedShadowLogH, 'x', 'y', filmPoints, true);
+            const speedPointDensity = trInterpolate(speedPoint, 'x', 'y', filmPoints, false);
+            const placedShadowDensity = trInterpolate(placedShadowLogH, 'x', 'y', filmPoints, false);
             const flareEiOffsetLogH = baseLogH_at_shadow - placedShadowLogH;
             const flareEiOffsetStops = flareEiOffsetLogH / 0.301;
             const flareDensityOffset = (baseD_at_shadow !== null && placedShadowDensity !== null)
@@ -8391,8 +8492,16 @@
             // Actual film densities with film exposure applied (for tracing)
             const logH_at_shadow = calcQ1Y(shadowReflectance);
             const logH_at_highlight = calcQ1Y(highlightReflectance);
-            const D_at_shadow = trInterpolate(logH_at_shadow, 'x', 'y', filmPoints, true);
-            const D_at_highlight = trInterpolate(logH_at_highlight, 'x', 'y', filmPoints, true);
+            const D_at_shadow = trInterpolate(logH_at_shadow, 'x', 'y', filmPoints, false);
+            const D_at_highlight = trInterpolate(logH_at_highlight, 'x', 'y', filmPoints, false);
+
+            // The film curve is CLAMPED at its measured ends — never linearly
+            // extrapolated (a fictional shoulder-free film). Warn when the
+            // exposure window runs off the measured data.
+            const filmDataMax = filmPoints[filmPoints.length - 1].x;
+            const filmDataMin = filmPoints[0].x;
+            const filmOverRun = logH_at_highlight - filmDataMax;
+            const filmUnderRun = filmDataMin - logH_at_shadow;
 
             // --- Paper anchoring ---
             const paperAnchorMode = document.getElementById('trPaperAnchor').value;
@@ -8403,8 +8512,8 @@
             // (default 0 stops). Manual film-exposure moves show as print changes until
             // the user explicitly re-anchors — then the paper follows the new negative.
             const anchorCalcQ1Y = (r) => Math.log10(Math.pow(10, -r) + L_flare) + baseCamConstant + trAnchorExpStops * 0.301;
-            const anchorD_at_shadow = trInterpolate(anchorCalcQ1Y(shadowReflectance), 'x', 'y', filmPoints, true);
-            const anchorD_at_highlight = trInterpolate(anchorCalcQ1Y(highlightReflectance), 'x', 'y', filmPoints, true);
+            const anchorD_at_shadow = trInterpolate(anchorCalcQ1Y(shadowReflectance), 'x', 'y', filmPoints, false);
+            const anchorD_at_highlight = trInterpolate(anchorCalcQ1Y(highlightReflectance), 'x', 'y', filmPoints, false);
 
             const reanchorInfoEl = document.getElementById('trReanchorInfo');
             if (reanchorInfoEl) {
@@ -8491,6 +8600,31 @@
             trChartQ2.options.scales.y.min = axisLogHMin;
             trChartQ2.options.scales.y.max = axisLogHMax;
             trChartQ2.options.scales.x.max = axisDensMax;
+
+            // --- Q2 film-gradient overlay data (computed here so the Q2 info
+            // block below can report the scale factor; drawn in the dataset
+            // section). Auto-scaled: peak gradient spans ~70% of the density
+            // axis so the shape is prominent, not pinned to the axis corner.
+            let q2GradData = null, q2GradScale = null, q2GradPeak = null;
+            if (document.getElementById('trShowFilmGradient')?.checked) {
+                const gradSpline = pchipInterpolator(filmPoints);
+                if (gradSpline) {
+                    const raw = [];
+                    let gPeak = 0;
+                    for (let h = gradSpline.xMin; h <= gradSpline.xMax + 1e-9; h += 0.02) {
+                        const hh = Math.min(h, gradSpline.xMax);
+                        if (hh < axisLogHMin || hh > axisLogHMax) continue;
+                        const g = Math.max(0, gradSpline.deriv(hh));
+                        if (g > gPeak) gPeak = g;
+                        raw.push({ g, h: hh });
+                    }
+                    if (raw.length > 1 && gPeak > 0) {
+                        const k = (0.70 * axisDensMax) / gPeak;
+                        q2GradScale = k; q2GradPeak = gPeak;
+                        q2GradData = raw.map(p => ({ x: p.g * k, y: p.h }));
+                    }
+                }
+            }
             trChartQ3.options.scales.x.max = axisDensMax;
             const printAxisMax = Math.ceil((paperDmax + 0.2) * 10) / 10;
             trChartQ3.options.scales.y.max = printAxisMax;
@@ -8520,7 +8654,7 @@
             const q2DrawMin = Math.min(filmLogHMin, logH_at_highlight) - 0.2;
             const q2DrawMax = Math.max(filmLogHMax, logH_at_shadow) + 0.2;
             for (let lh = q2DrawMin; lh <= Math.min(q2DrawMax, curveLogHLimit); lh += 0.03) {
-                const dens = trInterpolate(lh, 'y', 'x', q2Points, true);
+                const dens = trInterpolate(lh, 'y', 'x', q2Points, false);
                 if (dens !== null) q2Line.push({ x: dens, y: lh });
             }
 
@@ -8568,7 +8702,7 @@
             const q4ReproCurve = [];
             for (let r = highlightReflectance; r <= shadowReflectance + 0.01; r += 0.02) {
                 const lh = calcQ1Y(r);
-                const nd = trInterpolate(lh, 'y', 'x', q2Points, true);
+                const nd = trInterpolate(lh, 'y', 'x', q2Points, false);
                 if (nd === null) continue;
                 const pd = getPrintDensity(nd);
                 q4ReproCurve.push({ x: r, y: pd });
@@ -8662,13 +8796,12 @@
                     const aimDmin = Dmin + 0.04;
                     const optimumDrange = Dmax - aimDmin;
 
-                    // Reference target: logistic S-curve scaled to scene/paper
-                    // endpoints. Template mid/avg gradient ratio 1.158 matches
-                    // the preferred reproduction (midtone gamma 1.15, average
-                    // gradient 0.98 → ratio ≈1.17; Holm 1994 after Jones/Nelson).
+                    // Reference target: Holm (1994) Table 4 preferred densities
+                    // (Zones 9→1, monotone-cubic interpolated) scaled to the
+                    // scene/paper endpoints — see preferredAimTemplate.
                     const targetOptimumD = (r) => {
                         const t = Math.max(0, Math.min(1, (r - highlightReflectance) / sceneRange));
-                        const s = logisticSCurveTemplate(t);
+                        const s = preferredAimTemplate(t);
                         return aimDmin + optimumDrange * s;
                     };
                     // Linear (scene-faithful) target: full density range
@@ -8725,7 +8858,7 @@
                     }
 
                     // --- TIER 2: BSW Decomposition (diagnostic) ---
-                    bswResult = bswCurveRating(q4ReproCurve, logisticSCurveTemplate);
+                    bswResult = bswCurveRating(q4ReproCurve, preferredAimTemplate);
                     if (bswResult) {
                         qShape = bswResult.q;
                     }
@@ -8774,19 +8907,20 @@
                 const tQ3 = isKey ? q3Key : q3Trace;
                 const tQ4 = isKey ? q4Key : q4Trace;
 
-                // Q4: vertical drop from ideal scene line to x-axis (connects to Q1)
-                const idealY = sceneLineY(r);
-                tQ4.push({ x: r, y: idealY }, { x: r, y: 0 }, nan);
-
                 // Q1: scene luminance → log H (flare equation)
                 const lh = calcQ1Y(r);
 
                 // Q2: log H → negative density (film curve lookup)
-                const nd = trInterpolate(lh, 'y', 'x', q2Points, true);
+                const nd = trInterpolate(lh, 'y', 'x', q2Points, false);
                 if (nd === null) return;
 
                 // Q3: negative density → print density (paper via enlarger)
                 const pd = getPrintDensity(nd);
+
+                // Q4: vertical from the x-axis up to the ACTUAL reproduction
+                // curve (connects to Q1). It must stop at the traced print
+                // density — not run on to the aim/guide curve.
+                tQ4.push({ x: r, y: pd }, { x: r, y: 0 }, nan);
 
                 // Collect exact intersection points
                 q1Inject.push({ x: r, y: lh });
@@ -8848,7 +8982,13 @@
             const meteredGrayPct = parseFloat(document.getElementById('trMeteredGray').value) || 12;
             const meteredOffset = Math.log10(meteredGrayPct / 12); // offset from Zone V
             const zoneVCenter = shadowReflectance - ((5 - shadowZone) * 0.301); // Zone V center on the (placed) ruler
-            const meteredR = zoneVCenter - meteredOffset;
+            // Metered scene reflectance: zone-ruler based (Zone V) under speed
+            // anchoring; meter-arithmetic based (meterKm above the shadow) under
+            // metered anchoring — so the marker matches the anchor's own math.
+            const meteredBaseR = (filmAnchorMode === 'metered')
+                ? shadowReflectance - meterKm
+                : zoneVCenter;
+            const meteredR = meteredBaseR - meteredOffset;
             let meteredLogH = null, meteredNegD = null, meteredPrintD = null;
             let meteredDeltaFromExposure = null; // logH difference: metered vs actual film exposure
             let meteredDeltaFromSpeed = null;    // logH difference: metered vs speed point
@@ -8858,7 +8998,7 @@
 
             if (showMetered && meteredR > highlightReflectance + 0.01 && meteredR < shadowReflectance - 0.01) {
                 meteredLogH = calcQ1Y(meteredR);
-                meteredNegD = trInterpolate(meteredLogH, 'y', 'x', q2Points, true);
+                meteredNegD = trInterpolate(meteredLogH, 'y', 'x', q2Points, false);
                 if (meteredNegD !== null) {
                     meteredPrintD = getPrintDensity(meteredNegD);
 
@@ -8874,9 +9014,9 @@
                     injectPoints(q2Line, [{ x: meteredNegD, y: meteredLogH }], 'y');
                     injectPoints(q3Line, [{ x: meteredNegD, y: meteredPrintD }], 'x');
 
-                    // Q4: originate from scene line at Zone V, drop to x-axis, then show print density
-                    const meteredIdealY = sceneLineY(meteredR);
-                    mQ4Trace.push({ x: meteredR, y: meteredIdealY }, { x: meteredR, y: 0 }, nan);
+                    // Q4: vertical from x-axis up to the ACTUAL reproduction curve
+                    // (not the aim/guide), then horizontal to the density axis
+                    mQ4Trace.push({ x: meteredR, y: meteredPrintD }, { x: meteredR, y: 0 }, nan);
                     mQ4Trace.push({ x: meteredR, y: meteredPrintD }, { x: sceneMax, y: meteredPrintD }, nan);
 
                     // Q1: from top → curve → right
@@ -8971,6 +9111,18 @@
                 };
                 q2DsLen++;
             }
+            // Film gradient overlay in Q2: dD/d(log H) plotted on the density
+            // axis (same numeric range), log H on the shared vertical axis.
+            // The marker sits at the Jones fractional-gradient point — the
+            // gradient there is 0.3·G-bar, where shadow detail starts to build.
+            if (q2GradData) {
+                // Styled to match the Q4 reproduction-gradient curve: solid red.
+                trChartQ2.data.datasets[q2DsLen] = {
+                    data: q2GradData, borderColor: '#d70015',
+                    borderWidth: 1.5, pointRadius: 0, tension: 0.3
+                };
+                q2DsLen++;
+            }
             trChartQ2.data.datasets.length = q2DsLen;
 
             setDS(trChartQ3, 0, q3Line, '#1d1d1f', false);
@@ -9003,7 +9155,9 @@
             }
 
             setDS(trChartQ4, 0, q4ReproCurve, '#1d1d1f', false, 2);
-            setDS(trChartQ4, 1, q4Ideal, '#1d1d1f', false, 1.5);
+            // Scene-faithful straight line: a subordinate reference, NOT the Q aim.
+            // Styled faint so it cannot be mistaken for the guide the Q rating uses.
+            setDS(trChartQ4, 1, q4Ideal, 'rgba(0,0,0,0.30)', true, 1);
             setDS(trChartQ4, 2, q4HelpLines, 'rgba(0,0,0,0.25)', true, 1);
             setDS(trChartQ4, 3, q4HelpKey, 'rgba(0,0,0,0.7)', true, 2);
             setDS(trChartQ4, 4, q4Trace, traceColor, true, 0.75);
@@ -9011,9 +9165,11 @@
 
             // Reference target curve overlay (fixed aim — thin dashed blue-grey)
             if (q4OptimumCurve.length > 0) {
+                // The Q aim — THE guide curve. Prominent: this is the exact curve the
+                // Simonds Q rating measures against (same targetOptimumD function).
                 trChartQ4.data.datasets[6] = {
-                    data: q4OptimumCurve, borderColor: 'rgba(70,100,140,0.5)',
-                    borderWidth: 1.5, borderDash: [6, 3],
+                    data: q4OptimumCurve, borderColor: 'rgba(45,85,135,0.9)',
+                    borderWidth: 2, borderDash: [7, 4],
                     pointRadius: 0, tension: 0.3,
                     fill: false, order: 5
                 };
@@ -9091,11 +9247,22 @@
             }
             if (curveEFS) q2Info.push(`EFS:${Math.round(curveEFS)}`);
             q2Info.push('');
+            if (filmOverRun > 0.01) {
+                q2Info.push(`⚠ exposure exceeds measured data by ${filmOverRun.toFixed(2)} logH`);
+                q2Info.push(`  densities clamped at last measured point — not extrapolated`);
+            }
+            if (filmUnderRun > 0.01) {
+                q2Info.push(`⚠ shadow falls ${filmUnderRun.toFixed(2)} logH below measured data (clamped)`);
+            }
+            q2Info.push(`Fb+f:${(curveObj && curveObj.fbf !== undefined ? curveObj.fbf : filmPoints[0].y).toFixed(2)}`);
             q2Info.push(`DR:${filmDR.toFixed(2)}`);
             q2Info.push(`Highlight:${D_at_highlight.toFixed(2)}`);
             q2Info.push(`Shadow:${D_at_shadow.toFixed(2)}`);
             const spLabel = speedMethodLabels[trSpeedMethod] || trSpeedMethod;
             q2Info.push(`${spLabel} Spd:logH ${speedPoint.toFixed(2)} D ${speedPointDensity !== null ? speedPointDensity.toFixed(2) : '—'}`);
+            if (q2GradScale !== null) {
+                q2Info.push(`Gradient dD/dlogH: red, ×${q2GradScale.toFixed(1)} (peak ${q2GradPeak.toFixed(2)})`);
+            }
             if (showMetered && meteredNegD !== null) {
                 q2Info.push('');
                 q2Info.push(`*Metered (${meteredGrayPct}% gray${Math.abs(meteredOffset) > 0.005 ? `, ${meteredOffset > 0 ? '+' : ''}${(meteredOffset / 0.301).toFixed(1)} stops` : ''})`);
@@ -9122,8 +9289,8 @@
                 q1Info.push(`Place:${placeLabelMap[placementSel] || placementSel} (${placementOffset >= 0 ? '+' : ''}${placementOffset.toFixed(2)} logH)`);
             }
             q1Info.push(`Speed:${speedMethodLabels[trSpeedMethod] || trSpeedMethod}`);
-            q1Info.push(`Anchor:${filmAnchorMode === 'metered' ? 'Metered exposure (Hg = Hm+1.0)' : 'Speed point (0.10)'}`);
-            q1Info.push(`Flare:${effFlare.toFixed(2)} logH`);
+            q1Info.push(`Anchor:${filmAnchorMode === 'metered' ? `Metered (${meterKm === 1.00 ? '3⅓' : '4⅓'} stops over Spd)` : 'Speed point (0.10)'}`);
+            q1Info.push(`Flare:${effFlare.toFixed(2)} logH${(() => { const s = document.getElementById('lensQualitySelect'); if (!s || s.value === 'mid' || document.getElementById('trFlareMode').value === 'custom') return ''; return s.value === 'modern' ? ' · modern lens ×0.75' : ' · vintage lens ×1.40'; })()}`);
             if (showNoFlareRef) q1Info.push('No-flare ref: dashed');
             if (flareEiOffsetStops > 0.05) q1Info.push(`Offset:+${flareEiOffsetLogH.toFixed(2)} logH (ΔD ${flareDensityOffset.toFixed(2)})`);
             if (filmExpStops !== 0) q1Info.push(`Film Exp:${filmExpStops > 0 ? '+' : ''}${filmExpStops.toFixed(1)} stops`);
@@ -9183,6 +9350,8 @@
                 const approx = simondsResult.residRms > 0.04 ? '*' : '';
                 q4Info.push(`Q (Simonds):${Math.round(simondsResult.q)}${approx} · ${tier.label}`);
                 q4Info.push(`  ${tier.jnd < 0.5 ? '<½' : '~' + tier.jnd.toFixed(1)} JND from optimum`);
+                q4Info.push(`  aim = blue dashed curve (Q measures against it)`);
+                q4Info.push(`  gray dashed = scene-faithful line (reference only)`);
                 // y-diagnostics: WHICH kind of departure (Simonds' three vectors)
                 q4Info.push(`  y1:${simondsResult.y1 >= 0 ? '+' : ''}${simondsResult.y1.toFixed(2)} dens/contr`
                     + `  y2:${simondsResult.y2 >= 0 ? '+' : ''}${simondsResult.y2.toFixed(2)} tilt`
@@ -9191,7 +9360,7 @@
             }
             if (qTarget !== null) q4Info.push(`Q-Target:${qTarget}`);
             if (qLinearTarget !== null) q4Info.push(`Q-Linear:${qLinearTarget}`);
-            if (qShape !== null) q4Info.push(`Q-Shape:${qShape}`);
+            if (qShape !== null) q4Info.push(`Q-Shape:${qShape} (shape only — blind to position/contrast)`);
             if (bswResult) {
                 q4Info.push(`Δspd:${bswResult.h > 0 ? '+' : ''}${bswResult.h.toFixed(3)}`
                     + ` Δcon:${bswResult.c.toFixed(2)}`
@@ -9205,7 +9374,7 @@
                 const r = shadowReflectance - (i * 0.301);
                 if (r < highlightReflectance - 0.01) break;
                 const lh = calcQ1Y(r);
-                const nd = trInterpolate(lh, 'y', 'x', q2Points, true);
+                const nd = trInterpolate(lh, 'y', 'x', q2Points, false);
                 if (nd === null) continue;
                 const pd = getPrintDensity(nd);
                 if (prevPd !== null) {
@@ -9228,10 +9397,23 @@
             }
             renderTrInfoBlock('trInfoQ4', q4Info);
             trChartQ4._zoneStrip = null;
+            // Zone ruler anchoring: under speed anchoring the placed shadow sits on
+            // its zone (classic). Under metered anchoring the Zone System's own
+            // definition rules — Zone V IS the meter reading — so the ruler pins
+            // Zone V to the metered tone and the scene shadow falls at a fractional
+            // zone (e.g. Zone ⅔ for Delta-X: 4⅓ stops below Zone V).
+            // Includes the % gray offset: whatever tone you actually metered is the
+            // tone that renders as Zone V, so the ruler follows it. Deliberate
+            // placement shifts (exposing over/under the meter) move every tone's
+            // rendered zone, so the ruler shifts with them too.
+            const rulerShadowZone = (filmAnchorMode === 'metered')
+                ? 5 - (meterKm + Math.log10((parseFloat(document.getElementById('trMeteredGray').value) || 12) / 12)) / 0.301
+                  + placementOffset / 0.301
+                : shadowZone;
             trChartQ1._zoneStrip = {
                 shadowR: shadowReflectance,
                 numZones: 11,
-                shadowZone,
+                shadowZone: rulerShadowZone,
                 mode: document.getElementById('trSubjectScale').value || 'zone'
             };
 
@@ -9320,6 +9502,7 @@
             document.getElementById('trShowGradient').addEventListener('change', updateToneReproduction);
             document.getElementById('trShowNoFlare').addEventListener('change', updateToneReproduction);
             document.getElementById('trShowMetered').addEventListener('change', updateToneReproduction);
+            document.getElementById('trShowFilmGradient').addEventListener('change', updateToneReproduction);
             document.getElementById('trMeteredGray').addEventListener('input', updateToneReproduction);
             document.getElementById('trSceneLslr').addEventListener('input', updateToneReproduction);
             const syncTrFlareUI = () => {
@@ -9676,6 +9859,7 @@
             targetLerInput.addEventListener('input', () => { updateChartAndCalculations(); parsePaperCurves(); });
             flareLogHInput.addEventListener('input', updateChartDebounced);
             flareModelSelect.addEventListener('change', updateChartAndCalculations);
+            document.getElementById('lensQualitySelect').addEventListener('change', updateChartAndCalculations);
             isoMethodRadios.forEach(radio => radio.addEventListener('change', toggleIsoMethodUI));
             targetIsoInput.addEventListener('input', updateChartDebounced);
             speedMethodSelect.addEventListener('change', updateChartAndCalculations);
@@ -9688,6 +9872,7 @@
             showGridToggle.addEventListener('change', updateChartAndCalculations);
             showPointsToggle.addEventListener('change', updateChartAndCalculations);
             document.getElementById('showGradientToggle').addEventListener('change', updateChartAndCalculations);
+            document.getElementById('aboveFbfToggle').addEventListener('change', updateChartAndCalculations);
             document.getElementById('showIso6CurveToggle').addEventListener('change', updateChartAndCalculations);
             squareGridToggle.addEventListener('change', updateChartAndCalculations);
             document.getElementById('zoneTableMethod').addEventListener('change', () => {
@@ -9798,6 +9983,7 @@
             const STORAGE_KEY = 'sensitometry_tool_state';
             const settingsMap = [
                 { id: 'flareModelSelect', type: 'select' },
+                { id: 'lensQualitySelect', type: 'select' },
                 { id: 'targetLer', type: 'number' },
                 { id: 'flareLogH', type: 'number' },
                 { id: 'logHModeSelect', type: 'select' },
@@ -9812,6 +9998,7 @@
                 { id: 'showGridToggle', type: 'checkbox' },
                 { id: 'showPointsToggle', type: 'checkbox' },
                 { id: 'showGradientToggle', type: 'checkbox' },
+                { id: 'aboveFbfToggle', type: 'checkbox' },
                 { id: 'squareGridToggle', type: 'checkbox' },
                 { id: 'showIso6CurveToggle', type: 'checkbox' },
                 { id: 'plotSingleCurvesCheckbox', type: 'checkbox' },
@@ -9844,6 +10031,7 @@
                 { id: 'trPaperAnchor', type: 'select' },
                 { id: 'trAnchorPct', type: 'number' },
                 { id: 'trShowMetered', type: 'checkbox' },
+                { id: 'trShowFilmGradient', type: 'checkbox' },
                 { id: 'trShowNoFlare', type: 'checkbox' },
                 { id: 'trMeteredGray', type: 'number' },
                 { id: 'trShowGradient', type: 'checkbox' },
