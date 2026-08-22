@@ -57,6 +57,6 @@ This is a tool made to help you understand your process. Enter your exposure as 
 
     ![Step 10 - Tonal Transfer](screenshots/10.png)
     
-Made by René Böhmer · [analogworkshops.at](https://www.analogplotter.com) · free to use
+Made by René Böhmer and my dear friend Claude - Fable 5 <3 · [analogworkshops.at](https://www.analogplotter.com) · free to use
 
 *Changelog: see [UPDATE.md](UPDATE.md)*
