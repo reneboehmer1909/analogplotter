@@ -2,7 +2,7 @@
 
 **A sensitometry tool for black-and-white film testing — made to help you understand your process.**
 
-Analogplotter turns densitometer readings into characteristic curves and reads everything a darkroom worker needs from them: contrast, film speed, development aims, and a full scene-to-print tone reproduction analysis. It runs entirely in the browser as a single HTML file — no install, no server, no account.
+Analogplotter turns densitometer readings into characteristic curves and reads everything a darkroom worker needs from them: contrast, film speed, development aims, and a full scene-to-print tone reproduction analysis. It runs entirely in the browser as a single HTML file. No install, no server, no account.
 
 ![Characteristic curves of a development series](screenshots/curves.png)
 
