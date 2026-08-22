@@ -60,3 +60,8 @@ This is a tool made to help you understand your process. Enter your exposure as 
 Made by René Böhmer and my dear friend Claude - Fable 5 <3 · [analogworkshops.at](https://www.analogplotter.com) · free to use
 
 *Changelog: see [UPDATE.md](UPDATE.md)*
+
+## License
+
+Licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE.md) — free for any
+noncommercial use; commercial use is not permitted.
