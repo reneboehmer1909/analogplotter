@@ -30,6 +30,7 @@
         :root {
             --bg-page: #ffffff;
             --topbar-h: 64px;
+            --chart-h-budget: calc(100vh - var(--topbar-h) - 40px);
             --bg-card: #ffffff;
             --bg-card-alt: #f5f5f7;
             --border-subtle: #e8e8ed;
@@ -90,6 +91,100 @@
             transition: background-color 0.15s ease;
         }
         .secondary-btn:hover { background-color: #dcdce1; }
+
+        /* --- Method animation: focus mode ---
+           While an animation is running the page becomes a single fixed frame:
+           chart + transport, nothing else, and no scrolling. Everything the
+           animation needs (curve, method, playback) lives in the bar. */
+        body.anim-focus { overflow: hidden; height: 100vh; }
+        body.anim-focus .topbar { display: none; }
+        body.anim-focus .app-sidebar { display: none; }
+        body.anim-focus .app-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+        body.anim-focus .app-main { padding: 10px 16px 0; }
+        body.anim-focus .app-content > * { display: none !important; }
+        body.anim-focus .app-content > #panelCurvesChart { display: block !important; }
+        body.anim-focus { --chart-h-budget: calc(100vh - var(--anim-bar-h, 168px) - 26px); }
+        body.anim-focus #chartContainer { margin-bottom: 8px; }
+        body.anim-focus #curveAnimBar { box-shadow: 0 6px 28px rgba(0,0,0,0.12); }
+
+        /* --- Method animation: playback bar + per-curve menu --- */
+        #curveAnimBar {
+            margin-top: 10px;
+            padding: 12px 14px;
+            border: 1px solid var(--border-light, #e3e3e7);
+            border-radius: 14px;
+            /* The film chart can be taller than the viewport; keep the narration
+               and transport pinned to the bottom so they never scroll away. */
+            position: sticky;
+            bottom: 10px;
+            z-index: 20;
+            background: rgba(251,251,253,0.97);
+            backdrop-filter: saturate(180%) blur(12px);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+        }
+        #curveAnimBar.hidden { display: none; }
+        .ca-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .ca-title { font-weight: 600; font-size: 13px; color: #1d1d1f; }
+        .ca-step { font-size: 11px; color: var(--text-muted, #86868b); margin-left: auto; }
+        .ca-caption {
+            font-size: 12.5px; line-height: 1.5; color: #1d1d1f;
+            margin-top: 8px; min-height: 3.2em;
+        }
+        .ca-caption b { font-weight: 600; }
+        .ca-controls { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+        .ca-btn {
+            border-radius: 999px; background: #e8e8ed; color: #1d1d1f;
+            font-size: 12px; line-height: 1; padding: 7px 11px; border: none;
+            cursor: pointer; transition: background-color .15s ease;
+        }
+        .ca-btn:hover { background: #dcdce1; }
+        .ca-btn-close { margin-left: auto; }
+        #caDots { display: flex; gap: 5px; align-items: center; margin: 0 6px; }
+        .ca-dot {
+            width: 9px; height: 9px; border-radius: 50%; border: none; padding: 0;
+            background: #d2d2d7; cursor: pointer; transition: background-color .15s ease, transform .15s ease;
+        }
+        .ca-dot-done { background: #a1a1a6; }
+        .ca-dot-on { background: #1d1d1f; transform: scale(1.3); }
+        .ca-speed { font-size: 11px; border: 1px solid #d2d2d7; border-radius: 999px; padding: 5px 8px; background: #fff; }
+        .ca-curve-sel {
+            font-size: 12px; font-weight: 600; border: 1px solid #d2d2d7;
+            border-radius: 999px; padding: 4px 8px; background: #fff; max-width: 190px;
+        }
+        #caChips {
+            display: flex; gap: 5px; align-items: center; overflow-x: auto;
+            flex: 1 1 auto; min-width: 0; padding-bottom: 2px; scrollbar-width: none;
+        }
+        #caChips::-webkit-scrollbar { display: none; }
+        .ca-chip {
+            flex: 0 0 auto; border: 1px solid #e3e3e7; background: #fff; color: #6e6e73;
+            border-radius: 999px; font-size: 11px; line-height: 1; padding: 6px 10px;
+            cursor: pointer; white-space: nowrap; transition: all .15s ease;
+        }
+        .ca-chip:hover { background: #f2f2f7; color: #1d1d1f; }
+        .ca-chip-on, .ca-chip-on:hover { background: #1d1d1f; border-color: #1d1d1f; color: #fff; font-weight: 600; }
+        .ca-chip-na { opacity: .38; cursor: not-allowed; }
+        .ca-chip-na:hover { background: #fff; color: #6e6e73; }
+
+        .ca-more-wrap { margin-top: 8px; }
+        .ca-more-menu {
+            margin-top: 6px; border: 1px solid #e3e3e7; border-radius: 12px;
+            background: #fff; overflow: hidden;
+        }
+        .ca-more-menu.hidden { display: none; }
+        .ca-menu-head {
+            font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
+            color: #86868b; padding: 8px 12px 4px 12px;
+        }
+        .ca-menu-item {
+            display: block; width: 100%; text-align: left; background: none; border: none;
+            font-size: 12px; color: #1d1d1f; padding: 8px 12px; cursor: pointer;
+        }
+        .ca-menu-item:hover { background: #f2f2f7; }
+        .ca-menu-item-active, .ca-menu-item-active:hover {
+            background: #eaeaef; font-weight: 600;
+            box-shadow: inset 3px 0 0 #1d1d1f;
+        }
 
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
@@ -515,7 +610,7 @@
         /* First-viewport hero: the coordinate system fills the screen below the header,
            centered; everything after it lives below the fold */
         .chart-hero {
-            height: calc(100vh - var(--topbar-h) - 40px);
+            height: var(--chart-h-budget);
             aspect-ratio: 1.4 / 1;
             width: auto;
             max-width: 100%;
@@ -1112,6 +1207,27 @@
                 <div id="chartContainer" class="chart-hero">
                     <canvas id="filmCurveChart"></canvas>
                 </div>
+                <div id="curveAnimBar" class="hidden">
+                    <div class="ca-top">
+                        <select class="ca-curve-sel" id="caCurveSel" title="Which curve to analyse"></select>
+                        <div id="caChips"></div>
+                        <span class="ca-step" id="caStepNum"></span>
+                    </div>
+                    <div class="ca-caption" id="caCaption"></div>
+                    <div class="ca-controls">
+                        <button type="button" class="ca-btn" id="caRestart" title="Restart">&#8635;</button>
+                        <button type="button" class="ca-btn" id="caPrev" title="Previous step">&#9664;&#9664;</button>
+                        <button type="button" class="ca-btn" id="caPlay" title="Play">&#9654;</button>
+                        <button type="button" class="ca-btn" id="caNext" title="Next step">&#9654;&#9654;</button>
+                        <div id="caDots"></div>
+                        <select class="ca-speed" id="caSpeed" title="Playback speed">
+                            <option value="0.5">0.5&times;</option>
+                            <option value="1" selected>1&times;</option>
+                            <option value="2">2&times;</option>
+                        </select>
+                        <button type="button" class="ca-btn ca-btn-close" id="caClose" title="Exit animation">Exit &#10005;</button>
+                    </div>
+                </div>
                 </div>
 
                 <!-- CHART AREA: Tone Reproduction (switchable) -->
@@ -1232,10 +1348,10 @@
                     </div>
                     <div>
                         <label class="font-medium text-xs" style="color:var(--text-muted);">Lens</label>
-                        <select id="lensQualitySelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" title="Scales the flare component of the model. Mid-tier = the statistical average behind the model's base values. Modern multicoated designs flare ~25% less; vintage single/uncoated glass ~40% more.">
-                            <option value="vintage">Vintage (×1.40)</option>
-                            <option value="mid" selected>Mid-tier (×1.00)</option>
-                            <option value="modern">Modern (×0.75)</option>
+                        <select id="lensQualitySelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" title="Scales the flare component of the model. Every air-glass surface scatters a little light, so the more elements a lens has, the more veiling flare it adds. Medium is the statistical average behind the model's base values: a simple design flares about 25% less, a complex one about 40% more.">
+                            <option value="few">Few elements (×0.75)</option>
+                            <option value="medium" selected>Medium (×1.00)</option>
+                            <option value="many">Many elements (×1.40)</option>
                         </select>
                     </div>
                     <div>
@@ -2306,15 +2422,18 @@
             // Regress over the MEASURED points inside the detected window — the
             // spline chooses the window; the data provides the slope.
             let window = pts.filter(p => p.x >= startLogH - 1e-9 && p.x <= endLogH + 1e-9);
+            // Diagnostics for the step-by-step animation: the smoothed derivative it
+            // searched, the peak it locked onto, and the tolerance band it walked out to.
+            const detail = { xs, sg, peakIdx, peak, thresh, lo, hi, guard, window };
             if (window.length < 2) {
                 // Window narrower than point spacing: fall back to the spline slope
                 // across the window (still data-derived, just interpolated).
                 const g = (spline.at(endLogH) - spline.at(startLogH)) / (endLogH - startLogH);
-                return { gamma: g, startLogH, endLogH, method: 'auto' };
+                return { gamma: g, startLogH, endLogH, method: 'auto', detail };
             }
             const g = regressSlope(window);
             if (g === null) return null;
-            return { gamma: g, startLogH, endLogH, method: 'auto' };
+            return { gamma: g, startLogH, endLogH, method: 'auto', detail };
         };
 
         // Resolve Gamma for a curve: honor a manually entered log-H window when BOTH bounds are
@@ -2596,12 +2715,12 @@
             };
         };
 
-        // Lens-quality multiplier applied to the FLARE COMPONENT of both models.
-        // Mid-tier (×1.00) is the statistical average the base values come from;
-        // modern multicoated designs flare ~25% less, vintage single/uncoated
-        // glass ~40% more (coatings + element count dominate veiling flare).
+        // Lens multiplier applied to the FLARE COMPONENT of both models.
+        // Every air-glass surface scatters a little light, so veiling flare rises
+        // with element count. Medium (×1.00) is the statistical average the base
+        // values come from; a simple design flares ~25% less, a complex one ~40% more.
         const lensFlareFactor = () =>
-            ({ vintage: 1.40, mid: 1.00, modern: 0.75 })[document.getElementById('lensQualitySelect')?.value] ?? 1.0;
+            ({ few: 0.75, medium: 1.00, many: 1.40 })[document.getElementById('lensQualitySelect')?.value] ?? 1.0;
 
         const calculateSBR = (ci, targetLer, flareLogH, flareModel) => {
             if (!ci || ci === 0 || !targetLer) return null;
@@ -2722,7 +2841,7 @@
         const filmHoverPlugin = {
             id: 'filmHover',
             afterDatasetsDraw: (chart) => {
-                if (chart.canvas.id !== 'filmCurveChart') return;
+                if (chart.canvas.id !== 'filmCurveChart' || curveAnim) return;
                 const hx = chart._hoverLogH;
                 if (hx === undefined || hx === null) return;
                 const area = chart.chartArea, ctx2 = chart.ctx;
@@ -2790,7 +2909,7 @@
         const gammaBandPlugin = {
             id: 'gammaBand',
             beforeDatasetsDraw: (chart) => {
-                if (chart.canvas.id !== 'filmCurveChart') return;
+                if (chart.canvas.id !== 'filmCurveChart' || curveAnim) return;
                 const bands = chart._gammaBands;
                 if (!bands || !bands.length) return;
                 const area = chart.chartArea, xs = chart.scales.x, c2 = chart.ctx;
@@ -3227,11 +3346,42 @@
                             <div><input type="checkbox" id="show-gamma-${curveId}" class="show-gamma" ${curveInfo.showGamma ? 'checked' : ''}><label for="show-gamma-${curveId}" class="ml-2" title="Shade this curve's Gamma straight-line window on the chart">Show γ</label></div>
                             <div class="iso-ref-toggle-container hidden"><input type="checkbox" id="show-iso-ref-${curveId}" class="show-iso-ref" ${curveInfo.showIsoRef === false ? '' : 'checked'}><label for="show-iso-ref-${curveId}" class="ml-2">Show EFS Ref</label></div>
                         </div>
+                        <div class="ca-more-wrap">
+                            <button type="button" class="ca-more-btn secondary-btn text-xs py-1 px-2">Animations &#9662;</button>
+                            <div class="ca-more-menu hidden">
+                                <div class="ca-menu-head">Speed point</div>
+                                <button type="button" class="ca-menu-item" data-method="fd">Fixed Density</button>
+                                <button type="button" class="ca-menu-item" data-method="dx">Delta-X</button>
+                                <button type="button" class="ca-menu-item" data-method="jones">Jones</button>
+                                <div class="ca-menu-head">Contrast</div>
+                                <button type="button" class="ca-menu-item" data-method="ci">Contrast Index</button>
+                                <button type="button" class="ca-menu-item" data-method="gamma">Gamma</button>
+                                <div class="ca-menu-head">Range</div>
+                                <button type="button" class="ca-menu-item" data-method="sbr">Scene range</button>
+                                <div class="ca-menu-head">Data</div>
+                                <button type="button" class="ca-menu-item" data-method="smooth">Smoothing</button>
+                            </div>
+                        </div>
                     </div>
                 </div>`;
             curvesContainer.insertAdjacentHTML('beforeend', curveHTML);
             const newCurveEl = document.getElementById(curveId);
             newCurveEl.addEventListener('input', updateChartDebounced);
+            const moreBtn = newCurveEl.querySelector('.ca-more-btn');
+            const moreMenu = newCurveEl.querySelector('.ca-more-menu');
+            moreBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.ca-more-menu').forEach(m => { if (m !== moreMenu) m.classList.add('hidden'); });
+                moreMenu.classList.toggle('hidden');
+            });
+            moreMenu.querySelectorAll('.ca-menu-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    // Menu stays open: picking a method usually means comparing it
+                    // against the next one, and reopening every time is a nuisance.
+                    e.stopPropagation();
+                    startCurveAnim(curveId, item.dataset.method);
+                });
+            });
             newCurveEl.querySelector('.gamma-pick-btn').addEventListener('click', (e) => {
                 startGammaPick(e.currentTarget.dataset.curveId);
             });
@@ -3240,7 +3390,7 @@
                 card.querySelector('.gamma-start').value = '';
                 card.querySelector('.gamma-end').value = '';
                 updateChartAndCalculations();
-                showInfoToast('Gamma region cleared — using automatic straight-line detection.');
+                showInfoToast('Gamma region cleared. Using automatic straight line detection.');
             });
             newCurveEl.querySelector('.remove-curve-btn').addEventListener('click', (e) => {
                 const cardEl = document.getElementById(e.target.dataset.curveId);
@@ -3646,7 +3796,8 @@
                 // Calibrated absolute mode — compute directly
                 curvesData.forEach(curve => {
                     if (curve.fdSpeedPoint !== null) {
-                        curve.fdEI = 1.0 / Math.pow(10, curve.fdSpeedPoint + logH_Offset);
+                        const K = getSpeedConstant('fixedDensity');
+                        curve.fdEI = K / Math.pow(10, curve.fdSpeedPoint + logH_Offset);
                     }
                     if (curve.dxSpeedPoint !== null) {
                         const K = getSpeedConstant('deltaX');
@@ -3712,7 +3863,7 @@
                 // than the first viewport on wide screens — matches .chart-hero's height budget
                 const gridRatio = xRange / yRange;
                 chartContainer.style.aspectRatio = `${gridRatio.toFixed(4)} / 1`;
-                chartContainer.style.maxWidth = `min(100%, calc((100vh - var(--topbar-h) - 40px) * ${gridRatio.toFixed(4)}))`;
+                chartContainer.style.maxWidth = `min(100%, calc(var(--chart-h-budget) * ${gridRatio.toFixed(4)}))`;
             } else {
                 filmChart.options.maintainAspectRatio = false;
                 delete filmChart.options.aspectRatio;
@@ -3838,18 +3989,27 @@
             // Legend-toggle state lives inside the chart, so rebuilding the datasets would
             // silently re-show curves the user hid via the legend. Carry it over by curve id/label.
             const legendHidden = {};
-            filmChart.data.datasets.forEach((ds, i) => {
-                const key = ds.curveId !== undefined ? 'c' + ds.curveId : ds.label;
-                if (!filmChart.isDatasetVisible(i)) legendHidden[key] = true;
-            });
+            if (animPrevHidden) {
+                // A method animation is soloing one curve (or is being torn down).
+                // Reading live visibility here would record the solo as a user
+                // choice and make it permanent — use the pre-animation snapshot.
+                Object.assign(legendHidden, animPrevHidden);
+            } else {
+                filmChart.data.datasets.forEach((ds, i) => {
+                    const key = ds.curveId !== undefined ? 'c' + ds.curveId : ds.label;
+                    if (!filmChart.isDatasetVisible(i)) legendHidden[key] = true;
+                });
+            }
             filmChart.data.datasets = datasets;
             filmChart._gammaBands = gammaBands;
             filmChart.options.scales.y2.display = !!showGradient;
             datasets.forEach(ds => {
-                const key = ds.curveId !== undefined ? 'c' + ds.curveId : ds.label;
+                const key = animPrevHidden ? animDsKey(ds)
+                          : (ds.curveId !== undefined ? 'c' + ds.curveId : ds.label);
                 if (legendHidden[key]) ds.hidden = true;
             });
             filmChart.update();
+            applyAnimSolo();
 
             // --- UI/TABLE UPDATE ---
             const refCurveForDisplay = curvesData.find(c => c.isReference);
@@ -7232,103 +7392,118 @@
             event.target.value = '';
         };
         
+        // --- SHARED CHART DRAWING PRIMITIVES ---
+        // Pill badges, dimension lines and halo markers, used both by the static
+        // overlay plugin and by the step-by-step method animation.
+        const createDrawHelpers = (chart) => {
+            const ctx = chart.ctx;
+            const area = chart.chartArea;
+            
+            const drawBadge = (text, cx, cy, color, align = 'center') => {
+                ctx.save();
+                ctx.font = "600 10px -apple-system, 'SF Pro Text', sans-serif";
+                const padX = 6, h = 17;
+                const w = ctx.measureText(text).width + padX * 2;
+                let x = align === 'left' ? cx : (align === 'right' ? cx - w : cx - w / 2);
+                let y = cy - h / 2;
+                x = Math.max(area.left + 2, Math.min(x, area.right - w - 2));
+                y = Math.max(area.top + 2, Math.min(y, area.bottom - h - 2));
+                ctx.shadowColor = 'rgba(0,0,0,0.12)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetY = 1;
+                ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                ctx.beginPath();
+                ctx.roundRect(x, y, w, h, h / 2);
+                ctx.fill();
+                ctx.shadowColor = 'transparent';
+                ctx.strokeStyle = hexToRgba(color, 0.35);
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, x + w / 2, y + h / 2 + 0.5);
+                ctx.restore();
+            };
+            const arrowHead = (x, y, angle, color, size = 5) => {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(-size, -size * 0.55);
+                ctx.lineTo(-size, size * 0.55);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.restore();
+            };
+            // Technical dimension line: arrowheads at both ends + small end ticks
+            const dimLine = (x1, y1, x2, y2, color) => {
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.25;
+                ctx.setLineDash([]);
+                const ang = Math.atan2(y2 - y1, x2 - x1);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+                // end ticks perpendicular to the line
+                const tx = Math.cos(ang + Math.PI / 2) * 4, ty = Math.sin(ang + Math.PI / 2) * 4;
+                ctx.beginPath();
+                ctx.moveTo(x1 - tx, y1 - ty); ctx.lineTo(x1 + tx, y1 + ty);
+                ctx.moveTo(x2 - tx, y2 - ty); ctx.lineTo(x2 + tx, y2 + ty);
+                ctx.stroke();
+                arrowHead(x1, y1, ang + Math.PI, color);
+                arrowHead(x2, y2, ang, color);
+                ctx.restore();
+            };
+            // Marker with a white halo so it stays crisp on top of the curve
+            const haloMarker = (x, y, color, shape = 'circle', r = 4.5) => {
+                ctx.save();
+                ctx.setLineDash([]);
+                const path = () => {
+                    ctx.beginPath();
+                    if (shape === 'diamond') {
+                        ctx.moveTo(x, y - r - 1);
+                        ctx.lineTo(x + r + 1, y);
+                        ctx.lineTo(x, y + r + 1);
+                        ctx.lineTo(x - r - 1, y);
+                        ctx.closePath();
+                    } else {
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                    }
+                };
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 4;
+                path();
+                ctx.stroke();
+                ctx.fillStyle = '#ffffff';
+                path();
+                ctx.fill();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                path();
+                ctx.stroke();
+                ctx.restore();
+            };
+            const px = (p) => ({ x: chart.scales.x.getPixelForValue(p.x), y: chart.scales.y.getPixelForValue(p.y) });
+            const pxX = (x) => chart.scales.x.getPixelForValue(x);
+            const pxY = (y) => chart.scales.y.getPixelForValue(y);
+            return { ctx, area, drawBadge, arrowHead, dimLine, haloMarker, px, pxX, pxY };
+        };
+
         const visualizerPlugin = {
             id: 'curveVisualizers',
             afterDraw: (chart) => {
+                // A running method animation owns the film chart overlay
+                if (curveAnim && chart.canvas.id === 'filmCurveChart') return;
                 const ctx = chart.ctx;
                 const area = chart.chartArea;
                 const isStandardIsoMode = document.querySelector('input[name="isoMethod"]:checked').value === 'standard';
 
-                // --- shared helpers: pill badges, dimension lines, halo markers ---
-                const drawBadge = (text, cx, cy, color, align = 'center') => {
-                    ctx.save();
-                    ctx.font = "600 10px -apple-system, 'SF Pro Text', sans-serif";
-                    const padX = 6, h = 17;
-                    const w = ctx.measureText(text).width + padX * 2;
-                    let x = align === 'left' ? cx : (align === 'right' ? cx - w : cx - w / 2);
-                    let y = cy - h / 2;
-                    x = Math.max(area.left + 2, Math.min(x, area.right - w - 2));
-                    y = Math.max(area.top + 2, Math.min(y, area.bottom - h - 2));
-                    ctx.shadowColor = 'rgba(0,0,0,0.12)';
-                    ctx.shadowBlur = 4;
-                    ctx.shadowOffsetY = 1;
-                    ctx.fillStyle = 'rgba(255,255,255,0.95)';
-                    ctx.beginPath();
-                    ctx.roundRect(x, y, w, h, h / 2);
-                    ctx.fill();
-                    ctx.shadowColor = 'transparent';
-                    ctx.strokeStyle = hexToRgba(color, 0.35);
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                    ctx.fillStyle = color;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(text, x + w / 2, y + h / 2 + 0.5);
-                    ctx.restore();
-                };
-                const arrowHead = (x, y, angle, color, size = 5) => {
-                    ctx.save();
-                    ctx.translate(x, y);
-                    ctx.rotate(angle);
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(-size, -size * 0.55);
-                    ctx.lineTo(-size, size * 0.55);
-                    ctx.closePath();
-                    ctx.fillStyle = color;
-                    ctx.fill();
-                    ctx.restore();
-                };
-                // Technical dimension line: arrowheads at both ends + small end ticks
-                const dimLine = (x1, y1, x2, y2, color) => {
-                    ctx.save();
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 1.25;
-                    ctx.setLineDash([]);
-                    const ang = Math.atan2(y2 - y1, x2 - x1);
-                    ctx.beginPath();
-                    ctx.moveTo(x1, y1);
-                    ctx.lineTo(x2, y2);
-                    ctx.stroke();
-                    // end ticks perpendicular to the line
-                    const tx = Math.cos(ang + Math.PI / 2) * 4, ty = Math.sin(ang + Math.PI / 2) * 4;
-                    ctx.beginPath();
-                    ctx.moveTo(x1 - tx, y1 - ty); ctx.lineTo(x1 + tx, y1 + ty);
-                    ctx.moveTo(x2 - tx, y2 - ty); ctx.lineTo(x2 + tx, y2 + ty);
-                    ctx.stroke();
-                    arrowHead(x1, y1, ang + Math.PI, color);
-                    arrowHead(x2, y2, ang, color);
-                    ctx.restore();
-                };
-                // Marker with a white halo so it stays crisp on top of the curve
-                const haloMarker = (x, y, color, shape = 'circle', r = 4.5) => {
-                    ctx.save();
-                    ctx.setLineDash([]);
-                    const path = () => {
-                        ctx.beginPath();
-                        if (shape === 'diamond') {
-                            ctx.moveTo(x, y - r - 1);
-                            ctx.lineTo(x + r + 1, y);
-                            ctx.lineTo(x, y + r + 1);
-                            ctx.lineTo(x - r - 1, y);
-                            ctx.closePath();
-                        } else {
-                            ctx.arc(x, y, r, 0, Math.PI * 2);
-                        }
-                    };
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 4;
-                    path();
-                    ctx.stroke();
-                    ctx.fillStyle = '#ffffff';
-                    path();
-                    ctx.fill();
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 2;
-                    path();
-                    ctx.stroke();
-                    ctx.restore();
-                };
+                const { drawBadge, arrowHead, dimLine, haloMarker } = createDrawHelpers(chart);
 
                 chart.data.datasets.forEach((dataset, datasetIndex) => {
                     const curve = curvesData.find(c => c.id === dataset.curveId);
@@ -7486,6 +7661,852 @@
                         }
                     }
                 });
+            }
+        };
+
+        // ===================================================================
+        //  METHOD ANIMATION
+        //  Replays, step by step on a single soloed curve, how each speed /
+        //  contrast criterion actually locates its points. Every step draws
+        //  its own settled state at t = 1, so the renderer can simply draw
+        //  steps 0..idx-1 finished and step idx live.
+        // ===================================================================
+        let curveAnim = null;
+        let animDirty = false;
+        // Which datasets the user had hidden before the animation soloed anything,
+        // keyed the same way the chart rebuild keys them.
+        let animPrevHidden = null;
+
+        const ANIM_C = { fd: '#d70015', dx: '#248a3d', jones: '#0066cc', ci: '#8b2500', gamma: '#7d3cb5', smooth: '#0a7d76', ei: '#b25000', sbr: '#1d4ed8', mute: '#86868b', ink: '#424245' };
+        const ANIM_LABELS = {
+            fd: 'Fixed Density',
+            dx: 'Delta-X',
+            jones: 'Jones',
+            ci: 'Contrast Index',
+            gamma: 'Gamma',
+            sbr: 'Scene range',
+            smooth: 'Smoothing'
+        };
+        const ANIM_ORDER = ['fd', 'dx', 'jones', 'ci', 'gamma', 'sbr', 'smooth'];
+
+        const easeInOut = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        const lerpN = (a, b, t) => a + (b - a) * t;
+        // Map a global step progress onto a sub-interval, clamped to 0..1
+        const sub = (t, a, b) => Math.max(0, Math.min(1, (t - a) / (b - a)));
+
+        // Stroke a partial line from (x1,y1) toward (x2,y2), revealing fraction t
+        const growLine = (ctx, x1, y1, x2, y2, t, color, width, dash) => {
+            if (t <= 0) return;
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.setLineDash(dash || []);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(lerpN(x1, x2, t), lerpN(y1, y2, t));
+            ctx.stroke();
+            ctx.restore();
+        };
+
+        const eiText = (v) => v ? 'EI ' + roundToThirdStopISO(v) : 'EI (needs reference or calibration)';
+
+        // --- Fixed Density: D = B+F + 0.10 ------------------------------------
+        const buildFdAnim = (curve) => {
+            const pts = curve.points;
+            if (!pts || pts.length < 2 || curve.fdSpeedPoint === null || curve.fdSpeedPoint === undefined) return null;
+            const dMin = pts[0].y;
+            const hmX = curve.fdSpeedPoint;
+            const C = ANIM_C.fd;
+
+            const sBase = (H, t) => {
+                const y = H.pxY(dMin);
+                growLine(H.ctx, H.area.left, y, H.area.right, y, easeInOut(t), hexToRgba(ANIM_C.mute, 0.9), 1.25, [5, 4]);
+                if (t > 0.55) H.drawBadge('B+F = ' + dMin.toFixed(3), H.area.left + 8, y + 13, ANIM_C.mute, 'left');
+            };
+            const sRise = (H, t) => {
+                const x = H.pxX(pts[0].x) + 18;
+                const y0 = H.pxY(dMin), y1 = H.pxY(dMin + 0.10);
+                const e = easeInOut(t);
+                growLine(H.ctx, x, y0, x, y1, e, C, 1.5, []);
+                if (t > 0.5) H.arrowHead(x, lerpN(y0, y1, e), -Math.PI / 2, C, 5);
+                if (t > 0.7) H.drawBadge('+0.10 D', x + 8, (y0 + y1) / 2, C, 'left');
+            };
+            const sSweep = (H, t) => {
+                const y = H.pxY(dMin + 0.10);
+                const xEnd = H.pxX(hmX);
+                growLine(H.ctx, H.area.left, y, xEnd, y, easeInOut(sub(t, 0, 0.72)), C, 1.5, [5, 4]);
+                if (t > 0.72) {
+                    H.haloMarker(xEnd, y, C, 'circle', 3 + 2 * sub(t, 0.72, 1));
+                    H.drawBadge('Hm', xEnd + 12, y - 15, C, 'left');
+                }
+            };
+            const sResult = (H, t) => {
+                const xEnd = H.pxX(hmX), y = H.pxY(dMin + 0.10);
+                growLine(H.ctx, xEnd, y, xEnd, H.area.bottom, easeInOut(sub(t, 0, 0.6)), hexToRgba(C, 0.5), 1, [3, 3]);
+                if (t > 0.35) H.drawBadge('log H = ' + hmX.toFixed(3), xEnd, H.area.bottom - 12, C);
+                if (t > 0.65) H.drawBadge(eiText(curve.fdEI), xEnd + 14, y + 20, C, 'left');
+            };
+
+            return { steps: [
+                { dur: 1300, draw: sBase, caption: 'Read <b>base + fog</b> from the least exposed step. Everything after this is measured relative to it, so absolute density never enters the criterion.' },
+                { dur: 1200, draw: sRise, caption: 'Step up a <b>fixed 0.10 density</b> above B+F. This height is the whole criterion: it does not know, and cannot react to, the shape of the toe.' },
+                { dur: 1500, draw: sSweep, caption: 'Travel right until that density line meets the curve. The crossing is <b>Hm</b>, the fixed density speed point.' },
+                { dur: 1400, draw: sResult, caption: 'Drop to the exposure axis: log Hm = ' + hmX.toFixed(3) + '. Speed is <b>S = 0.80 / Hm</b>, and that 0.80 constant is only calibrated at &Delta;D = 0.80.' }
+            ] };
+        };
+
+        // --- Delta-X (ISO 6) --------------------------------------------------
+        const buildDxAnim = (curve) => {
+            const dp = curve.dxParams;
+            if (!dp || !dp.hm || !dp.hn || !dp.hfg) return null;
+            const hm = dp.hm, hn = dp.hn, deltaD = dp.deltaD, deltaX = dp.deltaX, hfg = dp.hfg;
+            const C = ANIM_C.dx, Cm = ANIM_C.fd;
+            const dd = Math.min(deltaD, 1.7916);
+
+            const sHm = (H, t) => {
+                const y = H.pxY(hm.y), xEnd = H.pxX(hm.x);
+                const yb = H.pxY(curve.points[0].y);
+                growLine(H.ctx, H.area.left, yb, H.area.right, yb, easeInOut(sub(t, 0, 0.4)), hexToRgba(ANIM_C.mute, 0.7), 1, [5, 4]);
+                growLine(H.ctx, H.area.left, y, xEnd, y, easeInOut(sub(t, 0.3, 0.85)), hexToRgba(Cm, 0.8), 1.5, [5, 4]);
+                if (t > 0.85) { H.haloMarker(xEnd, y, Cm); H.drawBadge('Hm · B+F +0.10', xEnd + 12, y - 16, Cm, 'left'); }
+            };
+            const sSpan = (H, t) => {
+                const y = H.pxY(hm.y), x1 = H.pxX(hm.x), x2 = H.pxX(hn.x);
+                growLine(H.ctx, x1, y, x2, y, easeInOut(t), ANIM_C.ink, 1.25, [4, 3]);
+                if (t > 0.55) H.drawBadge('Δ log H = 1.30', (x1 + x2) / 2, y - 13, ANIM_C.ink);
+                if (t > 0.9) {
+                    const ctx = H.ctx;
+                    ctx.save(); ctx.fillStyle = ANIM_C.ink;
+                    ctx.beginPath(); ctx.arc(x2, y, 2.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.restore();
+                }
+            };
+            const sRise = (H, t) => {
+                const x2 = H.pxX(hn.x), y0 = H.pxY(hm.y), y1 = H.pxY(hn.y);
+                const e = easeInOut(t);
+                growLine(H.ctx, x2, y0, x2, y1, e, ANIM_C.ink, 1.5, []);
+                if (t > 0.6) H.arrowHead(x2, lerpN(y0, y1, e), -Math.PI / 2, ANIM_C.ink, 5);
+                if (t > 0.75) {
+                    H.haloMarker(x2, y1, ANIM_C.ink, 'circle', 3.5);
+                    H.drawBadge('ΔD = ' + deltaD.toFixed(3), x2 + 8, (y0 + y1) / 2, ANIM_C.ink, 'left');
+                }
+            };
+            const sPoly = (H, t) => {
+                const x1 = H.pxX(hm.x), y = H.pxY(hm.y);
+                if (t > 0.25) H.drawBadge('ΔX = ' + deltaX.toFixed(3) + ' log H  (' + (deltaX / 0.301).toFixed(2) + ' stop)', x1, y - 40, C);
+            };
+            const sShift = (H, t) => {
+                const y = H.pxY(hm.y), x1 = H.pxX(hm.x), x2 = H.pxX(hfg.x);
+                const arrowY = y + 20;
+                const e = easeInOut(t);
+                H.dimLine(lerpN(x1, x2, e), arrowY, x1, arrowY, C);
+                if (t > 0.5) H.drawBadge('ΔX = ' + deltaX.toFixed(3), (x1 + lerpN(x1, x2, e)) / 2, arrowY + 15, C);
+            };
+            const sResult = (H, t) => {
+                const x2 = H.pxX(hfg.x), yf = H.pxY(hfg.y), arrowY = H.pxY(hm.y) + 20;
+                growLine(H.ctx, x2, arrowY - 4, x2, yf + 7, easeInOut(sub(t, 0, 0.5)), hexToRgba(C, 0.5), 1, [2, 3]);
+                if (t > 0.4) {
+                    H.haloMarker(x2, yf, C, 'diamond', 4.5);
+                    H.drawBadge('Speed point Hfg', x2 - 10, yf - 15, C, 'right');
+                }
+                if (t > 0.7) H.drawBadge(eiText(curve.dxEI), x2 - 10, yf - 34, C, 'right');
+            };
+
+            const p1 = (0.86 * dd).toFixed(3), p2 = (0.24 * dd * dd).toFixed(3);
+            const clampNote = deltaD > dd ? ' (&Delta;D clamped at the 1.79 vertex)' : '';
+            return { steps: [
+                { dur: 1400, draw: sHm, caption: 'Start from the same <b>Hm</b> the fixed density method uses, B+F + 0.10. Delta-X does not replace that point, it corrects it.' },
+                { dur: 1200, draw: sSpan, caption: 'Step <b>1.30 log H</b> to the right along the exposure axis. That is the ISO measuring interval.' },
+                { dur: 1400, draw: sRise, caption: 'Measure the density rise over that interval: <b>&Delta;D = ' + deltaD.toFixed(3) + '</b>. This one number stands in for how far development has been pushed.' },
+                { dur: 1800, draw: sPoly, caption: 'Nelson-Simonds fit: &Delta;X = 0.83 &minus; 0.86&middot;&Delta;D + 0.24&middot;&Delta;D<sup>2</sup> = 0.83 &minus; ' + p1 + ' + ' + p2 + ' = <b>' + deltaX.toFixed(3) + '</b>' + clampNote },
+                { dur: 1500, draw: sShift, caption: 'Shift <b>left of Hm by &Delta;X</b>. At &Delta;D = 0.80 this evaluates to 0.296 log H, which is exactly where fixed density and fractional gradient agree.' },
+                { dur: 1500, draw: sResult, caption: '<b>Hfg</b> is the Delta-X speed point. S = <b>0.40</b> / Hfg. The halved constant cancels the ~0.30 log H shift, keeping the number on the ISO scale.' }
+            ] };
+        };
+
+        // --- Jones fractional gradient ---------------------------------------
+        const buildJonesAnim = (curve) => {
+            const pts = curve.points;
+            const jx = curve.jonesSpeedPoint;
+            if (!pts || pts.length < 2 || jx === null || jx === undefined) return null;
+            let startH = interpolateX(pts, pts[0].y + 0.02);
+            if (startH === null || jx <= startH) startH = pts[0].x;
+            const C = ANIM_C.jones;
+
+            const gAt = (h) => {
+                const d0 = interpolateY(pts, h), d1 = interpolateY(pts, h + 1.50);
+                if (d0 === null || d1 === null) return null;
+                return { d0: d0, d1: d1, gAvg: (d1 - d0) / 1.50, gInst: calculateInstantaneousGradient(pts, h) };
+            };
+            const atPoint = gAt(jx);
+
+            // The probe apparatus at exposure h
+            const probe = (H, h, live) => {
+                const g = gAt(h);
+                if (!g) return;
+                const ctx = H.ctx;
+                const x0 = H.pxX(h), y0 = H.pxY(g.d0);
+                const x1 = H.pxX(h + 1.50), y1 = H.pxY(g.d1);
+                ctx.save();
+                // 1.50 log H averaging window
+                ctx.strokeStyle = hexToRgba(ANIM_C.ink, 0.35);
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); ctx.lineTo(x1, y1); ctx.stroke();
+                // the chord = G-bar
+                ctx.setLineDash([]);
+                ctx.strokeStyle = hexToRgba(ANIM_C.ink, 0.75);
+                ctx.lineWidth = 1.75;
+                ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+                // local tangent
+                const dx = 0.28;
+                const tx0 = H.pxX(h - dx), ty0 = H.pxY(g.d0 - g.gInst * dx);
+                const tx1 = H.pxX(h + dx), ty1 = H.pxY(g.d0 + g.gInst * dx);
+                ctx.strokeStyle = C;
+                ctx.lineWidth = 2.25;
+                ctx.beginPath(); ctx.moveTo(tx0, ty0); ctx.lineTo(tx1, ty1); ctx.stroke();
+                ctx.restore();
+                if (live) {
+                    const thr = 0.3 * g.gAvg;
+                    const met = g.gInst >= thr;
+                    // At the crossing itself the two are equal to displayed precision;
+                    // showing "<" there would read as the criterion having failed.
+                    const rel = Math.abs(g.gInst - thr) < 0.0005 ? ' = ' : (met ? ' > ' : ' < ');
+                    H.haloMarker(x0, y0, met ? '#248a3d' : C, 'circle', 4);
+                    H.drawBadge('ḡ = ' + g.gAvg.toFixed(3) + '  →  0.3ḡ = ' + thr.toFixed(3), x1, y1 - 14, ANIM_C.ink);
+                    H.drawBadge('g = ' + g.gInst.toFixed(3) + rel + '0.3ḡ', x0 - 12, y0 - 16, met ? '#248a3d' : C, 'right');
+                }
+            };
+
+            const sRange = (H, t) => {
+                const ctx = H.ctx;
+                const xa = H.pxX(startH), xb = H.pxX(jx + 1.50);
+                ctx.save();
+                ctx.globalAlpha = easeInOut(t);
+                ctx.fillStyle = hexToRgba(C, 0.05);
+                ctx.fillRect(xa, H.area.top, Math.max(0, xb - xa), H.area.bottom - H.area.top);
+                ctx.strokeStyle = hexToRgba(C, 0.35);
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(xa, H.area.top); ctx.lineTo(xa, H.area.bottom); ctx.stroke();
+                ctx.restore();
+                if (t > 0.5) H.drawBadge('search starts at B+F + 0.02', xa + 8, H.area.top + 28, C, 'left');
+            };
+            const sScan = (H, t) => probe(H, lerpN(startH, jx, easeInOut(t)), true);
+            const sLock = (H, t) => {
+                probe(H, jx, true);
+                if (!atPoint) return;
+                const x0 = H.pxX(jx), y0 = H.pxY(atPoint.d0);
+                const e = easeInOut(t);
+                const ctx = H.ctx;
+                ctx.save();
+                ctx.globalAlpha = 0.5 * (1 - e);
+                ctx.strokeStyle = '#248a3d';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(x0, y0, 6 + 26 * e, 0, Math.PI * 2); ctx.stroke();
+                ctx.restore();
+            };
+            const sResult = (H, t) => {
+                if (!atPoint) return;
+                const x0 = H.pxX(jx), y0 = H.pxY(atPoint.d0);
+                growLine(H.ctx, x0, y0, x0, H.area.bottom, easeInOut(sub(t, 0, 0.55)), hexToRgba(C, 0.45), 1, [3, 3]);
+                H.haloMarker(x0, y0, C, 'diamond', 5);
+                if (t > 0.3) H.drawBadge('log Hfg = ' + jx.toFixed(3), x0, H.area.bottom - 12, C);
+                if (t > 0.6) H.drawBadge(eiText(curve.jonesEI), x0 - 12, y0 - 34, C, 'right');
+            };
+
+            const gTxt = atPoint
+                ? 'Here ḡ = ' + atPoint.gAvg.toFixed(3) + ', so the threshold is 0.3ḡ = ' + (0.3 * atPoint.gAvg).toFixed(3) + '.'
+                : '';
+            return { steps: [
+                { dur: 1200, draw: sRange, caption: 'Search the toe only, from B+F + 0.02 up to the last exposure where the full 1.50 log H averaging window still fits inside the data.' },
+                { dur: 3400, draw: sScan, caption: 'Walk right. At every position measure <b>two</b> things: the average gradient ḡ over the next 1.50 log H (grey chord), and the local gradient g right here (blue tangent). <b>Both move as you walk</b>, which is why this criterion follows development instead of ignoring it.' },
+                { dur: 1200, draw: sLock, caption: 'Stop at the first place the local gradient <b>rises through</b> 0.3&middot;ḡ and stays above it for 0.10 log H. ' + gTxt },
+                { dur: 1500, draw: sResult, caption: 'That crossing is <b>Hfg</b>, the fractional gradient speed point. S = <b>0.40</b> / Hfg, the same scale as Delta-X, which was fitted to reproduce this point without doing the gradient search.' }
+            ] };
+        };
+
+        // --- Contrast Index (arc / meter method) ------------------------------
+        const buildCiAnim = (curve) => {
+            const cp = curve.ciParams;
+            const pts = curve.points;
+            if (!cp || !pts || pts.length < 2 || cp.logHCenter === null || !cp.pLow || !cp.pHigh) return null;
+            const dMin = pts[0].y;
+            const C = ANIM_C.ci;
+
+            let dense = pts;
+            const spl = pchipInterpolator(pts);
+            if (spl) {
+                dense = [];
+                for (let x = spl.xMin; x <= spl.xMax + 1e-9; x += 0.01) dense.push({ x: x, y: spl.at(Math.min(x, spl.xMax)) });
+            }
+            const probeAt = (c) => {
+                let pLow = null, pHigh = null, dl = Infinity, dh = Infinity;
+                for (const p of dense) {
+                    const d = Math.sqrt((p.x - c) * (p.x - c) + (p.y - dMin) * (p.y - dMin));
+                    if (Math.abs(d - 0.2) < dl) { pLow = p; dl = Math.abs(d - 0.2); }
+                    if (Math.abs(d - 2.2) < dh) { pHigh = p; dh = Math.abs(d - 2.2); }
+                }
+                return { pLow: pLow, pHigh: pHigh };
+            };
+            const startC = pts[0].x - 1.0;
+
+            const drawRig = (H, c, showErr) => {
+                const ctx = H.ctx;
+                const cx = H.pxX(c), cy = H.pxY(dMin);
+                const rx1 = H.pxX(c + 0.2) - cx, ry1 = cy - H.pxY(dMin + 0.2);
+                const rx2 = H.pxX(c + 2.2) - cx, ry2 = cy - H.pxY(dMin + 2.2);
+                ctx.save();
+                ctx.strokeStyle = hexToRgba(C, 0.5);
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 3]);
+                ctx.beginPath(); ctx.ellipse(cx, cy, Math.abs(rx1), Math.abs(ry1), 0, -Math.PI / 2, 0); ctx.stroke();
+                ctx.beginPath(); ctx.ellipse(cx, cy, Math.abs(rx2), Math.abs(ry2), 0, -Math.PI / 2, 0); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.strokeStyle = hexToRgba(C, 0.8);
+                ctx.lineWidth = 1.25;
+                ctx.beginPath();
+                ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy);
+                ctx.moveTo(cx, cy - 5); ctx.lineTo(cx, cy + 5);
+                ctx.stroke();
+                const pr = probeAt(c);
+                if (pr.pLow && pr.pHigh) {
+                    const a = H.px(pr.pLow), b = H.px(pr.pHigh);
+                    ctx.strokeStyle = hexToRgba(C, 0.3);
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy); ctx.lineTo(a.x, a.y);
+                    ctx.moveTo(cx, cy); ctx.lineTo(b.x, b.y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+                if (showErr && pr.pLow && pr.pHigh && pr.pLow.x > c && pr.pHigh.x > pr.pLow.x) {
+                    const sl = (pr.pLow.y - dMin) / (pr.pLow.x - c);
+                    const sh = (pr.pHigh.y - dMin) / (pr.pHigh.x - c);
+                    H.drawBadge('|slope 0.2 − slope 2.2| = ' + Math.abs(sl - sh).toFixed(3), cx, cy + 26, C);
+                }
+                return pr;
+            };
+
+            const sPivot = (H, t, done) => {
+                const yb = H.pxY(dMin);
+                growLine(H.ctx, H.area.left, yb, H.area.right, yb, easeInOut(sub(t, 0, 0.5)), hexToRgba(ANIM_C.mute, 0.8), 1.25, [5, 4]);
+                // The starting rig is scaffolding: once the pivot has slid away it
+                // would just leave stray arcs and radii across the plot.
+                if (done) return;
+                if (t > 0.4) {
+                    const ctx = H.ctx;
+                    ctx.save();
+                    ctx.globalAlpha = easeInOut(sub(t, 0.4, 1));
+                    drawRig(H, startC, false);
+                    ctx.restore();
+                }
+                if (t > 0.75) H.drawBadge('pivot rides the B+F line', H.pxX(startC), yb + 26, C);
+            };
+            const sSlide = (H, t) => drawRig(H, lerpN(startC, cp.logHCenter, easeInOut(t)), true);
+            const sLock = (H, t) => {
+                drawRig(H, cp.logHCenter, true);
+                const a = H.px(cp.pLow), b = H.px(cp.pHigh);
+                const e = easeInOut(t);
+                H.haloMarker(a.x, a.y, C, 'circle', 3.5 + 1.5 * e);
+                H.haloMarker(b.x, b.y, C, 'circle', 3.5 + 1.5 * e);
+                if (t > 0.5) {
+                    H.drawBadge('0.2 arc', a.x - 10, a.y + 16, C, 'right');
+                    H.drawBadge('2.2 arc', b.x + 10, b.y - 14, C, 'left');
+                }
+            };
+            const sChord = (H, t) => {
+                const a = H.px(cp.pLow), b = H.px(cp.pHigh);
+                growLine(H.ctx, a.x, a.y, b.x, b.y, easeInOut(t), C, 2.25, []);
+                if (t > 0.6 && curve.ci) H.drawBadge('CI = ' + curve.ci.toFixed(3), (a.x + b.x) / 2 - 14, (a.y + b.y) / 2 - 15, C);
+            };
+
+            const dD = cp.pHigh.y - cp.pLow.y, dH = cp.pHigh.x - cp.pLow.x;
+            return { steps: [
+                { dur: 1400, draw: sPivot, caption: 'Put a two armed compass on the <b>base + fog</b> line. One arm spans 0.2, the other 2.2, measured as straight line distance in the density / log H plane rather than distance along the curve.' },
+                { dur: 2600, draw: sSlide, caption: 'Slide the pivot until <b>both arms cut the curve at the same slope from the pivot</b>. That equal slope condition is the entire search.' },
+                { dur: 1300, draw: sLock, caption: 'Lock the two intersections. They are found geometrically, with no straight line fitting and no judgement call about where the curve "goes linear".' },
+                { dur: 1500, draw: sChord, caption: 'CI is the slope of the chord between them: &Delta;D / &Delta;log H = ' + dD.toFixed(3) + ' / ' + dH.toFixed(3) + ' = <b>' + (curve.ci ? curve.ci.toFixed(3) : '—') + '</b>' }
+            ] };
+        };
+
+        // --- Gamma: automatic straight-line detection -------------------------
+        const buildGammaAnim = (curve) => {
+            const gr = curve.gammaResult;
+            const pts = curve.points;
+            if (!gr || gr.gamma === null || !pts || pts.length < 2) return null;
+            const C = ANIM_C.gamma;
+
+            // Regression line through the window centroid
+            const win = pts.filter(p => p.x >= gr.startLogH - 1e-9 && p.x <= gr.endLogH + 1e-9);
+            const src = win.length >= 2 ? win : pts;
+            const mx = src.reduce((a, p) => a + p.x, 0) / src.length;
+            const my = src.reduce((a, p) => a + p.y, 0) / src.length;
+            const lineY = (x) => my + gr.gamma * (x - mx);
+
+            const shadeWindow = (H, x0, x1, alpha) => {
+                const ctx = H.ctx;
+                const a = H.pxX(x0), b = H.pxX(x1);
+                ctx.save();
+                ctx.fillStyle = hexToRgba(C, 0.07 * alpha);
+                ctx.fillRect(Math.min(a, b), H.area.top, Math.abs(b - a), H.area.bottom - H.area.top);
+                ctx.strokeStyle = hexToRgba(C, 0.4 * alpha);
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(a, H.area.top); ctx.lineTo(a, H.area.bottom);
+                ctx.moveTo(b, H.area.top); ctx.lineTo(b, H.area.bottom);
+                ctx.stroke();
+                ctx.restore();
+            };
+            const drawFit = (H, t) => {
+                const x0 = gr.startLogH, x1 = gr.endLogH;
+                const p0 = { x: x0, y: lineY(x0) }, p1 = { x: x1, y: lineY(x1) };
+                const a = H.px(p0), b = H.px(p1);
+                growLine(H.ctx, a.x, a.y, b.x, b.y, easeInOut(t), C, 2.5, []);
+                // the measured points the slope was actually fitted to
+                if (t > 0.3) src.forEach(p => { const q = H.px(p); H.haloMarker(q.x, q.y, C, 'circle', 3); });
+            };
+
+            const det = gr.detail;
+            if (gr.method === 'manual' || !det) {
+                return { steps: [
+                    { dur: 1300, draw: (H, t) => shadeWindow(H, gr.startLogH, gr.endLogH, easeInOut(t)),
+                      caption: 'This window was set by hand using <b>Measure on chart</b>, from log H ' + gr.startLogH.toFixed(2) + ' to ' + gr.endLogH.toFixed(2) + '. Automatic detection is skipped whenever both bounds are set.' },
+                    { dur: 1600, draw: (H, t) => { shadeWindow(H, gr.startLogH, gr.endLogH, 1); drawFit(H, t); },
+                      caption: 'Least squares slope over the measured points inside that window: <b>γ = ' + gr.gamma.toFixed(3) + '</b>' }
+                ] };
+            }
+
+            // Derivative panel: its own mapping, drawn over the full plot height
+            const gMax = Math.max(det.peak * 1.15, 1e-6);
+            const gy = (H, g) => H.area.bottom - (g / gMax) * (H.area.bottom - H.area.top);
+
+            const drawDeriv = (H, upTo) => {
+                const ctx = H.ctx;
+                const n = det.xs.length;
+                const last = Math.max(1, Math.floor(n * upTo));
+                ctx.save();
+                ctx.strokeStyle = hexToRgba(C, 0.75);
+                ctx.lineWidth = 1.75;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                for (let i = 0; i < last; i++) {
+                    const X = H.pxX(det.xs[i]), Y = gy(H, det.sg[i]);
+                    if (i === 0) ctx.moveTo(X, Y); else ctx.lineTo(X, Y);
+                }
+                ctx.stroke();
+                ctx.restore();
+            };
+
+            const sDeriv = (H, t) => {
+                drawDeriv(H, easeInOut(t));
+                if (t > 0.6) H.drawBadge('dD / d(log H)', H.area.right - 8, gy(H, det.peak * 1.05), C, 'right');
+            };
+            const sPeak = (H, t) => {
+                drawDeriv(H, 1);
+                const ctx = H.ctx;
+                // the 3% guard bands at each end, never trusted for the peak
+                ctx.save();
+                ctx.fillStyle = hexToRgba(ANIM_C.mute, 0.10);
+                const gA = H.pxX(det.xs[det.guard]), gB = H.pxX(det.xs[det.xs.length - 1 - det.guard]);
+                ctx.fillRect(H.area.left, H.area.top, gA - H.area.left, H.area.bottom - H.area.top);
+                ctx.fillRect(gB, H.area.top, H.area.right - gB, H.area.bottom - H.area.top);
+                ctx.restore();
+                const X = H.pxX(det.xs[det.peakIdx]), Y = gy(H, det.peak);
+                H.haloMarker(X, Y, C, 'diamond', 3 + 2 * easeInOut(t));
+                if (t > 0.5) H.drawBadge('peak = ' + det.peak.toFixed(3), X, Y - 16, C);
+            };
+            const sThresh = (H, t) => {
+                drawDeriv(H, 1);
+                const ctx = H.ctx;
+                const Y = gy(H, det.thresh);
+                growLine(ctx, H.area.left, Y, H.area.right, Y, easeInOut(sub(t, 0, 0.4)), C, 1.5, [6, 4]);
+                if (t > 0.3) H.drawBadge('90% of peak = ' + det.thresh.toFixed(3), H.area.left + 8, Y - 12, C, 'left');
+                // walk outward from the peak
+                const e = easeInOut(sub(t, 0.35, 1));
+                const pk = det.peakIdx;
+                const li = Math.round(lerpN(pk, det.lo, e)), hi = Math.round(lerpN(pk, det.hi, e));
+                ctx.save();
+                ctx.fillStyle = hexToRgba(C, 0.10);
+                const a = H.pxX(det.xs[li]), b = H.pxX(det.xs[hi]);
+                ctx.fillRect(a, H.area.top, Math.max(1, b - a), H.area.bottom - H.area.top);
+                ctx.restore();
+                H.haloMarker(H.pxX(det.xs[pk]), gy(H, det.peak), C, 'diamond', 4);
+            };
+            const sFit = (H, t) => {
+                shadeWindow(H, gr.startLogH, gr.endLogH, 1);
+                drawFit(H, t);
+                if (t > 0.75) {
+                    const mid = H.px({ x: (gr.startLogH + gr.endLogH) / 2, y: lineY((gr.startLogH + gr.endLogH) / 2) });
+                    H.drawBadge('γ = ' + gr.gamma.toFixed(3), mid.x - 16, mid.y - 16, C, 'right');
+                }
+            };
+
+            const span = (gr.endLogH - gr.startLogH).toFixed(2);
+            return { steps: [
+                { dur: 1800, draw: sDeriv, caption: 'Take the analytic first derivative of a monotone cubic (PCHIP) fit, sampled at 0.01 log H, then average it over one median step spacing. No finite difference staircase, no spline overshoot.' },
+                { dur: 1400, draw: sPeak, caption: 'Find the <b>peak gradient</b>, ignoring the outer 3% at each end where an interpolant is least trustworthy. Peak = ' + det.peak.toFixed(3) + '.' },
+                { dur: 2200, draw: sThresh, caption: 'Walk outward from the peak while the gradient stays at or above <b>90% of it</b>. Where it drops below, the straight line has ended: log H ' + gr.startLogH.toFixed(2) + ' to ' + gr.endLogH.toFixed(2) + ' (' + span + ' wide). Toe and shoulder exclude themselves.' },
+                { dur: 1800, draw: sFit, caption: 'The spline chose the window, the <b>measured points</b> provide the slope. Least squares over the ' + src.length + ' readings inside it: <b>γ = ' + gr.gamma.toFixed(3) + '</b>' }
+            ] };
+        };
+
+        // --- Resistant smoothing (Tukey 3RSSH, twice) -------------------------
+        const buildSmoothAnim = (curve) => {
+            const raw = curve.rawPoints;
+            if (!raw || raw.length < 5) return null;
+            const xs = raw.map(p => p.x);
+            const y0 = raw.map(p => p.y);
+            const y1 = smooth3R(y0);
+            const y2 = smoothSplit(smoothSplit(y1));
+            const y3 = smoothHann(y2);
+            const resid = y0.map((v, i) => v - y3[i]);
+            const residSmooth = smooth3RSSH(resid);
+            const y4 = y3.map((v, i) => v + residSmooth[i]);
+            const C = ANIM_C.smooth;
+
+            const worst = y0.reduce((best, v, i) =>
+                Math.abs(v - y4[i]) > best.d ? { d: Math.abs(v - y4[i]), i } : best, { d: 0, i: 0 });
+
+            const drawRaw = (H, alpha) => {
+                const ctx = H.ctx;
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.strokeStyle = hexToRgba(ANIM_C.mute, 0.55);
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                xs.forEach((x, i) => { const q = H.px({ x, y: y0[i] }); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); });
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.strokeStyle = hexToRgba(ANIM_C.mute, 0.9);
+                ctx.lineWidth = 1.25;
+                xs.forEach((x, i) => {
+                    const q = H.px({ x, y: y0[i] });
+                    ctx.beginPath(); ctx.arc(q.x, q.y, 3, 0, Math.PI * 2); ctx.stroke();
+                });
+                ctx.restore();
+            };
+            // Morph the polyline from stage `a` to stage `b`
+            const morph = (H, a, b, t, color) => {
+                const ctx = H.ctx;
+                const e = easeInOut(t);
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                xs.forEach((x, i) => {
+                    const q = H.px({ x, y: lerpN(a[i], b[i], e) });
+                    i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y);
+                });
+                ctx.stroke();
+                ctx.restore();
+                // mark the readings this stage actually moved
+                xs.forEach((x, i) => {
+                    if (Math.abs(b[i] - a[i]) < 0.004) return;
+                    const q = H.px({ x, y: lerpN(a[i], b[i], e) });
+                    H.haloMarker(q.x, q.y, color, 'circle', 3);
+                });
+            };
+            const moved = (a, b) => a.filter((v, i) => Math.abs(v - b[i]) >= 0.004).length;
+
+            return { steps: [
+                { dur: 1400, draw: (H, t) => drawRaw(H, easeInOut(t)),
+                  caption: 'The <b>raw readings</b>, exactly as measured. A dust speck or a misread step sits here as a single point off the line, and a moving average would smear it into its neighbours instead of removing it.' },
+                { dur: 1600, draw: (H, t) => { drawRaw(H, 0.4); morph(H, y0, y1, t, C); },
+                  caption: '<b>3R</b>: running medians of 3, repeated until nothing changes. A median cannot be dragged by one wild value, so the outlier is deleted rather than averaged in. ' + moved(y0, y1) + ' readings moved.' },
+                { dur: 1400, draw: (H, t) => { drawRaw(H, 0.4); morph(H, y1, y2, t, C); },
+                  caption: '<b>SS</b>: split two point flats. Repeated medians leave short flat pairs that are artefacts of the median itself, and splitting re-slopes them. ' + moved(y1, y2) + ' readings moved.' },
+                { dur: 1400, draw: (H, t) => { drawRaw(H, 0.4); morph(H, y2, y3, t, C); },
+                  caption: '<b>H</b>: hanning, the ¼ ½ ¼ weighting. One light linear pass to take the corners off what the medians left. ' + moved(y2, y3) + ' readings moved.' },
+                { dur: 1900, draw: (H, t) => { drawRaw(H, 0.4); morph(H, y3, y4, t, C); },
+                  caption: '<b>Twice</b>: smooth the residuals (raw minus smooth) and add them back. This is what separates a resistant smoother from a blunt one. Real signal the first pass flattened is recovered, while the outlier stays deleted.' },
+                { dur: 1500, draw: (H, t) => {
+                        drawRaw(H, 0.5);
+                        morph(H, y4, y4, 1, C);
+                        const q = H.px({ x: xs[worst.i], y: y4[worst.i] });
+                        const r = H.px({ x: xs[worst.i], y: y0[worst.i] });
+                        growLine(H.ctx, r.x, r.y, q.x, q.y, easeInOut(t), ANIM_C.fd, 1.5, []);
+                        if (t > 0.5) H.drawBadge('largest correction: ' + worst.d.toFixed(3) + ' D', q.x + 10, (q.y + r.y) / 2, ANIM_C.fd, 'left');
+                    },
+                  caption: 'Every number in this app, CI and gamma and all three speed points, is computed on the cleaned curve. The largest single correction here was <b>' + worst.d.toFixed(3) + ' density</b>, at step ' + (worst.i + 1) + '.' }
+            ] };
+        };
+
+        // --- Scene range: paper LER ÷ film CI, plus flare ----------------------
+        const buildSbrAnim = (curve) => {
+            if (!curve.ci || curve.matchedSbr === null || curve.matchedSbr === undefined) return null;
+            const targetLer = parseFloat(document.getElementById('targetLer').value);
+            if (!isFinite(targetLer) || targetLer <= 0) return null;
+            const flareModel = document.getElementById('flareModelSelect').value;
+            const lensK = lensFlareFactor();
+            const pure = targetLer / curve.ci;
+            const lslr = curve.matchedSbr * 0.301;
+            const flare = Math.max(0, lslr - pure);
+            const C = ANIM_C.sbr;
+
+            const anchorX = curve.speedPoint !== null ? curve.speedPoint : curve.points[0].x;
+            const anchorY = interpolateY(curve.points, anchorX);
+            const baseY = anchorY !== null ? anchorY : curve.points[0].y;
+
+            const sLer = (H, t) => {
+                const x = H.pxX(anchorX);
+                const yA = H.pxY(baseY), yB = H.pxY(baseY + targetLer);
+                const e = easeInOut(t);
+                H.dimLine(x - 26, yA, x - 26, lerpN(yA, yB, e), C);
+                growLine(H.ctx, x - 30, yA, H.area.right, yA, easeInOut(sub(t, 0.2, 1)), hexToRgba(C, 0.3), 1, [3, 3]);
+                growLine(H.ctx, x - 30, yB, H.area.right, yB, easeInOut(sub(t, 0.5, 1)), hexToRgba(C, 0.3), 1, [3, 3]);
+                if (t > 0.6) H.drawBadge('paper LER = ' + targetLer.toFixed(2), x - 32, (yA + yB) / 2, C, 'right');
+            };
+            const rowA = (H) => H.area.bottom - 58;   // LER ÷ CI  and  + flare
+            const rowB = (H) => H.area.bottom - 22;   // total LSLR
+            const sDivide = (H, t) => {
+                const yA = H.pxY(baseY), yB = H.pxY(baseY + targetLer);
+                const xA = H.pxX(anchorX), xB = H.pxX(anchorX + pure);
+                const e = easeInOut(t);
+                const ctx = H.ctx;
+                // the CI slope triangle: rise = LER, run = LER / CI
+                ctx.save();
+                ctx.fillStyle = hexToRgba(C, 0.07);
+                ctx.beginPath();
+                ctx.moveTo(xA, yA); ctx.lineTo(lerpN(xA, xB, e), yA); ctx.lineTo(lerpN(xA, xB, e), lerpN(yA, yB, e));
+                ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = hexToRgba(C, 0.6);
+                ctx.lineWidth = 1.25;
+                ctx.setLineDash([4, 3]);
+                ctx.stroke();
+                ctx.restore();
+                H.dimLine(xA, rowA(H), lerpN(xA, xB, e), rowA(H), C);
+                if (t > 0.55) H.drawBadge('LER ÷ CI = ' + targetLer.toFixed(2) + ' ÷ ' + curve.ci.toFixed(2) + ' = ' + pure.toFixed(2) + ' log H', (xA + xB) / 2, rowA(H) - 14, C);
+            };
+            const sFlare = (H, t) => {
+                const xB = H.pxX(anchorX + pure), xC = H.pxX(anchorX + pure + flare);
+                const e = easeInOut(t);
+                const ctx = H.ctx;
+                ctx.save();
+                ctx.fillStyle = hexToRgba(ANIM_C.fd, 0.10);
+                ctx.fillRect(xB, H.area.top, Math.max(0, lerpN(xB, xC, e) - xB), H.area.bottom - H.area.top);
+                ctx.restore();
+                H.dimLine(xB, rowA(H), lerpN(xB, xC, e), rowA(H), ANIM_C.fd);
+                if (t > 0.55) H.drawBadge('+ flare ' + flare.toFixed(2), (xB + xC) / 2, rowA(H) - 14, ANIM_C.fd);
+            };
+            const sTotal = (H, t) => {
+                const xA = H.pxX(anchorX), xC = H.pxX(anchorX + pure + flare);
+                H.dimLine(xA, rowB(H), lerpN(xA, xC, easeInOut(t)), rowB(H), C);
+                if (t > 0.5) H.drawBadge('LSLR = ' + lslr.toFixed(2) + ' log H = ' + curve.matchedSbr.toFixed(1) + ' stops of scene', (xA + xC) / 2, rowB(H) - 14, C);
+            };
+
+            const modelTxt = flareModel === 'practical'
+                ? 'the practical model (flare scales with contrast, from the Kodak/Connelly family)'
+                : 'the fixed model (' + document.getElementById('flareLogH').value + ' log H)';
+            return { steps: [
+                { dur: 1500, draw: sLer, caption: 'Start at the paper, not the film. Your enlarging paper can hold a <b>log exposure range of ' + targetLer.toFixed(2) + '</b>. That is a fixed density window the negative has to fit into.' },
+                { dur: 1800, draw: sDivide, caption: 'Divide by the film\'s contrast: <b>LER ÷ CI = ' + pure.toFixed(2) + ' log H</b>. That is how much exposure range the negative can carry. Steeper development means a narrower window, which is the entire N&minus;/N+ mechanism.' },
+                { dur: 1600, draw: sFlare, caption: 'Now add <b>flare</b>, using ' + modelTxt + ', scaled by the lens setting (×' + lensK.toFixed(2) + '). Flare lifts the shadows, so the real scene has to be <i>wider</i> than the film window to fill it.' },
+                { dur: 1600, draw: sTotal, caption: 'Total: <b>' + curve.matchedSbr.toFixed(1) + ' stops</b> of subject luminance range this development will place on that paper. This is the number to match against the scene in front of you.' }
+            ] };
+        };
+        const ANIM_BUILDERS = { fd: buildFdAnim, dx: buildDxAnim, jones: buildJonesAnim, ci: buildCiAnim,
+                                gamma: buildGammaAnim, smooth: buildSmoothAnim, sbr: buildSbrAnim };
+
+        // --- engine -----------------------------------------------------------
+        let animScrollY = 0;
+        let animPrevLegend;
+        const enterAnimFocus = () => {
+            if (document.body.classList.contains('anim-focus')) return;
+            animScrollY = window.scrollY || 0;
+            document.body.classList.add('anim-focus');
+            // The legend lists every curve, including the ones the solo just hid —
+            // in focus mode that is exactly the clutter we are removing.
+            if (filmChart) {
+                animPrevLegend = filmChart.options.plugins.legend.display;
+                filmChart.options.plugins.legend.display = false;
+            }
+            syncAnimBarHeight();
+        };
+        const exitAnimFocus = () => {
+            if (!document.body.classList.contains('anim-focus')) return;
+            document.body.classList.remove('anim-focus');
+            document.documentElement.style.removeProperty('--anim-bar-h');
+            if (filmChart) filmChart.options.plugins.legend.display = animPrevLegend;
+            animPrevLegend = undefined;
+            window.scrollTo(0, animScrollY);
+        };
+        // The chart's height budget is whatever the transport does not use
+        const syncAnimBarHeight = () => {
+            const bar = document.getElementById('curveAnimBar');
+            if (!bar || bar.classList.contains('hidden')) return;
+            const h = Math.round(bar.getBoundingClientRect().height);
+            if (h > 0) document.documentElement.style.setProperty('--anim-bar-h', h + 'px');
+        };
+
+        const animDsKey = (ds) => (ds.curveId !== undefined ? ds.curveId : '') + '|' + ds.label;
+        const captureAnimVisibility = () => {
+            const map = {};
+            if (!filmChart) return map;
+            filmChart.data.datasets.forEach((ds, i) => {
+                if (!filmChart.isDatasetVisible(i)) map[animDsKey(ds)] = true;
+            });
+            return map;
+        };
+
+        const applyAnimSolo = () => {
+            if (!filmChart || !curveAnim) return;
+            const keep = curveAnim.soloIds || [curveAnim.curveId];
+            filmChart.data.datasets.forEach(ds => { ds.hidden = !keep.includes(ds.curveId); });
+            filmChart.update('none');
+        };
+
+        const animTick = (ts) => {
+            if (!curveAnim) return;
+            if (curveAnim.last === null) curveAnim.last = ts;
+            const dt = Math.min(64, ts - curveAnim.last);
+            curveAnim.last = ts;
+            if (curveAnim.playing) {
+                const step = curveAnim.steps[curveAnim.idx];
+                curveAnim.t += (dt * curveAnim.speed) / step.dur;
+                if (curveAnim.t >= 1) {
+                    if (curveAnim.idx < curveAnim.steps.length - 1) { curveAnim.idx++; curveAnim.t = 0; }
+                    else { curveAnim.t = 1; curveAnim.playing = false; }
+                    renderAnimBar();
+                }
+                animDirty = true;
+            }
+            if (animDirty) { animDirty = false; filmChart.render(); }
+            curveAnim.raf = requestAnimationFrame(animTick);
+        };
+
+        const startCurveAnim = (curveId, method) => {
+            const curve = curvesData.find(c => c.id === curveId);
+            if (!curve) { showInfoToast('Add density data to this curve first.'); return; }
+            const built = ANIM_BUILDERS[method] ? ANIM_BUILDERS[method](curve) : null;
+            if (!built) {
+                const why = {
+                    smooth: 'Smoothing is switched off for this curve, so there are no raw readings to compare against.',
+                    sbr: 'Needs a Contrast Index and a paper LER. Check that this curve has enough straight line to measure.',
+                    gamma: 'Not enough data to identify a straight line on this curve.'
+                }[method] || 'The curve may not span enough exposure.';
+                showInfoToast(ANIM_LABELS[method] + ': ' + why);
+                return;
+            }
+            if (curveAnim && curveAnim.raf) cancelAnimationFrame(curveAnim.raf);
+            const soloIds = [curveId];
+            // Snapshot once — switching methods mid-animation must not capture the solo
+            if (!animPrevHidden) animPrevHidden = captureAnimVisibility();
+            const avail = {};
+            ANIM_ORDER.forEach(m => { try { avail[m] = !!(ANIM_BUILDERS[m] && ANIM_BUILDERS[m](curve)); } catch (e) { avail[m] = false; } });
+            curveAnim = { curveId: curveId, method: method, soloIds: soloIds, steps: built.steps, avail: avail, idx: 0, t: 0, playing: true, speed: 1, last: null, raf: null };
+            applyAnimSolo();
+            renderAnimBar();
+            animDirty = true;
+            enterAnimFocus();
+            // The bar's height feeds the chart's height budget, so re-measure it
+            // after the caption for this method has been laid out.
+            requestAnimationFrame(() => { syncAnimBarHeight(); if (filmChart) filmChart.resize(); });
+            curveAnim.raf = requestAnimationFrame(animTick);
+        };
+
+        const stopCurveAnim = () => {
+            if (!curveAnim) return;
+            if (curveAnim.raf) cancelAnimationFrame(curveAnim.raf);
+            curveAnim = null;
+            renderAnimBar();
+            exitAnimFocus();
+            // animPrevHidden is still set, so this rebuild restores exactly what
+            // was on screen before the animation started — then we drop it.
+            updateChartAndCalculations();
+            animPrevHidden = null;
+            if (filmChart) filmChart.resize();
+        };
+
+        const animGoto = (idx, atEnd) => {
+            if (!curveAnim) return;
+            curveAnim.idx = Math.max(0, Math.min(curveAnim.steps.length - 1, idx));
+            curveAnim.t = atEnd ? 1 : 0;
+            curveAnim.playing = false;
+            animDirty = true;
+            renderAnimBar();
+        };
+
+        const renderAnimBar = () => {
+            const bar = document.getElementById('curveAnimBar');
+            if (!bar) return;
+            if (!curveAnim) { bar.classList.add('hidden'); markActiveMenuItem(); return; }
+            const curve = curvesData.find(c => c.id === curveAnim.curveId);
+            bar.classList.remove('hidden');
+            renderAnimCurveSel();
+            renderAnimChips();
+            document.getElementById('caCaption').innerHTML = curveAnim.steps[curveAnim.idx].caption;
+            document.getElementById('caStepNum').textContent = 'Step ' + (curveAnim.idx + 1) + ' of ' + curveAnim.steps.length;
+            const playBtn = document.getElementById('caPlay');
+            playBtn.textContent = curveAnim.playing ? '❚❚' : '▶';
+            playBtn.title = curveAnim.playing ? 'Pause' : 'Play';
+            const dots = document.getElementById('caDots');
+            dots.innerHTML = curveAnim.steps.map((s, i) =>
+                '<button type="button" class="ca-dot' + (i === curveAnim.idx ? ' ca-dot-on' : '') +
+                (i < curveAnim.idx ? ' ca-dot-done' : '') + '" data-idx="' + i + '" title="Step ' + (i + 1) + '"></button>'
+            ).join('');
+            dots.querySelectorAll('.ca-dot').forEach(d =>
+                d.addEventListener('click', () => animGoto(parseInt(d.dataset.idx, 10), false)));
+            markActiveMenuItem();
+            requestAnimationFrame(syncAnimBarHeight);
+        };
+
+        // Curve picker — focus mode hides the sidebar, so the transport has to
+        // carry everything needed to drive the animation.
+        const renderAnimCurveSel = () => {
+            const sel = document.getElementById('caCurveSel');
+            if (!sel || !curveAnim) return;
+            const want = curvesData.map(c => c.id + ' ' + c.name).join('|');
+            if (sel.dataset.sig !== want) {
+                sel.innerHTML = curvesData.map(c =>
+                    '<option value="' + escapeHtml(c.id) + '">' + escapeHtml(c.name || 'Curve') + '</option>').join('');
+                sel.dataset.sig = want;
+            }
+            sel.value = curveAnim.curveId;
+        };
+
+        const renderAnimChips = () => {
+            const box = document.getElementById('caChips');
+            if (!box || !curveAnim) return;
+            box.innerHTML = ANIM_ORDER.map(m => {
+                const ok = !!(curveAnim.avail && curveAnim.avail[m]);
+                return '<button type="button" class="ca-chip' + (m === curveAnim.method ? ' ca-chip-on' : '')
+                     + (ok ? '' : ' ca-chip-na') + '" data-method="' + m + '" title="'
+                     + escapeHtml(ANIM_LABELS[m]) + (ok ? '' : ' (not available for this curve)') + '">'
+                     + ANIM_LABELS[m] + '</button>';
+            }).join('');
+            box.querySelectorAll('.ca-chip').forEach(c => c.addEventListener('click', () => {
+                if (c.classList.contains('ca-chip-na')) return;
+                startCurveAnim(curveAnim.curveId, c.dataset.method);
+            }));
+            const on = box.querySelector('.ca-chip-on');
+            if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        };
+
+        // Highlight the entry currently playing, so the open menu doubles as a legend
+        const markActiveMenuItem = () => {
+            document.querySelectorAll('.ca-menu-item').forEach(i => i.classList.remove('ca-menu-item-active'));
+            if (!curveAnim) return;
+            const card = document.getElementById(curveAnim.curveId);
+            const item = card && card.querySelector('.ca-menu-item[data-method="' + curveAnim.method + '"]');
+            if (item) item.classList.add('ca-menu-item-active');
+        };
+
+        const curveAnimPlugin = {
+            id: 'curveMethodAnim',
+            afterDraw: (chart) => {
+                if (chart.canvas.id !== 'filmCurveChart' || !curveAnim) return;
+                const curve = curvesData.find(c => c.id === curveAnim.curveId);
+                if (!curve) return;
+                const H = createDrawHelpers(chart);
+                try {
+                    for (let i = 0; i < curveAnim.idx; i++) curveAnim.steps[i].draw(H, 1, true);
+                    curveAnim.steps[curveAnim.idx].draw(H, Math.max(0, Math.min(1, curveAnim.t)), false);
+                } catch (err) {
+                    console.warn('method animation draw failed', err);
+                }
             }
         };
 
@@ -9290,7 +10311,13 @@
             }
             q1Info.push(`Speed:${speedMethodLabels[trSpeedMethod] || trSpeedMethod}`);
             q1Info.push(`Anchor:${filmAnchorMode === 'metered' ? `Metered (${meterKm === 1.00 ? '3⅓' : '4⅓'} stops over Spd)` : 'Speed point (0.10)'}`);
-            q1Info.push(`Flare:${effFlare.toFixed(2)} logH${(() => { const s = document.getElementById('lensQualitySelect'); if (!s || s.value === 'mid' || document.getElementById('trFlareMode').value === 'custom') return ''; return s.value === 'modern' ? ' · modern lens ×0.75' : ' · vintage lens ×1.40'; })()}`);
+            q1Info.push(`Flare:${effFlare.toFixed(2)} logH${(() => {
+                const k = lensFlareFactor();
+                if (k === 1 || document.getElementById('trFlareMode').value === 'custom') return '';
+                const s = document.getElementById('lensQualitySelect');
+                const name = (s && s.selectedIndex >= 0 ? s.options[s.selectedIndex].text : 'lens').replace(/\s*\(.*\)\s*$/, '');
+                return ` · ${name} ×${k.toFixed(2)}`;
+            })()}`);
             if (showNoFlareRef) q1Info.push('No-flare ref: dashed');
             if (flareEiOffsetStops > 0.05) q1Info.push(`Offset:+${flareEiOffsetLogH.toFixed(2)} logH (ΔD ${flareDensityOffset.toFixed(2)})`);
             if (filmExpStops !== 0) q1Info.push(`Film Exp:${filmExpStops > 0 ? '+' : ''}${filmExpStops.toFixed(1)} stops`);
@@ -9446,8 +10473,71 @@
             autoTableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js';
             document.head.appendChild(autoTableScript);
             
-            Chart.register(visualizerPlugin, whiteBackgroundPlugin, filmHoverPlugin, gammaPickPlugin, gammaBandPlugin);
+            Chart.register(visualizerPlugin, whiteBackgroundPlugin, filmHoverPlugin, gammaPickPlugin, gammaBandPlugin, curveAnimPlugin);
             initializeChart();
+
+            // --- method animation playback bar ---
+            document.getElementById('caPlay').addEventListener('click', () => {
+                if (!curveAnim) return;
+                if (!curveAnim.playing && curveAnim.idx === curveAnim.steps.length - 1 && curveAnim.t >= 1) {
+                    curveAnim.idx = 0; curveAnim.t = 0;   // replay from the top once finished
+                }
+                curveAnim.playing = !curveAnim.playing;
+                curveAnim.last = null;
+                animDirty = true;
+                renderAnimBar();
+            });
+            document.getElementById('caPrev').addEventListener('click', () => {
+                if (!curveAnim) return;
+                animGoto(curveAnim.t > 0.05 ? curveAnim.idx : curveAnim.idx - 1, false);
+            });
+            document.getElementById('caNext').addEventListener('click', () => {
+                if (!curveAnim) return;
+                if (curveAnim.idx === curveAnim.steps.length - 1) animGoto(curveAnim.idx, true);
+                else animGoto(curveAnim.idx + 1, false);
+            });
+            document.getElementById('caRestart').addEventListener('click', () => {
+                if (!curveAnim) return;
+                curveAnim.idx = 0; curveAnim.t = 0; curveAnim.playing = true; curveAnim.last = null;
+                animDirty = true;
+                renderAnimBar();
+            });
+            document.getElementById('caSpeed').addEventListener('change', (e) => {
+                if (curveAnim) curveAnim.speed = parseFloat(e.target.value) || 1;
+            });
+            document.getElementById('caClose').addEventListener('click', stopCurveAnim);
+            document.getElementById('caCurveSel').addEventListener('change', (e) => {
+                if (!curveAnim) return;
+                const id = e.target.value;
+                const target = curvesData.find(c => c.id === id);
+                if (!target) return;
+                // Keep the current method if the new curve supports it, else fall
+                // back to the first one that works rather than silently doing nothing.
+                let m = curveAnim.method;
+                if (!(ANIM_BUILDERS[m] && ANIM_BUILDERS[m](target))) {
+                    m = ANIM_ORDER.find(k => { try { return !!ANIM_BUILDERS[k](target); } catch (err) { return false; } });
+                }
+                if (!m) { showInfoToast('Nothing can be measured on "' + target.name + '" yet.'); renderAnimCurveSel(); return; }
+                startCurveAnim(id, m);
+            });
+            window.addEventListener('resize', () => {
+                if (!curveAnim) return;
+                syncAnimBarHeight();
+            });
+            document.addEventListener('click', (e) => {
+                // Clicks on the transport (play, next, speed) must not fold the menu away
+                if (e.target && e.target.closest && e.target.closest('#curveAnimBar, .ca-more-wrap')) return;
+                document.querySelectorAll('.ca-more-menu').forEach(m => m.classList.add('hidden'));
+            });
+            document.addEventListener('keydown', (e) => {
+                if (!curveAnim) return;
+                if (e.key === 'Escape') { stopCurveAnim(); return; }
+                if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+                if (e.key === 'ArrowRight') { e.preventDefault(); document.getElementById('caNext').click(); }
+                else if (e.key === 'ArrowLeft') { e.preventDefault(); document.getElementById('caPrev').click(); }
+                else if (e.key === ' ') { e.preventDefault(); document.getElementById('caPlay').click(); }
+            });
+
             addCurveBtn.addEventListener('click', () => addCurve());
 
             // Global curve controls
@@ -10055,6 +11145,10 @@
                 let state;
                 try { state = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e) {}
                 if (!state) return false;
+                // Lens tiers were renamed from quality to element count; without this a
+                // saved session would set a value no <option> has and blank the select.
+                const LENS_MIGRATION = { modern: 'few', mid: 'medium', vintage: 'many' };
+                if (LENS_MIGRATION[state.lensQualitySelect]) state.lensQualitySelect = LENS_MIGRATION[state.lensQualitySelect];
                 settingsMap.forEach(s => {
                     const el = document.getElementById(s.id);
                     if (!el || state[s.id] === undefined) return;
