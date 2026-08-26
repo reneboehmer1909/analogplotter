@@ -346,12 +346,19 @@
             max-height: calc(100vh - 80px); overflow-y: auto;
             padding: 30px 34px 22px; box-shadow: 0 24px 80px rgba(0,0,0,0.3);
         }
+        /* Wizard only: fixed height across all steps so the footer / Next button never moves. */
+        #introCard {
+            height: min(600px, calc(100vh - 80px));
+            display: flex; flex-direction: column; overflow-y: hidden;
+        }
+        #introCard .intro-body { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
         .intro-card h2 { font-size: 22px; letter-spacing: -0.02em; margin-bottom: 12px; }
         .intro-card p { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 10px; }
         .intro-card p strong { color: var(--text-primary); }
         .intro-illu { display: flex; justify-content: center; margin: 16px 0; }
         .intro-illu svg { max-width: 100%; height: auto; }
         .intro-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; gap: 12px; flex-wrap: wrap; }
+        #introCard .intro-footer { flex: 0 0 auto; margin-top: 16px; padding-top: 14px; border-top: 1px solid #ededf0; }
         .intro-dots { display: flex; gap: 6px; }
         .intro-dot { width: 7px; height: 7px; border-radius: 999px; background: #d2d2d7; transition: background 0.15s; }
         .intro-dot.active { background: var(--accent); }
@@ -948,6 +955,27 @@
                                 <div id="calibrationOffsetDisplay" class="text-sm font-medium text-green-700 h-4"></div>
                             </div>
                         </div>
+                         <div class="mt-2">
+                            <button id="toggleDensCorrBtn" class="text-xs text-[#0066cc] hover:underline font-medium">Densitometer Correction</button>
+                            <div id="densCorrContainer" class="hidden mt-3 p-3 bg-white border border-[#e8e8ed] rounded-lg space-y-3">
+                                <h4 class="section-heading">Correct Densitometer</h4>
+                                <p class="text-xs text-gray-600">Read a calibrated step wedge with your densitometer, then paste the certified densities and your readings. A linear fit then corrects every density reading. This helps when you use different densitometers.</p>
+                                <div>
+                                    <label class="font-medium text-sm">Certified wedge densities:</label>
+                                    <textarea id="densCorrReference" class="data-input w-full p-2 text-xs border rounded-md font-mono" placeholder="Certified step densities, comma-separated">0.05, 0.20, 0.35, 0.50, 0.65, 0.80, 0.95, 1.10, 1.25, 1.40, 1.55, 1.70, 1.85, 2.00, 2.15, 2.30, 2.45, 2.60, 2.75, 2.90, 3.05</textarea>
+                                    <p class="text-[11px] text-gray-500 mt-0.5">Default is a nominal Stouffer 21-step wedge. Replace with your wedge's certified values if you have them.</p>
+                                </div>
+                                <div>
+                                    <label class="font-medium text-sm">Your densitometer readings:</label>
+                                    <textarea id="densCorrMeasured" class="data-input w-full p-2 text-xs border rounded-md font-mono" placeholder="Your readings of the same wedge, comma-separated"></textarea>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button id="densCorrApplyBtn" class="custom-btn text-xs font-medium py-1 px-3">Apply Correction</button>
+                                    <button id="densCorrClearBtn" class="secondary-btn text-xs font-medium py-1 px-3">Clear</button>
+                                </div>
+                                <div id="densCorrStatus" class="text-xs font-medium h-4"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1483,11 +1511,29 @@
                     </div>
                 </div>
 
-                <div class="mt-6 text-center">
-                    <div class="mb-4 text-sm">
-                        <input type="checkbox" id="plotSingleCurvesCheckbox" class="mr-2">
-                        <label for="plotSingleCurvesCheckbox">Plot each curve individually in the export</label>
+                <div class="mt-6">
+                    <h3 class="section-heading collapsible collapsed" onclick="this.classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed');">Export Options</h3>
+                    <div class="collapsible-content collapsed">
+                        <p class="text-xs mb-3" style="color:var(--text-muted);">Choose which sections to include in the PDF. Everything is included by default.</p>
+                        <div class="flex flex-wrap items-center gap-x-2 mb-3">
+                            <button type="button" id="pdfOptAllBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Select All</button>
+                            <button type="button" id="pdfOptNoneBtn" class="secondary-btn py-1 px-2 text-[10px] tracking-wider">Select None</button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 text-sm">
+                            <label class="flex items-center gap-2"><input type="checkbox" class="pdf-opt" id="pdfOptChart" checked><span>Characteristic curve chart</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" class="pdf-opt" id="pdfOptFilmChar" checked><span>Film characteristics table</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" class="pdf-opt" id="pdfOptExposure" checked><span>Exposure, scene &amp; development aims</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" class="pdf-opt" id="pdfOptProcess" checked><span>Process description &amp; notes</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" class="pdf-opt" id="plotSingleCurvesCheckbox"><span>Individual curve plots</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" class="pdf-opt" id="pdfOptMethod" checked><span>Method &amp; calculation notes</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" class="pdf-opt" id="pdfOptPlots" checked><span>Analysis plots (CI/EFS vs. time…)</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" class="pdf-opt" id="pdfOptRaw" checked><span>Raw density data table</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" class="pdf-opt" id="pdfOptToneRepro" checked><span>Tone reproduction diagrams</span></label>
+                        </div>
                     </div>
+                </div>
+
+                <div class="mt-6 text-center">
                     <button id="exportPdfBtn" class="export-btn font-medium py-2.5 px-6 text-sm tracking-wide">Export as PDF</button>
                 </div>
                 </div><!-- /filmControlsBelow -->
@@ -1601,22 +1647,78 @@
         // --- INTRO WIZARD ---
         const INTRO_KEY = 'analogplotter_intro_dismissed';
 
-        const DEMO_CURVES = [
-            { name: 'Demo 5:30',  time: '5.5', color: '#8b2500', data: '0.18, 0.20, 0.23, 0.26, 0.30, 0.34, 0.40, 0.46, 0.52, 0.60, 0.67, 0.76, 0.84, 0.93, 1.01, 1.09' },
-            { name: 'Demo 8:00',  time: '8',   color: '#00457c', data: '0.18, 0.21, 0.24, 0.28, 0.33, 0.39, 0.46, 0.55, 0.64, 0.74, 0.85, 0.96, 1.06, 1.17, 1.27, 1.36' },
-            { name: 'Demo 11:00', time: '11',  color: '#2d6a4f', data: '0.18, 0.21, 0.25, 0.30, 0.36, 0.44, 0.53, 0.64, 0.76, 0.89, 1.03, 1.17, 1.30, 1.42, 1.53, 1.63' },
-            { name: 'Demo 16:00', time: '16',  color: '#6b3fa0', data: '0.18, 0.21, 0.25, 0.31, 0.39, 0.49, 0.61, 0.76, 0.92, 1.09, 1.26, 1.43, 1.58, 1.71, 1.83, 1.92' }
-        ];
+        // Real-world example dataset (Tri-X in Xtol 20.5C, 9 development times, with
+        // Ilford MGV paper curves). Loaded by the "Load example data" button and
+        // applied through the same path as an imported .json session.
+        const DEMO_SESSION = {
+          "globals": {
+            "docTitle": "TriX",
+            "docName": "Stephen B.",
+            "docDateTime": "2026-08-26T20:04",
+            "flareModel": "practical",
+            "targetLer": "1.05",
+            "flareLogH": "0.40",
+            "isoMethod": "iso6_interpolated",
+            "targetIso": "400",
+            "speedMethod": "deltaX",
+            "logHMode": "auto",
+            "customLogH": "",
+            "zoneTableMethod": "target_ci",
+            "targetCiInput": "0.58",
+            "normalLslrInput": "2.20",
+            "paperStepMode": "auto",
+            "paperCustomSteps": "",
+            "useMeasuredPaper": true,
+            "trPaperMode": "single",
+            "speedConstant": "0.40",
+            "paperName": "Ilford MGV",
+            "paperDeveloper": "Ektaflo II",
+            "paperDilution": "1:1",
+            "paperTemp": "20C",
+            "paperShowPoints": true,
+            "paperNotes": "",
+            "trSceneLslr": "1.88",
+            "trFlareMode": "auto",
+            "trFlareSlider": "0.40",
+            "trPlacement": "s1",
+            "trSubjectScale": "zone",
+            "trSpeedMethod": "deltaX",
+            "trFilmAnchor": "speed",
+            "trPaperAnchor": "shadow",
+            "trAnchorPct": "80"
+          },
+          "paperCurves": [
+            { "name": "Grade 2", "color": "#8b2500", "show": true, "smooth": false, "forTR": true,  "data": "0.05, 0.05, 0.05, 0.05, 0.07, 0.14, 0.30, 0.52, 0.80, 1.12, 1.48, 1.89, 2.15, 2.21, 2.22, 2.22, 2.22, 2.22, 2.22, 2.22", "c": 0, "m": 50, "y": 10 },
+            { "name": "Grade 1", "color": "#1a5276", "show": true, "smooth": false, "forTR": false, "data": "0.05, 0.05, 0.05, 0.05, 0.06, 0.08, 0.18, 0.38, 0.67, 1.06, 1.55, 2.02, 2.19, 2.22, 2.22, 2.22, 2.22, 2.22, 2.22, 2.22", "c": 0, "m": 25, "y": 5 },
+            { "name": "Grade 0", "color": "#196f3d", "show": true, "smooth": false, "forTR": false, "data": "0.05, 0.05, 0.05, 0.05, 0.05, 0.06, 0.08, 0.57, 1.25, 1.99, 2.21, 2.22, 2.22, 2.22, 2.22, 2.22, 2.22, 2.22, 2.22, 2.22", "c": 0, "m": 5, "y": 0 },
+            { "name": "Grade 4", "color": "#7d3c98", "show": true, "smooth": false, "forTR": false, "data": "0.05, 0.05, 0.05, 0.06, 0.09, 0.19, 0.38, 0.60, 0.85, 1.10, 1.35, 1.55, 1.78, 2.03, 2.18, 2.22, 2.22, 2.22, 2.22, 2.22", "c": 0, "m": 80, "y": 15 }
+          ],
+          "process": {
+            "dev": "Xtol 20.5C",
+            "dilution": "1:1",
+            "agitation": "Dip & Dunk",
+            "densitometer": "Visual",
+            "exposure": "Whitelight",
+            "postDev": "-",
+            "notes": "69° 20.5C"
+          },
+          "reference": null,
+          "curves": [
+            { "name": "Curve 1", "time": "3",    "data": "0.20, 0.21, 0.22, 0.23, 0.25, 0.28, 0.31, 0.36, 0.41, 0.45, 0.51, 0.57, 0.63, 0.71, 0.77, 0.83, 0.89, 0.96, 1.04, 1.10, 1.16", "gammaStart": "",     "gammaEnd": "",     "color": "#1a1a1a", "speedPointColor": "#ff0000", "style": "solid", "show": true, "smooth": true,  "showSpeedPoint": false, "showCI": false, "showDX": false, "showGamma": false, "showIsoRef": true },
+            { "name": "Curve 2", "time": "4",    "data": "0.21, 0.23, 0.24, 0.26, 0.30, 0.34, 0.40, 0.47, 0.52, 0.60, 0.66, 0.74, 0.81, 0.89, 0.96, 1.05, 1.11, 1.19, 1.26, 1.32, 1.38", "gammaStart": "1.80", "gammaEnd": "2.85", "color": "#8b2500", "speedPointColor": "#ff0000", "style": "solid", "show": true, "smooth": true,  "showSpeedPoint": false, "showCI": false, "showDX": false, "showGamma": false, "showIsoRef": true },
+            { "name": "Curve 3", "time": "5",    "data": "0.23, 0.24, 0.27, 0.30, 0.36, 0.42, 0.49, 0.57, 0.65, 0.73, 0.82, 0.90, 0.99, 1.07, 1.16, 1.24, 1.32, 1.42, 1.50, 1.58, 1.64", "gammaStart": "",     "gammaEnd": "",     "color": "#00457c", "speedPointColor": "#ff0000", "style": "solid", "show": true, "smooth": true,  "showSpeedPoint": false, "showCI": false, "showDX": false, "showGamma": false, "showIsoRef": true },
+            { "name": "Curve 4", "time": "6",    "data": "0.24, 0.26, 0.29, 0.34, 0.40, 0.48, 0.57, 0.66, 0.76, 0.86, 0.96, 1.05, 1.14, 1.23, 1.33, 1.42, 1.51, 1.62, 1.71, 1.78, 1.86", "gammaStart": "",     "gammaEnd": "",     "color": "#2d6a4f", "speedPointColor": "#ff0000", "style": "solid", "show": true, "smooth": true,  "showSpeedPoint": false, "showCI": false, "showDX": false, "showGamma": false, "showIsoRef": false },
+            { "name": "Curve 5", "time": "7",    "data": "0.25, 0.28, 0.31, 0.36, 0.43, 0.53, 0.63, 0.74, 0.85, 0.96, 1.07, 1.18, 1.29, 1.40, 1.50, 1.60, 1.70, 1.80, 1.89, 1.96, 2.06", "gammaStart": "",     "gammaEnd": "",     "color": "#6b3fa0", "speedPointColor": "#ff0000", "style": "solid", "show": true, "smooth": true,  "showSpeedPoint": false, "showCI": false, "showDX": false, "showGamma": false, "showIsoRef": true },
+            { "name": "Curve 6", "time": "8",    "data": "0.25, 0.29, 0.33, 0.39, 0.48, 0.59, 0.72, 0.85, 0.97, 1.09, 1.21, 1.33, 1.45, 1.56, 1.68, 1.78, 1.89, 1.99, 2.08, 2.16, 2.24", "gammaStart": "",     "gammaEnd": "",     "color": "#b45309", "speedPointColor": "#ff0000", "style": "solid", "show": true, "smooth": true,  "showSpeedPoint": false, "showCI": false, "showDX": false, "showGamma": false, "showIsoRef": true },
+            { "name": "Curve 7", "time": "10",   "data": "0.26, 0.31, 0.36, 0.44, 0.56, 0.70, 0.86, 1.01, 1.16, 1.30, 1.44, 1.58, 1.71, 1.84, 1.96, 2.06, 2.18, 2.30, 2.39, 2.48, 2.55", "gammaStart": "1.80", "gammaEnd": "2.85", "color": "#64748b", "speedPointColor": "#ff0000", "style": "solid", "show": true, "smooth": true,  "showSpeedPoint": false, "showCI": false, "showDX": false, "showGamma": false, "showIsoRef": true },
+            { "name": "Curve 8", "time": "13",   "data": "0.27, 0.33, 0.40, 0.52, 0.66, 0.86, 1.05, 1.23, 1.42, 1.58, 1.74, 1.89, 2.03, 2.17, 2.30, 2.41, 2.52, 2.63, 2.71, 2.80, 2.88", "gammaStart": "",     "gammaEnd": "",     "color": "#1a1a1a", "speedPointColor": "#ff0000", "style": "solid", "show": true, "smooth": false, "showSpeedPoint": false, "showCI": false, "showDX": false, "showGamma": false, "showIsoRef": true },
+            { "name": "Curve 9", "time": "15.8", "data": "0.28, 0.37, 0.45, 0.58, 0.75, 0.97, 1.19, 1.41, 1.61, 1.78, 1.96, 2.12, 2.28, 2.42, 2.55, 2.66, 2.77, 2.86, 2.95, 3.03, 3.09", "gammaStart": "",     "gammaEnd": "",     "color": "#8b2500", "speedPointColor": "#ff0000", "style": "solid", "show": true, "smooth": true,  "showSpeedPoint": false, "showCI": false, "showDX": false, "showGamma": false, "showIsoRef": true }
+          ]
+        };
 
         const loadDemoData = () => {
-            curvesContainer.innerHTML = '';
-            curveCounter = 0;
-            curvesData = [];
-            DEMO_CURVES.forEach(c => addCurve(c));
-            logHModeSelect.value = 'auto';
-            targetIsoInput.value = 400;
-            toggleLogH_UI();
-            updateChartAndCalculations();
+            // Deep-clone so applySessionData's in-place tweaks never mutate the template.
+            applySessionData(JSON.parse(JSON.stringify(DEMO_SESSION)));
             // open the Curves fold-down so the entered data is visible
             const h = [...document.querySelectorAll('#leftPanelFilm .section-heading.collapsible')].find(x => x.textContent.trim() === 'Curves');
             if (h && h.classList.contains('collapsed')) h.click();
@@ -1738,8 +1840,10 @@
             const dots = INTRO_STEPS.map((_, i) => `<div class="intro-dot${i === introStepIdx ? ' active' : ''}"></div>`).join('');
             card.innerHTML = `
                 <button class="menu-btn intro-close" onclick="closeIntroWizard(false)" title="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
-                <h2>${step.title}</h2>
-                ${step.body}
+                <div class="intro-body">
+                    <h2>${step.title}</h2>
+                    ${step.body}
+                </div>
                 <div class="intro-footer">
                     <label class="intro-skip"><input type="checkbox" id="introDontShow"> Don't show this again</label>
                     <div class="intro-dots">${dots}</div>
@@ -1756,7 +1860,8 @@
         window.introNav = (dir) => {
             introStepIdx = Math.max(0, Math.min(INTRO_STEPS.length - 1, introStepIdx + dir));
             renderIntroStep();
-            document.getElementById('introCard').scrollTop = 0;
+            const body = document.querySelector('#introCard .intro-body');
+            if (body) body.scrollTop = 0;
         };
         window.showIntroWizard = (force) => {
             if (!force && localStorage.getItem(INTRO_KEY)) return;
@@ -2787,6 +2892,11 @@
         const calibrateBtn = document.getElementById('calibrateBtn');
         const clearCalibrationBtn = document.getElementById('clearCalibrationBtn');
         const calibrationOffsetDisplay = document.getElementById('calibrationOffsetDisplay');
+        const toggleDensCorrBtn = document.getElementById('toggleDensCorrBtn');
+        const densCorrContainer = document.getElementById('densCorrContainer');
+        const densCorrApplyBtn = document.getElementById('densCorrApplyBtn');
+        const densCorrClearBtn = document.getElementById('densCorrClearBtn');
+        const densCorrStatus = document.getElementById('densCorrStatus');
         const showGridToggle = document.getElementById('showGridToggle');
         const showPointsToggle = document.getElementById('showPointsToggle');
         const squareGridToggle = document.getElementById('squareGridToggle');
@@ -2800,6 +2910,12 @@
         let globalReferenceCurve = null; // Store reference curve globally for PDF export
         let globalIso6Curve = null; // Store ISO 6 synthetic ΔD=0.80 curve
         let logH_Offset = null; // For sensitometer calibration
+        let densityCorrection = null; // Densitometer density-axis correction: { slope, intercept, r2 }
+        // Linear-correct raw densitometer readings so different instruments agree.
+        // certified ≈ slope * measured + intercept, fitted from a calibrated step wedge.
+        const applyDensityCorrection = (arr) => densityCorrection
+            ? arr.map(d => densityCorrection.slope * d + densityCorrection.intercept)
+            : arr;
         const defaultColors = ['#1d1d1f', '#8b2500', '#00457c', '#248a3d', '#6b3fa0', '#b25000', '#64748b'];
 
         // Speed constant K for S = K / Hm.
@@ -3356,6 +3472,7 @@
                                 <div class="ca-menu-head">Contrast</div>
                                 <button type="button" class="ca-menu-item" data-method="ci">Contrast Index</button>
                                 <button type="button" class="ca-menu-item" data-method="gamma">Gamma</button>
+                                <button type="button" class="ca-menu-item" data-method="gbar">G-bar</button>
                                 <div class="ca-menu-head">Range</div>
                                 <button type="button" class="ca-menu-item" data-method="sbr">Scene range</button>
                                 <div class="ca-menu-head">Data</div>
@@ -3459,7 +3576,7 @@
                 const warningEl = document.getElementById(`warning-${el.id}`);
                 if (warningEl) warningEl.style.display = 'none';
 
-                let yValues = parseNumberList(el.querySelector('.data-input').value);
+                let yValues = applyDensityCorrection(parseNumberList(el.querySelector('.data-input').value));
                 const countEl = el.querySelector('.value-count');
                 if (countEl) {
                     if (yValues.length === 0) {
@@ -3614,7 +3731,7 @@
             } else if (isoMethod === 'reference') {
                 const refCurveEl = document.getElementById('refCurve');
                 if (refCurveEl) {
-                    const yValues = parseNumberList(refCurveEl.querySelector('.data-input').value);
+                    const yValues = applyDensityCorrection(parseNumberList(refCurveEl.querySelector('.data-input').value));
                     if (yValues.length > 0) {
                         let refPoints;
                         if (logHMode === 'auto') { refPoints = yValues.map((y, i) => ({ x: (i + 1) * 0.15, y: y }));
@@ -4421,6 +4538,20 @@
             const contentWidth = pageW - margin * 2;
             let finalY = 0;
 
+            // Export Options — which report sections to include. A missing element
+            // defaults to included so the report is never accidentally emptied.
+            const optOn = (id) => { const el = document.getElementById(id); return el ? el.checked : true; };
+            const pdfOpts = {
+                chart: optOn('pdfOptChart'),
+                filmChar: optOn('pdfOptFilmChar'),
+                exposure: optOn('pdfOptExposure'),
+                process: optOn('pdfOptProcess'),
+                method: optOn('pdfOptMethod'),
+                plots: optOn('pdfOptPlots'),
+                raw: optOn('pdfOptRaw'),
+                toneRepro: optOn('pdfOptToneRepro'),
+            };
+
             // --- Shared PDF table style: scientific publication look ---
             const pdfTableDefaults = {
                 theme: 'plain',
@@ -4491,24 +4622,26 @@
             doc.line(margin, titleBottom + 11, pageW - margin, titleBottom + 11);
             finalY = titleBottom + 14;
 
-            const chartCanvas = document.getElementById('filmCurveChart');
-            // Render at 2× for crisp export, then restore
-            const origDPR = filmChart.options.devicePixelRatio;
-            filmChart.options.devicePixelRatio = 3;
-            filmChart.update('none');
-            let imgWidth = contentWidth;
-            let imgHeight = chartCanvas.height * contentWidth / chartCanvas.width;
-            // Tall charts (square-grid mode) must not run off the page: cap height, scale width to keep aspect
-            const maxImgHeight = doc.internal.pageSize.getHeight() - finalY - 20;
-            if (imgHeight > maxImgHeight) {
-                imgWidth = imgWidth * maxImgHeight / imgHeight;
-                imgHeight = maxImgHeight;
+            if (pdfOpts.chart) {
+                const chartCanvas = document.getElementById('filmCurveChart');
+                // Render at 2× for crisp export, then restore
+                const origDPR = filmChart.options.devicePixelRatio;
+                filmChart.options.devicePixelRatio = 3;
+                filmChart.update('none');
+                let imgWidth = contentWidth;
+                let imgHeight = chartCanvas.height * contentWidth / chartCanvas.width;
+                // Tall charts (square-grid mode) must not run off the page: cap height, scale width to keep aspect
+                const maxImgHeight = doc.internal.pageSize.getHeight() - finalY - 20;
+                if (imgHeight > maxImgHeight) {
+                    imgWidth = imgWidth * maxImgHeight / imgHeight;
+                    imgHeight = maxImgHeight;
+                }
+                await exportProgress.set(0.08, 'Rendering main chart…');
+                doc.addImage(chartCanvas.toDataURL('image/png'), 'PNG', margin + (contentWidth - imgWidth) / 2, finalY, imgWidth, imgHeight);
+                filmChart.options.devicePixelRatio = origDPR;
+                filmChart.update('none');
+                finalY += imgHeight + 10;
             }
-            await exportProgress.set(0.08, 'Rendering main chart…');
-            doc.addImage(chartCanvas.toDataURL('image/png'), 'PNG', margin + (contentWidth - imgWidth) / 2, finalY, imgWidth, imgHeight);
-            filmChart.options.devicePixelRatio = origDPR;
-            filmChart.update('none');
-            finalY += imgHeight + 10;
             
             const flareModel = flareModelSelect.value;
             const targetLer = parseFloat(targetLerInput.value);
@@ -4555,25 +4688,29 @@
                 return y + 4;
             };
 
-            finalY = pdfSectionHeading('Film Characteristics', finalY);
-            if (typeof doc.autoTable === 'function') {
-                doc.autoTable({ ...pdfTableDefaults, startY: finalY, head: filmTableHead, body: filmTableBody, margin: { left: margin, right: margin } });
-                finalY = doc.autoTable.previous.finalY;
-                doc.setFont('helvetica', 'italic');
-                doc.setFontSize(6.5);
-                doc.setTextColor(110, 110, 110);
-                doc.text('Per ISO 6:1993 an ISO speed exists only at Delta D = 0.80; the EFS/EI values above are effective speeds for the development shown.', margin, finalY + 3);
-                finalY += 9;
+            if (pdfOpts.filmChar) {
+                finalY = pdfSectionHeading('Film Characteristics', finalY);
+                if (typeof doc.autoTable === 'function') {
+                    doc.autoTable({ ...pdfTableDefaults, startY: finalY, head: filmTableHead, body: filmTableBody, margin: { left: margin, right: margin } });
+                    finalY = doc.autoTable.previous.finalY;
+                    doc.setFont('helvetica', 'italic');
+                    doc.setFontSize(6.5);
+                    doc.setTextColor(110, 110, 110);
+                    doc.text('Per ISO 6:1993 an ISO speed exists only at Delta D = 0.80; the EFS/EI values above are effective speeds for the development shown.', margin, finalY + 3);
+                    finalY += 9;
+                }
             }
 
+            const pageH = doc.internal.pageSize.getHeight();
+
             // --- PDF: EXPOSURE & SCENE + DEVELOPMENT AIMS (shared page) ---
+            if (pdfOpts.exposure) {
             // Estimate space needed for Exposure table + Dev Aims
             const expRowCount = curvesData.length;
             const expTableEstimate = 12 + (expRowCount * 7) + 30; // header + rows + subtitle + margin
             const devAimsEstimate = 12 + (6 * 7) + 30; // 6 zone rows + header + subtitle
             const totalEstimate = expTableEstimate + devAimsEstimate + 20; // + EFS ref text
-            
-            const pageH = doc.internal.pageSize.getHeight();
+
             const remainingSpace = pageH - finalY - 15; // 15mm bottom margin
             
             // If both tables won't fit on current page, start a new page
@@ -4857,6 +4994,7 @@
                     }
                 }
             }
+            } // end pdfOpts.exposure
 
             const processInfo = [
                 { label: 'Developer', value: document.getElementById('descDev').value },
@@ -4870,7 +5008,7 @@
             const generalNotes = document.getElementById('descNotes').value;
             const hasProcessContent = processInfo.length > 0 || generalNotes.trim();
 
-            if (hasProcessContent) {
+            if (pdfOpts.process && hasProcessContent) {
                 doc.addPage();
                 finalY = 20;
                 doc.setFont('helvetica', 'bold');
@@ -5067,6 +5205,7 @@
                 document.body.removeChild(singleChartContainer);
             }
             
+            if (pdfOpts.method) {
             doc.addPage();
             finalY = 20;
             finalY = pdfSectionHeading('Calculation Transparency', finalY);
@@ -5177,6 +5316,7 @@
             ];
             
             writePlainTextSection('References & Influential Papers', referenceList);
+            } // end pdfOpts.method
 
             const plotContainer = document.createElement('div');
             plotContainer.style.position = 'absolute'; plotContainer.style.left = '-9999px'; plotContainer.style.width = '800px';
@@ -5188,7 +5328,7 @@
             };
             await exportProgress.set(0.68, 'Analysis plots…');
             const plotData = curvesData; const ciTimeData = plotData.filter(c => !isNaN(c.ci) && !isNaN(c.time)).map(c => ({x: c.time, y: c.ci})).sort((a,b) => a.x - b.x); const sbrIsoData = plotData.filter(c => !isNaN(c.matchedSbr) && !isNaN(c.calculatedIso)).map(c => ({x: c.matchedSbr * 0.301, y: c.calculatedIso})).sort((a,b) => a.x - b.x); const isoCiData = plotData.filter(c => !isNaN(c.calculatedIso) && !isNaN(c.ci)).map(c => ({x: c.ci, y: c.calculatedIso})).sort((a,b) => a.x - b.x); const isoTimeData = plotData.filter(c => !isNaN(c.calculatedIso) && !isNaN(c.time)).map(c => ({x: c.time, y: c.calculatedIso})).sort((a,b) => a.x - b.x); const sbrCiData = plotData.filter(c => c.matchedSbr && !isNaN(c.ci)).map(c => ({x: c.ci, y: c.matchedSbr * 0.301})).sort((a,b) => a.x - b.x);
-            if (ciTimeData.length > 1 || sbrIsoData.length > 1 || isoCiData.length > 1 || isoTimeData.length > 1 || sbrCiData.length > 1) {
+            if (pdfOpts.plots && (ciTimeData.length > 1 || sbrIsoData.length > 1 || isoCiData.length > 1 || isoTimeData.length > 1 || sbrCiData.length > 1)) {
                 doc.addPage(); finalY = 20; finalY = pdfSectionHeading('Analysis Plots', finalY);
                 const plotDocTitle = document.getElementById('docTitle').value || '';
                 const plotDev = document.getElementById('descDev').value || '';
@@ -5203,8 +5343,8 @@
                 }
                 finalY += 2; const plotWidth = (contentWidth / 2) - 5; const plotHeight = plotWidth * 0.75; let currentX = margin; let rowMaxHeight = 0; const chart1 = await generateChart('ciTimeChart', ciTimeData, 'CI vs. Time', 'Time (min)', 'Contrast Index (CI)', saturatingRegression(ciTimeData) || polynomialRegression(ciTimeData)); if (chart1) { doc.addImage(chart1, 'PNG', currentX, finalY, plotWidth, plotHeight); currentX += plotWidth + 10; rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } const chart2 = await generateChart('isoTimeChart', isoTimeData, 'EFS vs. Time', 'Time (min)', 'EFS', saturatingRegression(isoTimeData, true) || polynomialRegression(isoTimeData)); if (chart2) { doc.addImage(chart2, 'PNG', currentX, finalY, plotWidth, plotHeight); rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } finalY += rowMaxHeight + 10; currentX = margin; rowMaxHeight = 0; const chart3 = await generateChart('sbrIsoChart', sbrIsoData, 'LSLR vs. EFS', 'LSLR', 'EFS'); if (chart3) { doc.addImage(chart3, 'PNG', currentX, finalY, plotWidth, plotHeight); currentX += plotWidth + 10; rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } const chart4 = await generateChart('isoCiChart', isoCiData, 'EFS vs. CI', 'Contrast Index (CI)', 'EFS'); if (chart4) { doc.addImage(chart4, 'PNG', currentX, finalY, plotWidth, plotHeight); rowMaxHeight = Math.max(rowMaxHeight, plotHeight); } finalY += rowMaxHeight + 10; currentX = margin; rowMaxHeight = 0; const chart5 = await generateChart('sbrCiChart', sbrCiData, 'LSLR vs. CI', 'Contrast Index (CI)', 'LSLR'); if (chart5) { const centeredX = margin + (contentWidth - plotWidth) / 2; doc.addImage(chart5, 'PNG', centeredX, finalY, plotWidth, plotHeight); }
             }
-            if (curvesData.length > 0) {
-                doc.addPage(); finalY = 20; finalY = pdfSectionHeading('Raw Density Data', finalY); finalY += 2; 
+            if (pdfOpts.raw && curvesData.length > 0) {
+                doc.addPage(); finalY = 20; finalY = pdfSectionHeading('Raw Density Data', finalY); finalY += 2;
                 const logHMode = logHModeSelect.value;
                 let xValuesForPdf = [];
                  if (logHMode !== 'auto') {
@@ -5237,7 +5377,7 @@
 
             // --- TONE REPRODUCTION DIAGRAMS (N+1, N, N-1) ---
             try {
-            if (curvesData.length >= 2) {
+            if (pdfOpts.toneRepro && curvesData.length >= 2) {
                 const trPanel = document.getElementById('panelToneReproChart');
                 const curvesPanel = document.getElementById('panelCurvesChart');
                 const trSel = document.getElementById('trCurveSelect');
@@ -7182,17 +7322,11 @@
                 }
             });
         };
-        const importFromJSON = (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                let step = 'parsing JSON';
+        // Apply a full session object (globals, process, paper curves, reference,
+        // film curves) to the UI. Shared by file import and the built-in example data.
+        const applySessionData = (data) => {
+                let step = 'preparing';
                 try {
-                    const text = e.target.result;
-                    const data = JSON.parse(text);
-
                     step = 'clearing curves';
                     curvesContainer.innerHTML = ''; refCurveContainer.innerHTML = '';
                     curveCounter = 0; curvesData = [];
@@ -7387,6 +7521,18 @@
                     console.error("Import error at step '" + step + "':", error);
                     alert("Import failed at step: " + step + "\n\nError: " + error.message);
                 }
+        };
+
+        const importFromJSON = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let data;
+                try { data = JSON.parse(e.target.result); }
+                catch (error) { alert("Import failed: file is not valid JSON.\n\n" + error.message); return; }
+                applySessionData(data);
             };
             reader.readAsText(file);
             event.target.value = '';
@@ -7677,17 +7823,18 @@
         // keyed the same way the chart rebuild keys them.
         let animPrevHidden = null;
 
-        const ANIM_C = { fd: '#d70015', dx: '#248a3d', jones: '#0066cc', ci: '#8b2500', gamma: '#7d3cb5', smooth: '#0a7d76', ei: '#b25000', sbr: '#1d4ed8', mute: '#86868b', ink: '#424245' };
+        const ANIM_C = { fd: '#d70015', dx: '#248a3d', jones: '#0066cc', ci: '#8b2500', gamma: '#7d3cb5', gbar: '#0f766e', smooth: '#0a7d76', ei: '#b25000', sbr: '#1d4ed8', mute: '#86868b', ink: '#424245' };
         const ANIM_LABELS = {
             fd: 'Fixed Density',
             dx: 'Delta-X',
             jones: 'Jones',
             ci: 'Contrast Index',
             gamma: 'Gamma',
+            gbar: 'G-bar',
             sbr: 'Scene range',
             smooth: 'Smoothing'
         };
-        const ANIM_ORDER = ['fd', 'dx', 'jones', 'ci', 'gamma', 'sbr', 'smooth'];
+        const ANIM_ORDER = ['fd', 'dx', 'jones', 'ci', 'gamma', 'gbar', 'sbr', 'smooth'];
 
         const easeInOut = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
         const lerpN = (a, b, t) => a + (b - a) * t;
@@ -8307,8 +8454,86 @@
                 { dur: 1600, draw: sTotal, caption: 'Total: <b>' + curve.matchedSbr.toFixed(1) + ' stops</b> of subject luminance range this development will place on that paper. This is the number to match against the scene in front of you.' }
             ] };
         };
+        // --- G-bar (average gradient) -----------------------------------------
+        // Ḡ is the slope of the chord from the speed point across a fixed 1.50 log H.
+        // Built as a slope triangle: each step draws ONE edge (run, rise, chord).
+        // The engine redraws completed steps with prior=true — those draw their edge
+        // as a muted line with NO label, so only the active step is ever labelled and
+        // badges never stack on top of each other.
+        const buildGbarAnim = (curve) => {
+            const pts = curve.points;
+            const jx = curve.jonesSpeedPoint;
+            if (!pts || pts.length < 2 || jx === null || jx === undefined) return null;
+            const d0 = interpolateY(pts, jx);
+            const d1 = interpolateY(pts, jx + 1.50);
+            if (d0 === null || d1 === null) return null;
+            const gAvg = (d1 - d0) / 1.50;
+            const C = ANIM_C.gbar;
+            const RUN = ANIM_C.ink;
+
+            const stroke = (H, x1, y1, x2, y2, color, width, dash) => {
+                const ctx = H.ctx; ctx.save();
+                ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash);
+                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+                ctx.restore();
+            };
+
+            // Step 1 — anchor the speed point (single label, well clear of the axis one).
+            const sAnchor = (H, t, prior) => {
+                const x0 = H.pxX(jx), y0 = H.pxY(d0);
+                if (!prior) growLine(H.ctx, x0, y0, x0, H.area.bottom, easeInOut(t), hexToRgba(C, 0.3), 1, [3, 3]);
+                H.haloMarker(x0, y0, C, 'circle', 4.5);
+                if (!prior && t > 0.35) H.drawBadge('speed point · log H = ' + jx.toFixed(2), x0, y0 - 16, C);
+            };
+            // Step 2 — the run: 1.50 log H baseline from the speed point.
+            const sRun = (H, t, prior) => {
+                const x0 = H.pxX(jx), y0 = H.pxY(d0);
+                H.haloMarker(x0, y0, C, 'circle', 4.5);
+                if (prior) {
+                    stroke(H, x0, y0, H.pxX(jx + 1.50), y0, hexToRgba(RUN, 0.4), 1, [4, 3]);
+                    H.haloMarker(H.pxX(jx + 1.50), y0, C, 'circle', 3.5);
+                } else {
+                    const e = easeInOut(t);
+                    const xE = H.pxX(jx + 1.50 * e);
+                    stroke(H, x0, y0, xE, y0, hexToRgba(RUN, 0.7), 1.5, []);
+                    H.haloMarker(xE, y0, C, 'circle', 3.5);
+                    if (t > 0.2) H.drawBadge('run = 1.50 log H  (≈5 stops)', (x0 + H.pxX(jx + 1.50)) / 2, y0 + 17, RUN);
+                }
+            };
+            // Step 3 — the rise: vertical ΔD at the far end of the run.
+            const sRise = (H, t, prior) => {
+                const x1 = H.pxX(jx + 1.50), y0 = H.pxY(d0), y1 = H.pxY(d1);
+                stroke(H, H.pxX(jx), y0, x1, y0, hexToRgba(RUN, 0.4), 1, [4, 3]); // muted run baseline for context
+                H.haloMarker(H.pxX(jx), y0, C, 'circle', 4.5);
+                H.haloMarker(x1, y1, C, 'circle', 4.5);
+                if (prior) {
+                    stroke(H, x1, y0, x1, y1, hexToRgba(RUN, 0.4), 1, [4, 3]);
+                } else {
+                    H.dimLine(x1, y0, x1, lerpN(y0, y1, easeInOut(t)), RUN);
+                    if (t > 0.45) H.drawBadge('rise = ΔD = ' + (d1 - d0).toFixed(2), x1 + 8, (y0 + y1) / 2, RUN, 'left');
+                }
+            };
+            // Step 4 — the chord: rise / run = Ḡ. Legs shown muted so the chord reads.
+            const sChord = (H, t) => {
+                const x0 = H.pxX(jx), y0 = H.pxY(d0), x1 = H.pxX(jx + 1.50), y1 = H.pxY(d1);
+                stroke(H, x0, y0, x1, y0, hexToRgba(RUN, 0.35), 1, [4, 3]);
+                stroke(H, x1, y0, x1, y1, hexToRgba(RUN, 0.35), 1, [4, 3]);
+                growLine(H.ctx, x0, y0, x1, y1, easeInOut(t), C, 2.5, []);
+                H.haloMarker(x0, y0, C, 'circle', 4.5);
+                H.haloMarker(x1, y1, C, 'diamond', 5);
+                if (t > 0.5) H.drawBadge('Ḡ = rise / run = ' + gAvg.toFixed(3), (x0 + x1) / 2, (y0 + y1) / 2 - 16, C);
+            };
+
+            return { steps: [
+                { dur: 1300, draw: sAnchor, caption: '<b>G-bar (Ḡ)</b> is the average gradient. It is anchored at the <b>speed point</b>, the same fractional-gradient point the Jones method finds, so it always starts down in the toe.' },
+                { dur: 1600, draw: sRun, caption: 'Step a fixed <b>1.50 log H</b> to the right along the exposure axis. That is about 5 stops, the range of an average scene. This baseline is the <b>run</b>.' },
+                { dur: 1500, draw: sRise, caption: 'Measure how far the curve climbs across that run: <b>ΔD = ' + (d1 - d0).toFixed(2) + '</b>. This vertical is the <b>rise</b>.' },
+                { dur: 1600, draw: sChord, caption: 'Ḡ is rise over run, the slope of the chord: <b>' + (d1 - d0).toFixed(2) + ' / 1.50 = ' + gAvg.toFixed(3) + '</b>. It starts in the toe, so it counts toe curvature that gamma leaves out. That is why Ḡ reads lower than gamma.' }
+            ] };
+        };
+
         const ANIM_BUILDERS = { fd: buildFdAnim, dx: buildDxAnim, jones: buildJonesAnim, ci: buildCiAnim,
-                                gamma: buildGammaAnim, smooth: buildSmoothAnim, sbr: buildSbrAnim };
+                                gamma: buildGammaAnim, gbar: buildGbarAnim, smooth: buildSmoothAnim, sbr: buildSbrAnim };
 
         // --- engine -----------------------------------------------------------
         let animScrollY = 0;
@@ -10550,6 +10775,9 @@
                 updateChartAndCalculations();
             });
             exportPdfBtn.addEventListener('click', exportPDF);
+            const setAllPdfOpts = (checked) => document.querySelectorAll('.pdf-opt').forEach(cb => { cb.checked = checked; });
+            document.getElementById('pdfOptAllBtn')?.addEventListener('click', () => setAllPdfOpts(true));
+            document.getElementById('pdfOptNoneBtn')?.addEventListener('click', () => setAllPdfOpts(false));
             exportJsonBtn.addEventListener('click', exportToJSON);
             document.getElementById('export-paper-json').addEventListener('click', exportPaperJSON);
             document.getElementById('paper-file-import').addEventListener('change', importPaperJSON);
@@ -10983,6 +11211,46 @@
 
             toggleCalibrationBtn.addEventListener('click', () => {
                 calibrationContainer.classList.toggle('hidden');
+            });
+
+            toggleDensCorrBtn.addEventListener('click', () => {
+                densCorrContainer.classList.toggle('hidden');
+            });
+            densCorrApplyBtn.addEventListener('click', () => {
+                const certified = parseNumberList(document.getElementById('densCorrReference').value);
+                const measured = parseNumberList(document.getElementById('densCorrMeasured').value);
+                densCorrStatus.classList.remove('text-green-700', 'text-red-700');
+                if (certified.length < 2 || measured.length < 2 || certified.length !== measured.length) {
+                    densCorrStatus.textContent = `Need matching lists of ≥2 values (${measured.length} readings vs ${certified.length} certified).`;
+                    densCorrStatus.classList.add('text-red-700');
+                    return;
+                }
+                // Fit certified = slope * measured + intercept (least squares).
+                const pts = measured.map((x, i) => ({ x, y: certified[i] }));
+                const slope = regressSlope(pts);
+                if (slope === null) {
+                    densCorrStatus.textContent = 'Readings are all identical, so no correction can be fitted.';
+                    densCorrStatus.classList.add('text-red-700');
+                    return;
+                }
+                const meanX = measured.reduce((a, b) => a + b, 0) / measured.length;
+                const meanY = certified.reduce((a, b) => a + b, 0) / certified.length;
+                const intercept = meanY - slope * meanX;
+                // R² of the fit.
+                let ssTot = 0, ssRes = 0;
+                pts.forEach(p => { const pred = slope * p.x + intercept; ssRes += (p.y - pred) ** 2; ssTot += (p.y - meanY) ** 2; });
+                const r2 = ssTot === 0 ? 1 : 1 - ssRes / ssTot;
+                const maxResid = Math.max(...pts.map(p => Math.abs(p.y - (slope * p.x + intercept))));
+                densityCorrection = { slope, intercept, r2 };
+                densCorrStatus.textContent = `Applied: D′ = ${slope.toFixed(3)}·D ${intercept >= 0 ? '+' : '−'} ${Math.abs(intercept).toFixed(3)}  ·  R²=${r2.toFixed(4)}, max resid ${maxResid.toFixed(3)}`;
+                densCorrStatus.classList.add('text-green-700');
+                updateChartAndCalculations();
+            });
+            densCorrClearBtn.addEventListener('click', () => {
+                densityCorrection = null;
+                densCorrStatus.textContent = '';
+                densCorrStatus.classList.remove('text-green-700', 'text-red-700');
+                updateChartAndCalculations();
             });
             clearCalibrationBtn.addEventListener('click', () => {
                 logH_Offset = null;
