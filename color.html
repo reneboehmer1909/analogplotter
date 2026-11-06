@@ -232,9 +232,11 @@
                     <div class="row">
                         <label class="f">Open gate (cd/m²)<span class="tip" data-tip="Screen luminance with no film in the gate. 48 cd/m² (14 fL) is the usual cinema reference for an open gate."></span>
                             <input type="number" id="openGate" step="1" min="1" value="48"></label>
-                        <label class="f">Stray light (% of open gate)<span class="tip" data-tip="Light that reaches the screen without passing through the image: lens flare, port glass, exit signs, reflections from the room. It sets the deepest black the screen can show. 0.2% limits the screen to 500:1."></span>
+                        <label class="f">Room light (% of open gate)<span class="tip" data-tip="Light that reaches the screen regardless of the image: exit signs, aisle lights, port glass and reflections from the room. A constant floor that sets the deepest black the screen can show. 0.2% alone limits the screen to 500:1."></span>
                             <input type="number" id="stray" step="0.05" min="0" max="10" value="0.20"></label>
                     </div>
+                    <label class="f">Projector lens flare (% of grey)<span class="tip" data-tip="Veiling glare of the projection lens: light scattered from the whole image across the screen. It scales with the picture itself, so it is taken as a percentage of the 18% grey's screen luminance in each channel. It lifts the blacks of a normal scene; a dark scene gets less."></span>
+                        <input type="number" id="projFlare" step="0.1" min="0" max="20" value="1.0"></label>
                     <label class="f">Lamp balance (relative output per channel)<span class="tip" data-tip="Relative light the projector lamp and screen deliver in the red, green and blue bands, green = 1. A warmer lamp has red above 1 and blue below 1."></span></label>
                     <div class="row3">
                         <label class="f"><span class="ch r">Red</span><input type="number" id="lampR" step="0.01" min="0.1" value="1.00"></label>
@@ -263,7 +265,7 @@
             <div class="tiles" id="tiles"></div>
             <div class="card quad-card">
                 <div class="quad-head">
-                    <h3>Tone transfer · four quadrants<span class="tip" data-tip="The whole chain in one diagram, read clockwise from bottom right. Q1: the camera turns scene luminance into exposure on the negative (flare lifts the shadows; the dashed line is the same scene without flare). Q2: the negative's three layers turn exposure into density. Q3: the printer and print film turn negative density into print density, with timing, printer flare and the optical transfer included. Q4: the result, scene luminance against print density, with screen luminance on the right axis. The dotted rectangles follow the scene shadow, the 18% grey and diffuse white through all four steps."></span></h3>
+                    <h3>Tone transfer · six stages<span class="tip" data-tip="The whole chain from scene to cinema screen. Each panel turns one quantity into the next and shares an axis with its neighbour, so a scene tone can be followed through all six: Q2 camera flare and optics (scene → exposure on the camera film), Q3 camera film (exposure → negative density), Q4 printer flare and optics with timing (negative density → exposure on the print film), Q5 print film (exposure → print density), Q6 projector lens flare and room light (print density → screen luminance), and back to Q1, scene against screen. The dotted loops follow the scene shadow, the 18% grey and diffuse white."></span></h3>
                     <div class="seg" role="group" aria-label="Traces">
                         <button type="button" data-trace="all" aria-pressed="true">All</button>
                         <button type="button" data-trace="R" aria-pressed="false">R</button>
@@ -271,26 +273,26 @@
                         <button type="button" data-trace="B" aria-pressed="false">B</button>
                     </div>
                 </div>
-                <div class="quad-box"><canvas id="quad" role="img" aria-label="Four-quadrant tone transfer diagram for red, green and blue"></canvas></div>
+                <div class="quad-box"><canvas id="quad" role="img" aria-label="Six-stage tone transfer diagram for red, green and blue, from scene to screen"></canvas></div>
             </div>
             <div class="charts">
                 <div class="card">
-                    <h3>1 · Camera negative<span class="tip" data-tip="The negative's three curves. Dots mark where the scene shadow, the 18% grey and diffuse white land on each layer."></span></h3>
+                    <h3>Camera film<span class="tip" data-tip="The negative's three curves. Dots mark where the scene shadow, the 18% grey and diffuse white land on each layer."></span></h3>
                     <p class="sub" id="negSub">Density vs. relative log H</p>
                     <div class="chart-box"><canvas id="chNeg"></canvas></div>
                 </div>
                 <div class="card">
-                    <h3>2 · Print film<span class="tip" data-tip="The print film's three curves on its own relative log E axis. Dots mark where shadow, grey and white of the scene land after the printer, timing and printer flare."></span></h3>
+                    <h3>Print film<span class="tip" data-tip="The print film's three curves on its own relative log E axis. Dots mark where shadow, grey and white of the scene land after the printer, timing and printer flare."></span></h3>
                     <p class="sub" id="prtSub">Density vs. relative log E</p>
                     <div class="chart-box"><canvas id="chPrt"></canvas></div>
                 </div>
                 <div class="card">
-                    <h3>3 · Scene → screen<span class="tip" data-tip="Screen luminance per channel against scene luminance, both in log units with 0 at the 18% grey. The dashed lines are references through the grey: slope 1.0 is an exact copy of the scene's contrast; slope 1.5 is the higher overall contrast usually preferred for projection in a dark room (Hunt, The Reproduction of Colour)."></span></h3>
+                    <h3>Scene → screen<span class="tip" data-tip="Screen luminance per channel against scene luminance, both in log units with 0 at the 18% grey. The dashed lines are references through the grey: slope 1.0 is an exact copy of the scene's contrast; slope 1.5 is the higher overall contrast usually preferred for projection in a dark room (Hunt, The Reproduction of Colour)."></span></h3>
                     <p class="sub">log screen luminance vs. log scene luminance, 0 = 18% grey</p>
                     <div class="chart-box"><canvas id="chRep"></canvas></div>
                 </div>
                 <div class="card">
-                    <h3>4 · Neutral balance<span class="tip" data-tip="Red and blue against green on the screen along the grey scale, as a density difference (0.01 ≈ 2.3% in light; positive = more of that colour). Lines on 0 mean a neutral grey scale. A line shifted up or down everywhere is a colour cast from timing, aim or lamp. Lines that tilt or bend are a colour crossover, for example warm shadows and cool highlights, which timing cannot correct."></span></h3>
+                    <h3>Neutral balance<span class="tip" data-tip="Red and blue against green on the screen along the grey scale, as a density difference (0.01 ≈ 2.3% in light; positive = more of that colour). Lines on 0 mean a neutral grey scale. A line shifted up or down everywhere is a colour cast from timing, aim or lamp. Lines that tilt or bend are a colour crossover, for example warm shadows and cool highlights, which timing cannot correct."></span></h3>
                     <p class="sub">Red and blue relative to green on screen (density)</p>
                     <div class="chart-box"><canvas id="chBal"></canvas></div>
                 </div>
@@ -320,7 +322,7 @@ const EXAMPLE = {
     sceneRange: '2.20', camFlare: '0.40', expStops: '0', greyOffset: '0.76',
     printer: 'contact', lightR: '25', lightG: '25', lightB: '25', pointSize: '0.025', printerFlare: '0',
     aimR: '1.00', aimG: '1.00', aimB: '1.00', transfer: '',
-    openGate: '48', stray: '0.20', lampR: '1.00', lampG: '1.00', lampB: '1.00'
+    openGate: '48', stray: '0.20', projFlare: '1.0', lampR: '1.00', lampG: '1.00', lampB: '1.00'
 };
 const FIELDS = Object.keys(EXAMPLE).filter(k => k !== 'printer');
 const STORAGE_KEY = 'analogplotter_color_state';
@@ -447,6 +449,7 @@ const compute = (s) => {
     const lights = { R: num(s.lightR, 25), G: num(s.lightG, 25), B: num(s.lightB, 25) };
     const aims = { R: num(s.aimR, 1), G: num(s.aimG, 1), B: num(s.aimB, 1) };
     const open = num(s.openGate, 48), stray = Math.max(0, num(s.stray, 0.2)) / 100;
+    const projFlare = Math.max(0, num(s.projFlare, 1)) / 100;
     const lamp = { R: num(s.lampR, 1), G: num(s.lampG, 1), B: num(s.lampB, 1) };
 
     // Printer: exposure through the negative, plus flare proportional to the grey's exposure
@@ -472,6 +475,10 @@ const compute = (s) => {
         }
         const K = K0 + point * (lights[c] - 25);
         ch[c] = { K, dnGrey, printLogE: (dn) => printLogE(K, dn) };
+        // Projector: light through the print, plus lens flare from the picture (taken at
+        // the grey's level) and constant room light
+        const dpGrey = prt[c].at(ch[c].printLogE(dnGrey)).y;
+        ch[c].screenL = (dp) => open * lamp[c] * (Math.pow(10, -dp) + projFlare * Math.pow(10, -dpGrey) + stray);
     }
 
     // Run one scene tone through the chain
@@ -481,7 +488,7 @@ const compute = (s) => {
             const n = neg[c].at(out.logH);
             const e = ch[c].printLogE(n.y);
             const d = prt[c].at(e);
-            const L = open * lamp[c] * (Math.pow(10, -d.y) + stray);
+            const L = ch[c].screenL(d.y);
             out.neg[c] = n.y; out.logE[c] = e; out.prt[c] = d.y; out.L[c] = L; out.logL[c] = Math.log10(L);
             out.beyond[c] = { neg: n.out, prt: d.out };
         }
@@ -625,40 +632,47 @@ const render = () => {
     upgradeTips();
 };
 
-// --- four-quadrant diagram ---------------------------------------------------
-// Same layout as the B&W tone reproduction tab. Shared axes: Q1/Q4 scene log
-// luminance (right, rising outward), Q2/Q3 negative density (left, rising outward),
-// Q1/Q2 log H (bottom, rising toward the centre), Q3/Q4 print density (top, rising
-// outward). A tone's trace is the rectangle scene → log H → neg D → print D → scene.
+// --- six-stage tone transfer diagram -----------------------------------------
+// A 3×3 staircase. Panels in a row share the vertical quantity, panels in a column
+// share the horizontal one, so a scene tone traces a closed loop through all six:
+//     row 0 (log screen L):   Q1 scene→screen   ·              Q6 projector
+//     row 1 (log H camera):   Q2 camera flare   Q3 camera film ·
+//     row 2 (log E print):    legend            Q4 printer     Q5 print film
+//     columns: scene log L | negative density | print density
 let lastResult = null;
 let traceChannel = 'all';
 const drawQuadrants = (res) => {
     const canvas = $('quad');
-    const box = canvas.parentElement.getBoundingClientRect();
-    const size = Math.max(320, Math.round(box.width));
+    const size = Math.max(330, Math.round(canvas.parentElement.getBoundingClientRect().width));
     const dpr = window.devicePixelRatio || 1;
     canvas.width = size * dpr; canvas.height = size * dpr;
     const g = canvas.getContext('2d');
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.clearRect(0, 0, size, size);
 
-    const margin = size < 600 ? 44 : 60, pad = 10;
-    const cx = size / 2, cy = size / 2, half = size / 2 - margin;
+    const small = size < 640;
+    const mL = small ? 40 : 56, mB = small ? 30 : 40, mT = 8, mR = 8;
+    const cw = (size - mL - mR) / 3, chh = (size - mT - mB) / 3, ip = small ? 7 : 10, gap = small ? 6 : 10;
     const { neg, prt, ch, samples } = res;
 
-    // axis ranges
-    const r0 = res.rShadow - 0.25, r1 = res.rWhite + 0.25;
-    const hVals = CH.flatMap(c => [neg[c].xMin, neg[c].xMax]).concat(samples.map(t => t.logH));
-    const h0 = Math.min(...hVals), h1 = Math.max(...hVals);
-    const dnVals = CH.flatMap(c => neg[c].pts.map(p => p.y));
-    const dn0 = Math.max(0, Math.min(...dnVals) - 0.1), dn1 = Math.max(...dnVals) + 0.1;
-    const dp0 = 0, dp1 = Math.max(...CH.flatMap(c => prt[c].pts.map(p => p.y))) + 0.1;
-    const X_r = (r) => cx + pad + (r - r0) / (r1 - r0) * (half - pad);
-    const X_dn = (d) => cx - pad - (d - dn0) / (dn1 - dn0) * (half - pad);
-    const Y_h = (h) => cy + pad + (h1 - h) / (h1 - h0) * (half - pad);
-    const Y_dp = (d) => cy - pad - (d - dp0) / (dp1 - dp0) * (half - pad);
+    // ranges: columns 0 scene r, 1 negative D, 2 print D; rows 0 log screen L, 1 log H, 2 print log E
+    const rng = (vals, padv) => { const lo = Math.min(...vals), hi = Math.max(...vals); return [lo - padv, hi + padv]; };
+    const colR = [
+        [res.rShadow - 0.25, res.rWhite + 0.25],
+        rng(CH.flatMap(c => neg[c].pts.map(p => p.y)), 0.08),
+        [0, Math.max(...CH.flatMap(c => prt[c].pts.map(p => p.y))) + 0.1]
+    ];
+    const lScreen = CH.flatMap(c => [Math.log10(ch[c].screenL(colR[2][1])), Math.log10(ch[c].screenL(0))]).concat(samples.flatMap(t => CH.map(c => t.logL[c])));
+    const rowR = [
+        rng(lScreen, 0.08),
+        rng(CH.flatMap(c => [neg[c].xMin, neg[c].xMax]).concat(samples.map(t => t.logH)), 0.05),
+        rng(CH.flatMap(c => [prt[c].xMin, prt[c].xMax]).concat(samples.flatMap(t => CH.map(c => t.logE[c]))), 0.05)
+    ];
+    const left = (col) => mL + col * cw + gap / 2, top = (row) => mT + row * chh + gap / 2;
+    const X = (col, v) => left(col) + ip + (v - colR[col][0]) / (colR[col][1] - colR[col][0]) * (cw - gap - 2 * ip);
+    const Y = (row, v) => top(row) + chh - gap - ip - (v - rowR[row][0]) / (rowR[row][1] - rowR[row][0]) * (chh - gap - 2 * ip);
 
-    const ink = '#1d1d1f', muted = '#8e8e93', grid = '#eeeef0';
+    const ink = '#1d1d1f', muted = '#8e8e93', gridc = '#eeeef0';
     g.lineJoin = 'round'; g.lineCap = 'round';
     const path = (pts, color, width = 2, dash = []) => {
         g.beginPath(); g.setLineDash(dash); g.strokeStyle = color; g.lineWidth = width;
@@ -668,116 +682,117 @@ const drawQuadrants = (res) => {
         g.fillStyle = color; g.textAlign = align; g.textBaseline = base;
         g.font = `${font} -apple-system, BlinkMacSystemFont, sans-serif`; g.fillText(t, x, y);
     };
-    const niceStep = (span) => [0.1, 0.2, 0.25, 0.5, 1].find(s2 => span / s2 <= 8) || 1;
-    const ticks = (a, b) => { const st = niceStep(b - a), out = []; for (let v = Math.ceil(a / st) * st; v <= b + 1e-9; v += st) out.push(+v.toFixed(3)); return out; };
+    const niceStep = (span) => [0.1, 0.2, 0.25, 0.5, 1, 2].find(st => span / st <= (small ? 4 : 6)) || 2;
+    const ticks = ([a, b]) => { const st = niceStep(b - a), out = []; for (let v = Math.ceil(a / st) * st; v <= b + 1e-9; v += st) out.push(+v.toFixed(3)); return out; };
+    const clip = (row, col, fn) => { g.save(); g.beginPath(); g.rect(left(col), top(row), cw - gap, chh - gap); g.clip(); fn(); g.restore(); };
 
-    // frame, centre cross and light grid
-    g.strokeStyle = '#d2d2d7'; g.lineWidth = 1;
-    g.strokeRect(margin, margin, size - 2 * margin, size - 2 * margin);
-    path([[margin, cy], [size - margin, cy]], '#c7c7cc', 1);
-    path([[cx, margin], [cx, size - margin]], '#c7c7cc', 1);
-    ticks(r0, r1).forEach(v => { path([[X_r(v), margin], [X_r(v), size - margin]], grid, 1); });
-    ticks(dn0, dn1).forEach(v => { path([[X_dn(v), margin], [X_dn(v), size - margin]], grid, 1); });
-    ticks(h0, h1).forEach(v => { path([[margin, Y_h(v)], [size - margin, Y_h(v)]], grid, 1); });
-    ticks(dp0, dp1).forEach(v => { path([[margin, Y_dp(v)], [size - margin, Y_dp(v)]], grid, 1); });
+    const PANELS = [
+        { id: 'Q1', name: 'Scene → screen', row: 0, col: 0 },
+        { id: 'Q6', name: 'Projector flare & optics', row: 0, col: 2 },
+        { id: 'Q2', name: 'Camera flare & optics', row: 1, col: 0 },
+        { id: 'Q3', name: 'Camera film', row: 1, col: 1 },
+        { id: 'Q4', name: 'Printer flare & optics', row: 2, col: 1 },
+        { id: 'Q5', name: 'Print film', row: 2, col: 2 }
+    ];
+    // panel frames and grids
+    for (const P of PANELS) {
+        g.fillStyle = '#fbfbfd'; g.fillRect(left(P.col), top(P.row), cw - gap, chh - gap);
+        clip(P.row, P.col, () => {
+            ticks(colR[P.col]).forEach(v => path([[X(P.col, v), top(P.row)], [X(P.col, v), top(P.row) + chh]], gridc, 1));
+            ticks(rowR[P.row]).forEach(v => path([[left(P.col), Y(P.row, v)], [left(P.col) + cw, Y(P.row, v)]], gridc, 1));
+        });
+        g.strokeStyle = '#d2d2d7'; g.lineWidth = 1; g.strokeRect(left(P.col), top(P.row), cw - gap, chh - gap);
+    }
 
-    // tick labels on the outer frame
-    ticks(r0, r1).forEach(v => { text(v.toFixed(1), X_r(v), size - margin + 12); text(v.toFixed(1), X_r(v), margin - 10); });
-    ticks(dn0, dn1).forEach(v => { text(v.toFixed(1), X_dn(v), size - margin + 12); text(v.toFixed(1), X_dn(v), margin - 10); });
-    ticks(h0, h1).forEach(v => text(v.toFixed(1), margin - 6, Y_h(v), 'right'));
-    ticks(dp0, dp1).forEach(v => text(v.toFixed(1), margin - 6, Y_dp(v), 'right'));
-    // right axis of Q4: screen luminance of the green channel (stray light included)
-    ticks(dp0, dp1).forEach(v => {
-        const L = res.open * res.lamp.G * (Math.pow(10, -v) + res.stray);
-        text(L >= 10 ? L.toFixed(0) : L >= 1 ? L.toFixed(1) : L.toFixed(2), size - margin + 6, Y_dp(v), 'left');
+    // axis ticks: each column under its lowest panel, each row left of its first panel
+    const colBottomRow = [1, 2, 2], rowFirstCol = [0, 0, 1];
+    const colTitle = ['scene log L (0 = grey)', 'negative density (M)', 'print density (A)'];
+    const rowTitle = ['log screen cd/m²', 'log H camera film', 'log E print film'];
+    colR.forEach((r, col) => {
+        const yb = top(colBottomRow[col]) + chh - gap;
+        ticks(r).forEach(v => text(v.toFixed(1), X(col, v), yb + 9));
+        text(colTitle[col], left(col) + (cw - gap) / 2, yb + (small ? 21 : 26), 'center', 'middle', ink, small ? '10px' : '11px');
     });
-    ticks(h0, h1).forEach(v => text(v.toFixed(1), size - margin + 6, Y_h(v), 'left'));
+    rowR.forEach((r, row) => {
+        const xl = left(rowFirstCol[row]);
+        ticks(r).forEach(v => text(v.toFixed(1), xl - 5, Y(row, v), 'right'));
+        g.save(); g.translate(xl - (small ? 30 : 40), top(row) + (chh - gap) / 2); g.rotate(-Math.PI / 2);
+        text(rowTitle[row], 0, 0, 'center', 'middle', ink, small ? '10px' : '11px'); g.restore();
+    });
 
-    // axis titles: horizontal axes top and bottom, vertical axes rotated in the side margins
-    ['log scene luminance (0 = 18% grey)'].forEach(t => { text(t, X_r((r0 + r1) / 2), size - 8, 'center', 'alphabetic', ink, '11px'); text(t, X_r((r0 + r1) / 2), 14, 'center', 'alphabetic', ink, '11px'); });
-    ['negative density (Status M)'].forEach(t => { text(t, X_dn((dn0 + dn1) / 2), size - 8, 'center', 'alphabetic', ink, '11px'); text(t, X_dn((dn0 + dn1) / 2), 14, 'center', 'alphabetic', ink, '11px'); });
-    const vtext = (t, x, y, angle) => { g.save(); g.translate(x, y); g.rotate(angle); text(t, 0, 0, 'center', 'middle', ink, '11px'); g.restore(); };
-    vtext('print density (Status A)', 12, (margin + cy) / 2, -Math.PI / 2);
-    vtext('log H on the negative', 12, (cy + size - margin) / 2, -Math.PI / 2);
-    vtext('screen cd/m² (green)', size - 10, (margin + cy) / 2, Math.PI / 2);
-    vtext('log H on the negative', size - 10, (cy + size - margin) / 2, Math.PI / 2);
-    // quadrant names
-    const qn = (t, x, y, align) => text(t, x, y, align, 'middle', ink, '600 11px');
-    qn('Q1 · Camera / flare', size - margin - 8, size - margin - 12, 'right');
-    qn('Q2 · Camera negative', margin + 8, size - margin - 12, 'left');
-    qn('Q3 · Printer → print film', margin + 8, margin + 12, 'left');
-    qn('Q4 · Reproduction', size - margin - 8, margin + 12, 'right');
-
-    // stop ruler on the scene axis (whole stops from the grey)
+    // stop ruler along the bottom of Q2 and the top of Q1's scene axis
     const stop = Math.log10(2);
-    for (let k = Math.ceil(r0 / stop); k * stop <= r1; k++) {
-        const x = X_r(k * stop);
-        path([[x, cy - 4], [x, cy + 4]], muted, 1);
-        if (x > cx + 14) text(k === 0 ? 'grey' : (k > 0 ? '+' : '') + k, x, cy + 12, 'center', 'middle', k === 0 ? ink : muted, k === 0 ? '600 10px' : '10px');
+    for (let k = Math.ceil(colR[0][0] / stop); k * stop <= colR[0][1]; k++) {
+        const x = X(0, k * stop), yb = top(1) + chh - gap;
+        path([[x, yb - 5], [x, yb]], muted, 1);
     }
 
-    // Q4 references through the grey: screen contrast 1.0 and 1.5 (density slope −1, −1.5)
-    const gDp = res.grey.prt.G;
-    [[1, [2, 4]], [1.5, [7, 4]]].forEach(([k, dash]) => {
-        const pts = [r0, r1].map(r => [X_r(r), Y_dp(gDp - k * r)]);
-        g.save(); g.beginPath(); g.rect(cx, margin, half, half); g.clip();
-        path(pts, muted, 1, dash); g.restore();
-    });
-    // labels at the shadow end of the reference lines, where Q4 has room
-    [[1, 'slope 1.0'], [1.5, 'slope 1.5']].forEach(([k, label]) => {
-        const r = res.rShadow - 0.12, y = Y_dp(gDp - k * r);
-        if (y > margin + 24) text(label, X_r(r) + 6, y, 'left');
-    });
-    // stray-light floor: where stray light equals the light through the print
-    if (res.stray > 0) {
-        const dFloor = -Math.log10(res.stray);
-        if (dFloor < dp1) {
-            path([[cx, Y_dp(dFloor)], [size - margin, Y_dp(dFloor)]], '#c7c7cc', 1, [3, 3]);
-            text('stray light = image light', size - margin - 6, Y_dp(dFloor) - 7, 'right');
-        }
-    }
-
-    // Q1: flare curve (neutral) and the no-flare reference
-    path(samples.map(t => [X_r(t.r), Y_h(t.logH)]), ink, 2);
-    path([res.rShadow, res.rWhite].map(r => [X_r(r), Y_h(res.logHGrey + r)]), muted, 1, [4, 4]);
-
-    // Q2, Q3, Q4 per channel
+    // ----- curves
     const steps = 120;
+    const sweep = (a, b, f) => Array.from({ length: steps + 1 }, (_, i) => f(a + (b - a) * i / steps));
+    // Q2 camera flare (neutral) and the no-flare reference
+    clip(1, 0, () => {
+        path(samples.map(t => [X(0, t.r), Y(1, t.logH)]), ink, 2);
+        path([colR[0][0], colR[0][1]].map(r => [X(0, r), Y(1, res.logHGrey + r)]), muted, 1, [4, 4]);
+    });
+    // Q1 references through the green grey: slope 1.0 and 1.5
+    const gL = res.grey.logL.G;
+    clip(0, 0, () => {
+        [[1, [2, 4]], [1.5, [7, 4]]].forEach(([k, dash]) => path(colR[0].map(r => [X(0, r), Y(0, gL + k * r)]), muted, 1, dash));
+    });
     for (const c of CH) {
-        const col = CH_COLOR[c];
-        const nPts = [];
-        for (let i = 0; i <= steps; i++) {
-            const h = neg[c].xMin + (neg[c].xMax - neg[c].xMin) * i / steps;
-            nPts.push([X_dn(neg[c].at(h).y), Y_h(h)]);
-        }
-        path(nPts, col, 2);
-        const tPts = [];
-        for (let i = 0; i <= steps; i++) {
-            const dn = neg[c].yMin + (Math.max(...neg[c].pts.map(p => p.y)) - neg[c].yMin) * i / steps;
-            tPts.push([X_dn(dn), Y_dp(prt[c].at(ch[c].printLogE(dn)).y)]);
-        }
-        path(tPts, col, 2);
-        path(samples.map(t => [X_r(t.r), Y_dp(t.prt[c])]), col, 2);
+        const col = CH_COLOR[c], nMax = Math.max(...neg[c].pts.map(p => p.y)), pMax = Math.max(...prt[c].pts.map(p => p.y));
+        clip(0, 0, () => path(samples.map(t => [X(0, t.r), Y(0, t.logL[c])]), col, 2));                                       // Q1
+        clip(1, 1, () => path(sweep(neg[c].xMin, neg[c].xMax, h => [X(1, neg[c].at(h).y), Y(1, h)]), col, 2));                 // Q3
+        clip(2, 1, () => path(sweep(neg[c].yMin, nMax, d => [X(1, d), Y(2, ch[c].printLogE(d))]), col, 2));                    // Q4
+        clip(2, 2, () => path(sweep(prt[c].xMin, prt[c].xMax, e => [X(2, prt[c].at(e).y), Y(2, e)]), col, 2));                 // Q5
+        clip(0, 2, () => path(sweep(0, pMax, d => [X(2, d), Y(0, Math.log10(ch[c].screenL(d)))]), col, 2));                    // Q6
     }
+    // room-light floor in Q6 (green)
+    if (res.stray > 0) clip(0, 2, () => {
+        const y = Y(0, Math.log10(res.open * res.lamp.G * res.stray));
+        path([[left(2), y], [left(2) + cw, y]], '#c7c7cc', 1, [3, 3]);
+        text('room light', left(2) + cw - gap - 6, y - 7, 'right');
+    });
 
-    // traces: shadow, grey, white
+    // ----- traces: shadow, grey, white as closed loops through all six panels
     const tones = [['shadow', res.shadow], ['grey', res.grey], ['white', res.white]];
     const show = traceChannel === 'all' ? CH : [traceChannel];
     for (const c of show) {
         const col = CH_COLOR[c];
-        g.globalAlpha = traceChannel === 'all' ? 0.55 : 0.9;
         for (const [, t] of tones) {
-            const xr = X_r(t.r), yh = Y_h(t.logH), xd = X_dn(t.neg[c]), yp = Y_dp(t.prt[c]);
-            path([[xr, yh], [xd, yh], [xd, yp], [xr, yp], [xr, yh]], col, 1.2, [2, 3]);
-        }
-        g.globalAlpha = 1;
-        for (const [, t] of tones) {
-            const dots = [[X_r(t.r), Y_h(t.logH)], [X_dn(t.neg[c]), Y_h(t.logH)], [X_dn(t.neg[c]), Y_dp(t.prt[c])], [X_r(t.r), Y_dp(t.prt[c])]];
-            dots.forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 3.5, 0, Math.PI * 2); g.fillStyle = col; g.fill(); g.lineWidth = 1.2; g.strokeStyle = '#fff'; g.stroke(); });
+            const p1 = [X(0, t.r), Y(0, t.logL[c])], p2 = [X(0, t.r), Y(1, t.logH)], p3 = [X(1, t.neg[c]), Y(1, t.logH)],
+                  p4 = [X(1, t.neg[c]), Y(2, t.logE[c])], p5 = [X(2, t.prt[c]), Y(2, t.logE[c])], p6 = [X(2, t.prt[c]), Y(0, t.logL[c])];
+            g.globalAlpha = traceChannel === 'all' ? 0.5 : 0.85;
+            path([p1, p2, p3, p4, p5, p6, p1], col, 1.1, [2, 3]);
+            g.globalAlpha = 1;
+            [p1, p2, p3, p4, p5, p6].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 3.3, 0, Math.PI * 2); g.fillStyle = col; g.fill(); g.lineWidth = 1.2; g.strokeStyle = '#fff'; g.stroke(); });
         }
     }
-    // tone labels under the scene axis in Q1
-    tones.forEach(([name, t]) => text(name, X_r(t.r), Y_h(t.logH) + 14, 'center', 'middle', ink, '600 10px'));
+    tones.forEach(([name, t]) => text(name, X(0, t.r), Y(1, t.logH) + 13, 'center', 'middle', ink, '600 10px'));
+
+    // panel names (drawn last so traces never cover them)
+    for (const P of PANELS) {
+        const label = `${P.id} · ${P.name}`;
+        g.font = `600 ${small ? 10 : 11}px -apple-system, BlinkMacSystemFont, sans-serif`;
+        const w = g.measureText(label).width + 10;
+        g.fillStyle = 'rgba(251,251,253,0.92)'; g.fillRect(left(P.col) + 4, top(P.row) + 4, w, small ? 16 : 18);
+        text(label, left(P.col) + 9, top(P.row) + (small ? 12 : 13), 'left', 'middle', ink, `600 ${small ? 10 : 11}px`);
+    }
+
+    // legend in the free bottom-left cell
+    const lx = left(0) + 4, ly = top(2) + (small ? 30 : 42);
+    text('Follow a tone round the loop:', lx, ly + 6, 'left', 'middle', ink, '600 11px');
+    const legendLines = [
+        'Q1 scene → Q2 camera exposure → Q3 negative',
+        '→ Q4 printer → Q5 print → Q6 screen → Q1',
+        `Traces: shadow, 18% grey, diffuse white`,
+        `Screen gamma ${fmt(res.gamma.G)} · contrast ${Math.round(res.white.L.G / res.shadow.L.G)}:1`,
+        'Q1 dashed: slope 1.0 and 1.5 through grey'
+    ];
+    if (!small) legendLines.forEach((l, i) => text(l, lx, ly + 26 + i * 17, 'left', 'middle', muted, '11px'));
+    CH.forEach((c, i) => { const x = lx + i * 56, y = ly + (small ? 26 : 26 + legendLines.length * 17 + 8);
+        g.fillStyle = CH_COLOR[c]; g.fillRect(x, y - 5, 12, 10); text(CH_NAME[c], x + 17, y, 'left', 'middle', ink, '11px'); });
 };
 
 document.querySelectorAll('[data-trace]').forEach(b => b.addEventListener('click', () => {
