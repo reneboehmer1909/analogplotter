@@ -87,7 +87,7 @@
         .btn.primary:hover { background: var(--accent-hover); }
         .file-label { display: inline-flex; }
 
-        .tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+        .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
         @media (max-width: 1300px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media (max-width: 640px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         .tile { background: var(--panel); border-radius: 16px; padding: 14px 16px; display: grid; gap: 2px; align-content: start; }
@@ -174,8 +174,10 @@
                     <div class="row">
                         <label class="f">Exposure (stops vs. normal)<span class="tip" data-tip="Over- or underexposure of the camera negative relative to normal exposure at the film's speed."></span>
                             <input type="number" id="expStops" step="0.333" min="-5" max="5" value="0"></label>
-                        <label class="f">Grey above speed point (log)<span class="tip" data-tip="Where an 18% grey card lands above the ISO 5800 speed point at normal exposure. 0.76 comes from a reflected-light meter with K = 12.5 and lens factor q = 0.65 (H = qK/S ≈ 8.1/S) against the ISO 5800 speed point Hm = √2/S."></span>
+                        <label class="f" id="greyOffsetWrap">Grey above speed point (log)<span class="tip" data-tip="Where an 18% grey card lands above the ISO 5800 speed point at normal exposure. 0.76 comes from a reflected-light meter with K = 12.5 and lens factor q = 0.65 (H = qK/S ≈ 8.1/S) against the ISO 5800 speed point Hm = √2/S."></span>
                             <input type="number" id="greyOffset" step="0.01" min="0" max="2" value="0.76"></label>
+                        <label class="f" id="greyAbsWrap">18% grey at log H (lux·s)<span class="tip" data-tip="Exposure of an 18% grey card at normal exposure, in log lux·s. Kodak's VISION3 250D datasheet puts normal exposure (camera stop 0) at −1.30. A reflected-light meter set to the film's EI gives log(8.1 / EI): −1.49 at EI 250."></span>
+                            <input type="number" id="greyAbs" step="0.01" min="-6" max="3" value="-1.30"></label>
                     </div>
                 </div>
             </details>
@@ -183,12 +185,15 @@
             <details class="section" open>
                 <summary>Camera negative</summary>
                 <div class="sec-body">
+                    <label class="f">Preset<select id="negPreset"><option value="">Own measurement</option><option value="v3_250d">Kodak VISION3 250D 5207 · datasheet</option></select></label>
+                    <label class="f">Film / process<input type="text" id="negName" value=""></label>
                     <div class="row">
-                        <label class="f">Film / process<input type="text" id="negName" value="Example negative (synthetic)"></label>
-                        <label class="f">log H step<span class="tip" data-tip="Exposure increment between the readings, in log H. 0.15 for a standard 21-step tablet. For a tablet with certified densities, paste its log H values below instead."></span>
+                        <label class="f">Exposure axis<span class="tip" data-tip="Relative steps: readings from a step tablet with a fixed log H increment. log lux·s or lux·s: absolute exposure for every reading, as on a datasheet or from a calibrated sensitometer. Absolute exposure gives the real ISO 5800 speed and places the grey in lux·s."></span>
+                            <select id="negUnit"><option value="step">Relative steps</option><option value="log">log lux·s</option><option value="luxs">lux·s</option></select></label>
+                        <label class="f" id="negStepWrap">log H step<span class="tip" data-tip="Exposure increment between the readings, in log H. 0.15 for a standard 21-step tablet."></span>
                             <input type="number" id="negStep" step="0.01" min="0.01" value="0.15"></label>
                     </div>
-                    <label class="f">Custom log H values (optional)<textarea id="negLogH" rows="2" placeholder="Leave empty to use the step above"></textarea></label>
+                    <label class="f" id="negLogHWrap">Exposure per reading<textarea id="negLogH" rows="2" placeholder="One value per density reading"></textarea></label>
                     <label class="f"><span class="ch r">Red · Status M</span><textarea id="negR" rows="2"></textarea></label>
                     <label class="f"><span class="ch g">Green · Status M</span><textarea id="negG" rows="2"></textarea></label>
                     <label class="f"><span class="ch b">Blue · Status M</span><textarea id="negB" rows="2"></textarea></label>
@@ -227,11 +232,13 @@
             <details class="section" open>
                 <summary>Print film</summary>
                 <div class="sec-body">
+                    <label class="f">Preset<select id="prtPreset"><option value="">Own measurement</option><option value="k2383">Kodak VISION 2383 · datasheet</option></select></label>
+                    <label class="f">Film / process<input type="text" id="prtName" value=""></label>
                     <div class="row">
-                        <label class="f">Film / process<input type="text" id="prtName" value="Example print film (synthetic)"></label>
-                        <label class="f">log E step<input type="number" id="prtStep" step="0.01" min="0.01" value="0.15"></label>
+                        <label class="f">Exposure axis<select id="prtUnit"><option value="step">Relative steps</option><option value="log">log lux·s</option><option value="luxs">lux·s</option></select></label>
+                        <label class="f" id="prtStepWrap">log E step<input type="number" id="prtStep" step="0.01" min="0.01" value="0.15"></label>
                     </div>
-                    <label class="f">Custom log E values (optional)<textarea id="prtLogE" rows="2" placeholder="Leave empty to use the step above"></textarea></label>
+                    <label class="f" id="prtLogEWrap">Exposure per reading<textarea id="prtLogE" rows="2" placeholder="One value per density reading"></textarea></label>
                     <label class="f"><span class="ch r">Red · Status A</span><textarea id="prtR" rows="2"></textarea></label>
                     <label class="f"><span class="ch g">Green · Status A</span><textarea id="prtG" rows="2"></textarea></label>
                     <label class="f"><span class="ch b">Blue · Status A</span><textarea id="prtB" rows="2"></textarea></label>
@@ -265,7 +272,7 @@
                         <button type="button" class="btn primary" id="exportBtn">Export JSON</button>
                         <label class="btn file-label" for="importFile">Import JSON</label>
                         <input type="file" id="importFile" accept=".json,application/json" hidden>
-                        <button type="button" class="btn" id="exampleBtn">Load example</button>
+                        <button type="button" class="btn" id="exampleBtn">Load Kodak example</button>
                     </div>
                 </div>
             </details>
@@ -294,7 +301,7 @@
                     <div class="chart-box"><canvas id="chRep"></canvas></div>
                 </div>
                 <div class="card">
-                    <h3>Neutral balance<span class="tip" data-tip="Red and blue against green on the screen along the grey scale, as a density difference (0.01 ≈ 2.3% in light; positive = more of that colour). Lines on 0 mean a neutral grey scale. A line shifted up or down everywhere is a colour cast from timing, aim or lamp. Lines that tilt or bend are a colour crossover, for example warm shadows and cool highlights, which timing cannot correct."></span></h3>
+                    <h3>Neutral balance<span class="tip" data-tip="Red and blue against green on the screen along the grey scale, as a density difference (0.01 ≈ 2.3% in light; positive = more of that colour), measured from the grey aim, which counts as neutral. Lines on 0 mean a neutral grey scale. A line shifted up or down everywhere is a colour cast from timing or lamp. Lines that tilt or bend are a colour crossover, for example warm shadows and cool highlights, which timing cannot correct."></span></h3>
                     <div class="chart-box"><canvas id="chBal"></canvas></div>
                 </div>
             </div>
@@ -309,25 +316,46 @@
 'use strict';
 
 // ---------------------------------------------------------------------------
-// Example data: synthetic curves, not measurements of a real film. They have
-// the usual shape of an ECN-2 camera negative (Status M, orange-mask Dmin,
-// gamma ≈ 0.6) and a print film (Status A, gamma ≈ 2.8). 21 steps of 0.15.
+// Presets digitised from Kodak's published datasheets (curve pages traced at
+// 400 dpi, about ±0.02 D and ±0.02 log). Representative of production coatings
+// under Kodak's test conditions, not of a particular roll or process line.
+//   VISION3 250D 5207: KODAK publication, sensitometric curves, 5500 K daylight
+//     1/50 s, ECN-2, Status M. Normal exposure (camera stop 0) at log H −1.30.
+//   VISION Color Print Film 2383: H-1-2383 (3-22), 1/500 s tungsten + heat
+//     absorbing glass, ECP-2D, Status A. Toe and shoulder (above D 4.0) are read
+//     more coarsely where the three curves run together.
+//   LAD aim for 2383: Status A 1.09 / 1.06 / 1.03 (KODAK H-61b).
 // ---------------------------------------------------------------------------
+const PRESETS = {
+    neg: {
+        v3_250d: {
+            negName: 'Kodak VISION3 250D 5207 · ECN-2 · datasheet', negUnit: 'log', negStep: '0.1',
+            negLogH: '-3.5, -3.4, -3.3, -3.2, -3.1, -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0',
+            negR: '0.18, 0.18, 0.19, 0.19, 0.21, 0.22, 0.24, 0.26, 0.28, 0.31, 0.34, 0.37, 0.42, 0.46, 0.51, 0.56, 0.60, 0.65, 0.70, 0.75, 0.80, 0.84, 0.89, 0.94, 0.98, 1.03, 1.08, 1.13, 1.18, 1.22, 1.27, 1.32, 1.37, 1.41, 1.46, 1.50, 1.54, 1.58, 1.62, 1.66, 1.69, 1.73, 1.76, 1.78, 1.80, 1.82',
+            negG: '0.58, 0.58, 0.59, 0.60, 0.61, 0.63, 0.65, 0.67, 0.69, 0.72, 0.76, 0.80, 0.85, 0.90, 0.96, 1.01, 1.07, 1.12, 1.18, 1.23, 1.29, 1.35, 1.40, 1.46, 1.51, 1.57, 1.62, 1.68, 1.74, 1.79, 1.85, 1.90, 1.96, 2.02, 2.07, 2.12, 2.17, 2.22, 2.27, 2.31, 2.36, 2.40, 2.44, 2.47, 2.50, 2.53',
+            negB: '0.85, 0.85, 0.85, 0.85, 0.87, 0.88, 0.90, 0.92, 0.94, 0.97, 1.00, 1.05, 1.09, 1.15, 1.21, 1.26, 1.32, 1.37, 1.43, 1.48, 1.54, 1.59, 1.64, 1.69, 1.75, 1.80, 1.86, 1.91, 1.96, 2.02, 2.07, 2.13, 2.18, 2.23, 2.28, 2.33, 2.38, 2.43, 2.47, 2.52, 2.56, 2.60, 2.63, 2.66, 2.69, 2.71',
+            greyAbs: '-1.30'
+        }
+    },
+    prt: {
+        k2383: {
+            prtName: 'Kodak VISION 2383 · ECP-2D · datasheet', prtUnit: 'log', prtStep: '0.1',
+            prtLogE: '-1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6',
+            prtR: '0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.06, 0.06, 0.07, 0.08, 0.10, 0.13, 0.18, 0.24, 0.33, 0.46, 0.66, 0.96, 1.34, 1.78, 2.24, 2.70, 3.09, 3.41, 3.64, 3.80, 3.91, 4.00, 4.02, 4.04, 4.07, 4.09, 4.10, 4.11',
+            prtG: '0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.06, 0.07, 0.08, 0.14, 0.21, 0.30, 0.42, 0.59, 0.81, 1.09, 1.43, 1.82, 2.23, 2.66, 3.01, 3.32, 3.56, 3.75, 3.88, 3.96, 4.01, 4.03, 4.05, 4.08, 4.10, 4.10, 4.10, 4.11, 4.11',
+            prtB: '0.10, 0.11, 0.11, 0.12, 0.12, 0.14, 0.15, 0.17, 0.21, 0.27, 0.35, 0.47, 0.62, 0.83, 1.10, 1.45, 1.90, 2.37, 2.83, 3.22, 3.51, 3.71, 3.85, 3.93, 3.99, 4.02, 4.05, 4.07, 4.10, 4.10, 4.10, 4.10, 4.11, 4.11, 4.11, 4.11, 4.11',
+            aimR: '1.09', aimG: '1.06', aimB: '1.03'
+        }
+    }
+};
 const EXAMPLE = {
-    negName: 'Example negative (synthetic)', negStep: '0.15', negLogH: '',
-    negR: '0.23, 0.23, 0.25, 0.27, 0.30, 0.35, 0.41, 0.49, 0.57, 0.65, 0.73, 0.82, 0.90, 0.99, 1.08, 1.17, 1.25, 1.34, 1.43, 1.51, 1.60',
-    negG: '0.63, 0.64, 0.66, 0.69, 0.73, 0.79, 0.86, 0.94, 1.03, 1.12, 1.21, 1.30, 1.40, 1.49, 1.58, 1.67, 1.77, 1.86, 1.95, 2.05, 2.14',
-    negB: '0.88, 0.89, 0.91, 0.95, 1.01, 1.08, 1.16, 1.25, 1.34, 1.44, 1.53, 1.63, 1.73, 1.83, 1.93, 2.03, 2.13, 2.23, 2.33, 2.42, 2.52',
-    prtName: 'Example print film (synthetic)', prtStep: '0.15', prtLogE: '',
-    prtR: '0.11, 0.14, 0.17, 0.22, 0.30, 0.42, 0.59, 0.83, 1.13, 1.50, 1.90, 2.32, 2.70, 3.02, 3.27, 3.46, 3.59, 3.68, 3.74, 3.78, 3.80',
-    prtG: '0.13, 0.16, 0.20, 0.26, 0.35, 0.48, 0.67, 0.91, 1.22, 1.59, 1.99, 2.39, 2.76, 3.07, 3.31, 3.50, 3.63, 3.72, 3.78, 3.82, 3.85',
-    prtB: '0.15, 0.18, 0.23, 0.29, 0.39, 0.53, 0.72, 0.96, 1.28, 1.64, 2.02, 2.40, 2.75, 3.03, 3.26, 3.42, 3.54, 3.63, 3.69, 3.72, 3.75',
+    ...PRESETS.neg.v3_250d, ...PRESETS.prt.k2383,
     sceneRange: '2.20', camFlare: '0.40', expStops: '0', greyOffset: '0.76',
-    printer: 'contact', lightR: '25', lightG: '25', lightB: '25', pointSize: '0.025', printerFlare: '0',
-    aimR: '1.00', aimG: '1.00', aimB: '1.00', transfer: '',
+    printer: 'contact', lightR: '25', lightG: '25', lightB: '25', pointSize: '0.025', printerFlare: '0', transfer: '',
     openGate: '48', stray: '0.20', projFlare: '1.0', lampR: '1.00', lampG: '1.00', lampB: '1.00'
 };
 const FIELDS = Object.keys(EXAMPLE).filter(k => k !== 'printer');
+const ABSOLUTE = (unit) => unit === 'log' || unit === 'luxs';
 const STORAGE_KEY = 'analogplotter_color_state';
 const CH = ['R', 'G', 'B'];
 const CH_COLOR = { R: '#d70015', G: '#248a3d', B: '#0066cc' };
@@ -388,9 +416,10 @@ const makeCurve = (xs, ys) => {
     return { pts, at, inverse, xMin: pts[0].x, xMax: pts[n - 1].x, yMin: Math.min(...pts.map(p => p.y)) };
 };
 
-const axisValues = (custom, step, count) => {
-    const c = parseList(custom);
-    if (c.length) return c;
+// Exposure for each reading: fixed relative steps, or absolute values in log lux·s or lux·s
+const axisValues = (unit, custom, step, count) => {
+    if (unit === 'log') return parseList(custom);
+    if (unit === 'luxs') return parseList(custom).map(v => v > 0 ? Math.log10(v) : NaN);
     return Array.from({ length: count }, (_, i) => +(i * step).toFixed(6));
 };
 
@@ -400,9 +429,27 @@ const readState = () => {
     FIELDS.forEach(k => { s[k] = $(k).value; });
     return s;
 };
+// Show the step or the value field to match each film's exposure axis, and the
+// grey placement that fits it (absolute log H or above the speed point)
+const syncUnits = () => {
+    for (const [unit, step, vals] of [['negUnit', 'negStepWrap', 'negLogHWrap'], ['prtUnit', 'prtStepWrap', 'prtLogEWrap']]) {
+        const abs = ABSOLUTE($(unit).value);
+        $(step).hidden = abs; $(vals).hidden = !abs;
+    }
+    const absNeg = ABSOLUTE($('negUnit').value);
+    $('greyOffsetWrap').hidden = absNeg; $('greyAbsWrap').hidden = !absNeg;
+};
+// Sessions saved before the exposure-axis switch: custom values meant a list, otherwise steps
+const migrate = (d) => {
+    const out = { ...d };
+    if (out.negUnit === undefined) out.negUnit = parseList(out.negLogH).length ? 'log' : 'step';
+    if (out.prtUnit === undefined) out.prtUnit = parseList(out.prtLogE).length ? 'log' : 'step';
+    return out;
+};
 const writeState = (s) => {
     FIELDS.forEach(k => { if (s[k] !== undefined) $(k).value = s[k]; });
-    setPrinter(s.printer === 'optical' ? 'optical' : 'contact');
+    if (s.printer !== undefined) setPrinter(s.printer === 'optical' ? 'optical' : 'contact');
+    syncUnits();
 };
 const num = (v, fallback) => { const x = parseFloat(String(v).replace(',', '.')); return Number.isFinite(x) ? x : fallback; };
 
@@ -418,14 +465,14 @@ const compute = (s) => {
     const neg = {}, prt = {};
     for (const c of CH) {
         const nd = parseList(s['neg' + c]);
-        const nx = axisValues(s.negLogH, num(s.negStep, 0.15), nd.length);
-        if (parseList(s.negLogH).length && parseList(s.negLogH).length !== nd.length)
-            warnings.push(`Negative ${CH_NAME[c].toLowerCase()}: ${nd.length} densities but ${parseList(s.negLogH).length} log H values.`);
+        const nx = axisValues(s.negUnit, s.negLogH, num(s.negStep, 0.15), nd.length);
+        if (ABSOLUTE(s.negUnit) && nx.length !== nd.length)
+            warnings.push(`Negative ${CH_NAME[c].toLowerCase()}: ${nd.length} densities but ${nx.length} exposure values.`);
         neg[c] = makeCurve(nx.slice(0, nd.length), nd);
         const pd = parseList(s['prt' + c]);
-        const px = axisValues(s.prtLogE, num(s.prtStep, 0.15), pd.length);
-        if (parseList(s.prtLogE).length && parseList(s.prtLogE).length !== pd.length)
-            warnings.push(`Print film ${CH_NAME[c].toLowerCase()}: ${pd.length} densities but ${parseList(s.prtLogE).length} log E values.`);
+        const px = axisValues(s.prtUnit, s.prtLogE, num(s.prtStep, 0.15), pd.length);
+        if (ABSOLUTE(s.prtUnit) && px.length !== pd.length)
+            warnings.push(`Print film ${CH_NAME[c].toLowerCase()}: ${pd.length} densities but ${px.length} exposure values.`);
         prt[c] = makeCurve(px.slice(0, pd.length), pd);
     }
     const missing = CH.filter(c => !neg[c]).map(c => 'negative ' + CH_NAME[c].toLowerCase())
@@ -442,7 +489,11 @@ const compute = (s) => {
     const range = num(s.sceneRange, 2.2), flareLog = Math.max(0, num(s.camFlare, 0.4));
     const rWhite = LOG_WHITE, rShadow = LOG_WHITE - range;
     const flareRel = Math.pow(10, rShadow) * (Math.pow(10, flareLog) - 1); // flare light, in grey-luminance units
-    const logHGrey = logHm + num(s.greyOffset, 0.76) + num(s.expStops, 0) * Math.log10(2);
+    const absNeg = ABSOLUTE(s.negUnit);
+    // ISO 5800: S = √2 / Hm, meaningful only when exposure is in lux·s
+    const iso5800 = absNeg ? Math.SQRT2 / Math.pow(10, logHm) : null;
+    // 18% grey: absolute log H (datasheet normal or meter) or relative to the speed point
+    const logHGrey = (absNeg ? num(s.greyAbs, -1.3) : logHm + num(s.greyOffset, 0.76)) + num(s.expStops, 0) * Math.log10(2);
     const logH = (r) => logHGrey + Math.log10(Math.pow(10, r) + flareRel);
 
     const p = Math.max(0, num(s.printerFlare, 0)) / 100;
@@ -521,7 +572,10 @@ const compute = (s) => {
         if (shadow.beyond[c].prt || white.beyond[c].prt) warnings.push(`Print film ${CH_NAME[c].toLowerCase()}: the printed scene runs past the measured strip (${shadow.beyond[c].prt ? 'shadow' : 'white'}).`);
     }
 
-    return { neg, prt, ch, logH, lamp, flareLog, sp, slow, logHm, logHGrey, range, rShadow, rWhite, samples, grey, white, shadow, open, stray,
+    // Neutral on screen is the grey aim itself (e.g. Kodak's LAD 1.09/1.06/1.03 is a neutral
+    // grey of 1.0 visual density), so casts are measured against the aim's own channel offsets
+    const cast = (t, c) => (t.logL[c] - t.logL.G) + (aims[c] - aims.G);
+    return { cast, absNeg, absPrt: ABSOLUTE(s.prtUnit), iso5800, neg, prt, ch, logH, lamp, flareLog, sp, slow, logHm, logHGrey, range, rShadow, rWhite, samples, grey, white, shadow, open, stray,
              gamma: { R: midGamma('R'), G: midGamma('G'), B: midGamma('B') }, worst, tone, warnings, lights };
 };
 
@@ -552,6 +606,7 @@ const drawChart = (id, datasets, options) => {
 };
 
 const render = () => {
+    syncUnits();
     const s = readState();
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch (e) {}
     const res = compute(s);
@@ -588,7 +643,7 @@ const render = () => {
     ], baseOptions('log scene luminance (0 = 18% grey)', 'log screen luminance (0 = green grey)'));
 
     // 4 balance relative to green on screen (a timing cast shifts it, a crossover tilts it)
-    const bal = (c) => samples.map(t => ({ x: t.r, y: t.logL[c] - t.logL.G }));
+    const bal = (c) => samples.map(t => ({ x: t.r, y: res.cast(t, c) }));
     const balOpts = baseOptions('log scene luminance (0 = 18% grey)', 'Δ density vs. green');
     const span = Math.max(0.1, ...['R', 'B'].flatMap(c => bal(c).map(p => Math.abs(p.y)))) * 1.15;
     balOpts.scales.y.suggestedMin = -span; balOpts.scales.y.suggestedMax = span;
@@ -601,11 +656,13 @@ const render = () => {
     const contrast = white.L.G / shadow.L.G;
     const tiles = [
         ['Scene → screen gamma', fmt(res.gamma.G), `R ${fmt(res.gamma.R)} · B ${fmt(res.gamma.B)}`, 'Slope of screen against scene luminance through the mid-tones (−2 to +1 stop around grey), green channel. Around 1.5 is the usual aim for projection in a dark room; 1.0 copies the scene.'],
-        ['Grey on screen', `${fmt(grey.L.G, 1)} cd/m²`, `${fmt(100 * grey.L.G / res.open, 1)}% of open gate · cast R ${sign(grey.logL.R - grey.logL.G)} B ${sign(grey.logL.B - grey.logL.G)}`, 'Screen luminance of the 18% grey card, green channel. The cast is red and blue against green on screen, as a density difference: 0.00 is neutral.'],
+        ['Grey on screen', `${fmt(grey.L.G, 1)} cd/m²`, `${fmt(100 * grey.L.G / res.open, 1)}% of open gate · cast R ${sign(res.cast(grey, 'R'))} B ${sign(res.cast(grey, 'B'))}`, 'Screen luminance of the 18% grey card, green channel. The cast is red and blue against green on screen, as a density difference, measured from the grey aim: the aim is taken as neutral (Kodak\'s LAD aims are a neutral grey), so 0.00 means the grey looks like the lab\'s neutral.'],
         ['White on screen', `${fmt(white.L.G, 1)} cd/m²`, `${fmt(100 * white.L.G / res.open, 0)}% of open gate`, 'Screen luminance of diffuse white (90% reflectance), green channel.'],
         ['Screen contrast', `${Math.round(contrast)}:1`, `${fmt(Math.log10(contrast) / Math.log10(2), 1)} stops, white to shadow`, 'Diffuse white to the scene shadow on screen, green channel, including stray light.'],
         ['Colour crossover', sign(res.worst.d), `${CH_NAME[res.worst.c].toLowerCase()} vs. green at ${fmt(res.worst.r / Math.log10(2), 1)} stops`, 'Largest change of red or blue against green along the grey scale, measured from their balance at the grey. Timing moves the whole grey scale and cannot remove this part.']
     ];
+    if (res.iso5800) tiles.unshift(['ISO 5800 speed', String(Math.round(res.iso5800)), `log Hm ${fmt(res.logHm)} lux·s · ${CH_NAME[res.slow].toLowerCase()} slowest`,
+        'Speed of the camera negative by ISO 5800: Hm is the geometric mean of the green exposure and the slower of red and blue, each at 0.15 above its minimum density; S = √2 / Hm. Shown only when the negative has absolute exposure in lux·s. Manufacturers often rate motion-picture films at a lower exposure index than this.']);
     $('tiles').innerHTML = tiles.map(([k, v, sub, tip]) =>
         `<div class="tile"><span class="k">${esc(k)}<span class="tip" data-tip="${esc(tip)}"></span></span><span class="v">${esc(v)}</span><span class="s">${esc(sub)}</span></div>`).join('');
 
@@ -620,7 +677,7 @@ const render = () => {
         <th class="grp" colspan="3">Screen (cd/m²)</th><th class="grp" colspan="2">Balance vs. green</th></tr>
         <tr>${['R', 'G', 'B'].map((c, i) => `<th${i === 0 ? ' class="sep"' : ''}>${c}</th>`).join('')}${['R', 'G', 'B'].map((c, i) => `<th${i === 0 ? ' class="sep"' : ''}>${c}</th>`).join('')}${['R', 'G', 'B'].map((c, i) => `<th${i === 0 ? ' class="sep"' : ''}>${c}</th>`).join('')}<th class="sep">R</th><th>B</th></tr></thead>`;
     const body = rows.map(([label, t]) => {
-        const bR = t.logL.R - t.logL.G, bB = t.logL.B - t.logL.G;
+        const bR = res.cast(t, 'R'), bB = res.cast(t, 'B');
         return `<tr${label === '18% grey' ? ' class="grey"' : ''}><td>${esc(label)}</td><td>${fmt(t.logH)}</td>`
             + CH.map(c => cell(t.neg[c], c, t.beyond[c].neg)).join('')
             + CH.map(c => cell(t.prt[c], c, t.beyond[c].prt)).join('')
@@ -717,7 +774,7 @@ const drawQuadrants = (res) => {
     // axis ticks: each column under its lowest panel, each row left of its first panel
     const colBottomRow = [1, 2, 2], rowFirstCol = [0, 0, 1];
     const colTitle = ['scene log L (0 = grey)', 'negative density (M)', 'print density (A)'];
-    const rowTitle = ['log screen cd/m²', 'log H camera film', 'log E print film'];
+    const rowTitle = ['log screen cd/m²', res.absNeg ? 'log H camera film (lux·s)' : 'log H camera film', res.absPrt ? 'log E print film (lux·s)' : 'log E print film'];
     colR.forEach((r, col) => {
         const yb = top(colBottomRow[col]) + chh - gap;
         ticks(r).forEach(v => text(v.toFixed(1), X(col, v), yb + 9));
@@ -841,7 +898,9 @@ document.querySelectorAll('[data-printer]').forEach(b => b.addEventListener('cli
     if (b.dataset.printer === 'optical' && num($('printerFlare').value, 0) === 0) $('printerFlare').value = '0.5';
     render();
 }));
-$('exampleBtn').addEventListener('click', () => { writeState(EXAMPLE); render(); });
+$('exampleBtn').addEventListener('click', () => { writeState(EXAMPLE); $('negPreset').value = 'v3_250d'; $('prtPreset').value = 'k2383'; render(); });
+$('negPreset').addEventListener('change', (e) => { const p = PRESETS.neg[e.target.value]; if (p) { writeState(p); render(); } });
+$('prtPreset').addEventListener('change', (e) => { const p = PRESETS.prt[e.target.value]; if (p) { writeState(p); render(); } });
 $('exportBtn').addEventListener('click', () => {
     const s = readState();
     const blob = new Blob([JSON.stringify({ _type: 'analogplotter_color', version: 1, ...s }, null, 2)], { type: 'application/json' });
@@ -856,7 +915,7 @@ $('importFile').addEventListener('change', async (e) => {
     try {
         const data = JSON.parse(await f.text());
         if (!data || data._type !== 'analogplotter_color') throw new Error('not a colour file');
-        writeState(data); render();
+        writeState(migrate(data)); render();
     } catch (err) {
         $('warnings').innerHTML = `<div class="warn">This file could not be read as an Analogplotter Color session (${esc(err.message)}).</div>`;
     }
@@ -864,7 +923,7 @@ $('importFile').addEventListener('change', async (e) => {
 
 let saved = null;
 try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) {}
-writeState(saved && typeof saved === 'object' ? { ...EXAMPLE, ...saved } : EXAMPLE);
+writeState(saved && typeof saved === 'object' ? { ...EXAMPLE, ...migrate(saved) } : EXAMPLE);
 upgradeTips();
 render();
 </script>
