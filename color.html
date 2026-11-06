@@ -687,6 +687,11 @@ const render = () => {
     $('table').innerHTML = head + `<tbody>${body}</tbody>`;
     // the first group header cells of each block carry the separator line
     $('table').querySelectorAll('tbody tr').forEach(tr => { [2, 5, 8].forEach(i => tr.children[i]?.classList.add('sep')); });
+    res.meta = {
+        neg: s.negName || 'Camera negative', prt: s.prtName || 'Print film',
+        exp: num(s.expStops, 0), printer: printerType, printerFlare: num(s.printerFlare, 0),
+        projFlare: num(s.projFlare, 0), stray: num(s.stray, 0), range: num(s.sceneRange, 2.2), camFlare: num(s.camFlare, 0)
+    };
     lastResult = res;
     drawQuadrants(res);
     upgradeTips();
@@ -855,10 +860,37 @@ const drawQuadrants = (res) => {
         text(label, left(P.col) + 9, top(P.row) + (small ? 12 : 13), 'left', 'middle', ink, `600 ${small ? 10 : 11}px`);
     }
 
-    // colour key in the free bottom-left cell
-    const lx = left(0) + 4, ly = top(2) + (small ? 30 : 42);
-    CH.forEach((c, i) => { const x = lx + i * 56;
-        g.fillStyle = CH_COLOR[c]; g.fillRect(x, ly - 5, 12, 10); text(CH_NAME[c], x + 17, ly, 'left', 'middle', ink, '11px'); });
+    // info block in the free bottom-left cell: which films, the settings, the result
+    const M = res.meta, fs = small ? 10 : 11, lh = small ? 14 : 16;
+    const bx = left(0) + 2, bw = cw - gap - (small ? 52 : 70); // leaves room for Q4's axis labels
+    let by = top(2) + (small ? 28 : 40);
+    const font = (w) => `${w} ${fs}px -apple-system, BlinkMacSystemFont, sans-serif`;
+    const wrap = (t, maxW) => {
+        g.font = font(400);
+        const words = String(t).split(' '), lines = [];
+        let cur = '';
+        for (const w of words) { const nxt = cur ? cur + ' ' + w : w; if (g.measureText(nxt).width > maxW && cur) { lines.push(cur); cur = w; } else cur = nxt; }
+        if (cur) lines.push(cur);
+        return lines;
+    };
+    const head = (t) => { text(t, bx, by, 'left', 'middle', ink, font(600).replace(/ -apple.*/, '')); by += lh; };
+    const para = (t) => { wrap(t, bw).forEach(l => { text(l, bx, by, 'left', 'middle', muted, `${fs}px`); by += lh; }); };
+    const kv = (k, v) => { text(k, bx, by, 'left', 'middle', muted, `${fs}px`); text(v, bx + bw, by, 'right', 'middle', ink, `600 ${fs}px`); by += lh; };
+    const rule = () => { by += 3; path([[bx, by - lh / 2], [bx + bw, by - lh / 2]], '#e3e3e8', 1); by += 3; };
+    const stopsTxt = (v) => v === 0 ? 'normal' : `${v > 0 ? '+' : ''}${fmt(v, Math.abs(v) % 1 ? 1 : 0)} stops`;
+    head('Camera film'); para(M.neg);
+    head('Print film'); para(M.prt);
+    rule();
+    kv('Scene', `${fmt(M.range)} log · flare ${fmt(M.camFlare)}`);
+    kv('Exposure', stopsTxt(M.exp));
+    kv('Printer', `${M.printer} · ${CH.map(c => res.lights[c]).join('-')}${M.printerFlare ? ` · flare ${fmt(M.printerFlare, 1)}%` : ''}`);
+    kv('Projector', `${fmt(res.open, 0)} cd/m² · ${fmt(M.projFlare, 1)}% · ${fmt(M.stray, 2)}%`);
+    rule();
+    if (res.iso5800) kv('ISO 5800 speed', String(Math.round(res.iso5800)));
+    kv('Screen gamma', fmt(res.gamma.G));
+    kv('Grey / white', `${fmt(res.grey.L.G, 1)} / ${fmt(res.white.L.G, 1)} cd/m²`);
+    kv('Contrast', `${Math.round(res.white.L.G / res.shadow.L.G)}:1`);
+    kv('Crossover', `${sign(res.worst.d)} ${CH_NAME[res.worst.c].toLowerCase()} at ${sign(res.worst.r / Math.log10(2), 1)} st`);
 };
 
 document.querySelectorAll('[data-trace]').forEach(b => b.addEventListener('click', () => {
