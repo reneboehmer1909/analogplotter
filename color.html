@@ -722,7 +722,8 @@ const drawQuadrants = (res) => {
         rng(CH.flatMap(c => neg[c].pts.map(p => p.y)), 0.08),
         [0, Math.max(...CH.flatMap(c => prt[c].pts.map(p => p.y))) + 0.1]
     ];
-    const lScreen = CH.flatMap(c => [Math.log10(ch[c].screenL(colR[2][1])), Math.log10(ch[c].screenL(0))]).concat(samples.flatMap(t => CH.map(c => t.logL[c])));
+    const lScreen = CH.flatMap(c => [Math.log10(ch[c].screenL(colR[2][1])), Math.log10(ch[c].screenL(0))]).concat(samples.flatMap(t => CH.map(c => t.logL[c])))
+        .concat([res.rShadow, res.rWhite].map(r => res.grey.logL.G + r));
     const rowR = [
         rng(lScreen, 0.08),
         rng(CH.flatMap(c => [neg[c].xMin, neg[c].xMax]).concat(samples.map(t => t.logH)), 0.05),
@@ -802,11 +803,15 @@ const drawQuadrants = (res) => {
         path(samples.map(t => [X(0, t.r), Y(1, t.logH)]), ink, 2);
         path([colR[0][0], colR[0][1]].map(r => [X(0, r), Y(1, res.logHGrey + r)]), muted, 1, [4, 4]);
     });
-    // Q1 references through the green grey: slope 1.0 and 1.5
+    // Q1: the linear scene (the input, slope 1 through the grey) and a dashed 1.5 reference.
+    // The traces start on the scene line and come back onto the reproduction curve (the product).
     const gL = res.grey.logL.G;
+    const sceneY = (r) => Y(0, gL + r);
     clip(0, 0, () => {
-        [[1, [2, 4]], [1.5, [7, 4]]].forEach(([k, dash]) => path(colR[0].map(r => [X(0, r), Y(0, gL + k * r)]), muted, 1, dash));
+        path(colR[0].map(r => [X(0, r), Y(0, gL + 1.5 * r)]), muted, 1, [7, 4]);
+        path([res.rShadow, res.rWhite].map(r => [X(0, r), sceneY(r)]), '#48484a', 1.6);
     });
+    { const rl = res.rShadow + 0.45; text('scene', X(0, rl) - 4, sceneY(rl) - 9, 'right', 'middle', '#48484a', '600 10px'); }
     for (const c of CH) {
         const col = CH_COLOR[c], nMax = Math.max(...neg[c].pts.map(p => p.y)), pMax = Math.max(...prt[c].pts.map(p => p.y));
         clip(0, 0, () => path(samples.map(t => [X(0, t.r), Y(0, t.logL[c])]), col, 2));                                       // Q1
@@ -828,14 +833,17 @@ const drawQuadrants = (res) => {
     for (const c of show) {
         const col = CH_COLOR[c];
         for (const [, t] of tones) {
+            const p0 = [X(0, t.r), sceneY(t.r)];
             const p1 = [X(0, t.r), Y(0, t.logL[c])], p2 = [X(0, t.r), Y(1, t.logH)], p3 = [X(1, t.neg[c]), Y(1, t.logH)],
                   p4 = [X(1, t.neg[c]), Y(2, t.logE[c])], p5 = [X(2, t.prt[c]), Y(2, t.logE[c])], p6 = [X(2, t.prt[c]), Y(0, t.logL[c])];
             g.globalAlpha = traceChannel === 'all' ? 0.5 : 0.85;
-            path([p1, p2, p3, p4, p5, p6, p1], col, 1.1, [2, 3]);
+            path([p0, p2, p3, p4, p5, p6, p1], col, 1.1, [2, 3]);
             g.globalAlpha = 1;
             [p1, p2, p3, p4, p5, p6].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 3.3, 0, Math.PI * 2); g.fillStyle = col; g.fill(); g.lineWidth = 1.2; g.strokeStyle = '#fff'; g.stroke(); });
         }
     }
+    // scene points: the inputs, hollow, one per tone (the scene is neutral)
+    tones.forEach(([, t]) => { g.beginPath(); g.arc(X(0, t.r), sceneY(t.r), 4, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 1.6; g.strokeStyle = '#48484a'; g.stroke(); });
     tones.forEach(([name, t]) => text(name, X(0, t.r), Y(1, t.logH) + 13, 'center', 'middle', ink, '600 10px'));
 
     // panel names (drawn last so traces never cover them)
