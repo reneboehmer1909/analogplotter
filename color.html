@@ -96,9 +96,12 @@
         .card p.sub { margin: 0 0 8px; font-size: 12px; color: var(--text-muted); }
         .chart-box { position: relative; height: 300px; }
 
-        .quad-card { padding-bottom: 14px; }
-        .quad-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
-        .quad-box { position: relative; width: 100%; max-width: 980px; margin: 0 auto; aspect-ratio: 1 / 1; }
+        .quad-card { border: 0; padding: 0; position: relative; }
+        .quad-head { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 2; }
+        .quad-box { position: relative; width: 100%; max-width: min(100%, calc(100vh - 110px)); margin: 0 auto; aspect-ratio: 1 / 1; }
+        details.more { border-top: 1px solid var(--line); padding-top: 4px; }
+        details.more > summary { cursor: pointer; font-weight: 600; font-size: 14px; padding: 10px 0; color: var(--text-muted); }
+        .more-body { display: grid; gap: 20px; padding-top: 8px; }
         .quad-box canvas { width: 100%; height: 100%; display: block; }
         .warnings { display: grid; gap: 6px; }
         .warnings:empty { display: none; }
@@ -177,7 +180,6 @@
                     <label class="f"><span class="ch r">Red · Status M</span><textarea id="negR" rows="2"></textarea></label>
                     <label class="f"><span class="ch g">Green · Status M</span><textarea id="negG" rows="2"></textarea></label>
                     <label class="f"><span class="ch b">Blue · Status M</span><textarea id="negB" rows="2"></textarea></label>
-                    <p class="hint" id="negInfo"></p>
                 </div>
             </details>
 
@@ -193,7 +195,6 @@
                         <label class="f"><span class="ch g">Green light</span><input type="number" id="lightG" step="1" value="25"></label>
                         <label class="f"><span class="ch b">Blue light</span><input type="number" id="lightB" step="1" value="25"></label>
                     </div>
-                    <p class="hint">Timing in printer points. 25-25-25 prints the 18% grey exactly at the aim below; each point is one step of the point size.</p>
                     <div class="row">
                         <label class="f">Point size (log E)<span class="tip" data-tip="Exposure change per printer point. 0.025 log E (1/12 stop) is the common lab scale."></span>
                             <input type="number" id="pointSize" step="0.001" min="0.005" value="0.025"></label>
@@ -222,7 +223,6 @@
                     <label class="f"><span class="ch r">Red · Status A</span><textarea id="prtR" rows="2"></textarea></label>
                     <label class="f"><span class="ch g">Green · Status A</span><textarea id="prtG" rows="2"></textarea></label>
                     <label class="f"><span class="ch b">Blue · Status A</span><textarea id="prtB" rows="2"></textarea></label>
-                    <p class="hint" id="prtInfo"></p>
                 </div>
             </details>
 
@@ -255,17 +255,14 @@
                         <input type="file" id="importFile" accept=".json,application/json" hidden>
                         <button type="button" class="btn" id="exampleBtn">Load example</button>
                     </div>
-                    <p class="hint">Everything you enter is saved in this browser automatically.</p>
                 </div>
             </details>
         </aside>
 
         <main class="main">
             <div class="warnings" id="warnings"></div>
-            <div class="tiles" id="tiles"></div>
             <div class="card quad-card">
                 <div class="quad-head">
-                    <h3>Tone transfer · six stages<span class="tip" data-tip="The whole chain from scene to cinema screen. Each panel turns one quantity into the next and shares an axis with its neighbour, so a scene tone can be followed through all six: Q2 camera flare and optics (scene → exposure on the camera film), Q3 camera film (exposure → negative density), Q4 printer flare and optics with timing (negative density → exposure on the print film), Q5 print film (exposure → print density), Q6 projector lens flare and room light (print density → screen luminance), and back to Q1, scene against screen. The dotted loops follow the scene shadow, the 18% grey and diffuse white."></span></h3>
                     <div class="seg" role="group" aria-label="Traces">
                         <button type="button" data-trace="all" aria-pressed="true">All</button>
                         <button type="button" data-trace="R" aria-pressed="false">R</button>
@@ -275,30 +272,32 @@
                 </div>
                 <div class="quad-box"><canvas id="quad" role="img" aria-label="Six-stage tone transfer diagram for red, green and blue, from scene to screen"></canvas></div>
             </div>
+            <details class="more">
+                <summary>Details</summary>
+                <div class="more-body">
+            <div class="tiles" id="tiles"></div>
             <div class="charts">
                 <div class="card">
                     <h3>Camera film<span class="tip" data-tip="The negative's three curves. Dots mark where the scene shadow, the 18% grey and diffuse white land on each layer."></span></h3>
-                    <p class="sub" id="negSub">Density vs. relative log H</p>
                     <div class="chart-box"><canvas id="chNeg"></canvas></div>
                 </div>
                 <div class="card">
                     <h3>Print film<span class="tip" data-tip="The print film's three curves on its own relative log E axis. Dots mark where shadow, grey and white of the scene land after the printer, timing and printer flare."></span></h3>
-                    <p class="sub" id="prtSub">Density vs. relative log E</p>
                     <div class="chart-box"><canvas id="chPrt"></canvas></div>
                 </div>
                 <div class="card">
                     <h3>Scene → screen<span class="tip" data-tip="Screen luminance per channel against scene luminance, both in log units with 0 at the 18% grey. The dashed lines are references through the grey: slope 1.0 is an exact copy of the scene's contrast; slope 1.5 is the higher overall contrast usually preferred for projection in a dark room (Hunt, The Reproduction of Colour)."></span></h3>
-                    <p class="sub">log screen luminance vs. log scene luminance, 0 = 18% grey</p>
                     <div class="chart-box"><canvas id="chRep"></canvas></div>
                 </div>
                 <div class="card">
                     <h3>Neutral balance<span class="tip" data-tip="Red and blue against green on the screen along the grey scale, as a density difference (0.01 ≈ 2.3% in light; positive = more of that colour). Lines on 0 mean a neutral grey scale. A line shifted up or down everywhere is a colour cast from timing, aim or lamp. Lines that tilt or bend are a colour crossover, for example warm shadows and cool highlights, which timing cannot correct."></span></h3>
-                    <p class="sub">Red and blue relative to green on screen (density)</p>
                     <div class="chart-box"><canvas id="chBal"></canvas></div>
                 </div>
             </div>
             <h2 class="h">Tone by tone<span class="tip" data-tip="Each row is one scene tone, in stops from the 18% grey. Values marked in orange lie beyond the measured part of a curve and are held at the last reading."></span></h2>
             <div class="tbl-wrap"><table id="table"></table></div>
+                </div>
+            </details>
         </main>
     </div>
 
@@ -558,10 +557,10 @@ const render = () => {
     const { neg, prt, samples, grey, white, shadow } = res;
     const keyTones = [['shadow', shadow], ['grey', grey], ['white', white]];
 
-    $('negInfo').textContent = `ISO 5800 speed point at log H ${fmt(res.logHm)} (green and ${CH_NAME[res.slow].toLowerCase()}, the slower layer). 18% grey at log H ${fmt(res.logHGrey)}.`;
-    $('prtInfo').textContent = `Grey prints at ${CH.map(c => fmt(grey.prt[c])).join(' / ')} (R / G / B). Printer lights ${CH.map(c => res.lights[c]).join('-')}.`;
-    $('negSub').textContent = `${s.negName || 'Camera negative'} · density vs. relative log H`;
-    $('prtSub').textContent = `${s.prtName || 'Print film'} · density vs. relative log E`;
+    if ($('negInfo')) $('negInfo').textContent = `ISO 5800 speed point at log H ${fmt(res.logHm)} (green and ${CH_NAME[res.slow].toLowerCase()}, the slower layer). 18% grey at log H ${fmt(res.logHGrey)}.`;
+    if ($('prtInfo')) $('prtInfo').textContent = `Grey prints at ${CH.map(c => fmt(grey.prt[c])).join(' / ')} (R / G / B). Printer lights ${CH.map(c => res.lights[c]).join('-')}.`;
+    if ($('negSub')) $('negSub').textContent = `${s.negName || 'Camera negative'} · density vs. relative log H`;
+    if ($('prtSub')) $('prtSub').textContent = `${s.prtName || 'Print film'} · density vs. relative log E`;
 
     // 1 negative
     drawChart('chNeg', [
@@ -638,7 +637,7 @@ const render = () => {
 //     row 0 (log screen L):   Q1 scene→screen   ·              Q6 projector
 //     row 1 (log H camera):   Q2 camera flare   Q3 camera film ·
 //     row 2 (log E print):    legend            Q4 printer     Q5 print film
-//     columns: scene log L | negative density | print density
+//     columns: scene log L (→) | negative density (←) | print density (←)
 let lastResult = null;
 let traceChannel = 'all';
 const drawQuadrants = (res) => {
@@ -669,7 +668,14 @@ const drawQuadrants = (res) => {
         rng(CH.flatMap(c => [prt[c].xMin, prt[c].xMax]).concat(samples.flatMap(t => CH.map(c => t.logE[c]))), 0.05)
     ];
     const left = (col) => mL + col * cw + gap / 2, top = (row) => mT + row * chh + gap / 2;
-    const X = (col, v) => left(col) + ip + (v - colR[col][0]) / (colR[col][1] - colR[col][0]) * (cw - gap - 2 * ip);
+    // Density columns run right-to-left, so both film curves appear as the familiar
+    // characteristic curve turned 90° (exposure up, density to the left), as in the
+    // B&W diagram, instead of mirrored across their diagonal.
+    const REVERSED = [false, true, true];
+    const X = (col, v) => {
+        const f = (v - colR[col][0]) / (colR[col][1] - colR[col][0]);
+        return left(col) + ip + (REVERSED[col] ? 1 - f : f) * (cw - gap - 2 * ip);
+    };
     const Y = (row, v) => top(row) + chh - gap - ip - (v - rowR[row][0]) / (rowR[row][1] - rowR[row][0]) * (chh - gap - 2 * ip);
 
     const ink = '#1d1d1f', muted = '#8e8e93', gridc = '#eeeef0';
@@ -780,19 +786,10 @@ const drawQuadrants = (res) => {
         text(label, left(P.col) + 9, top(P.row) + (small ? 12 : 13), 'left', 'middle', ink, `600 ${small ? 10 : 11}px`);
     }
 
-    // legend in the free bottom-left cell
+    // colour key in the free bottom-left cell
     const lx = left(0) + 4, ly = top(2) + (small ? 30 : 42);
-    text('Follow a tone round the loop:', lx, ly + 6, 'left', 'middle', ink, '600 11px');
-    const legendLines = [
-        'Q1 scene → Q2 camera exposure → Q3 negative',
-        '→ Q4 printer → Q5 print → Q6 screen → Q1',
-        `Traces: shadow, 18% grey, diffuse white`,
-        `Screen gamma ${fmt(res.gamma.G)} · contrast ${Math.round(res.white.L.G / res.shadow.L.G)}:1`,
-        'Q1 dashed: slope 1.0 and 1.5 through grey'
-    ];
-    if (!small) legendLines.forEach((l, i) => text(l, lx, ly + 26 + i * 17, 'left', 'middle', muted, '11px'));
-    CH.forEach((c, i) => { const x = lx + i * 56, y = ly + (small ? 26 : 26 + legendLines.length * 17 + 8);
-        g.fillStyle = CH_COLOR[c]; g.fillRect(x, y - 5, 12, 10); text(CH_NAME[c], x + 17, y, 'left', 'middle', ink, '11px'); });
+    CH.forEach((c, i) => { const x = lx + i * 56;
+        g.fillStyle = CH_COLOR[c]; g.fillRect(x, ly - 5, 12, 10); text(CH_NAME[c], x + 17, ly, 'left', 'middle', ink, '11px'); });
 };
 
 document.querySelectorAll('[data-trace]').forEach(b => b.addEventListener('click', () => {
