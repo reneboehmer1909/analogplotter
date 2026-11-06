@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analogplotter Color</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js" integrity="sha384-Emf5ZVIUiarAdhkgtqK+5/Z5qIvM6QoVrS+qAVtfyZVuD5lIHrac0me485+Antp0" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --panel: #f5f5f7;
+            --line: #e3e3e8;
+            --text: #1d1d1f;
+            --text-muted: #6e6e73;
+            --accent: #0066cc;
+            --accent-hover: #0055b3;
+            --ch-r: #d70015;
+            --ch-g: #248a3d;
+            --ch-b: #0066cc;
+            --warn: #b25000;
+            --warn-bg: #fff4e5;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, 'SF Mono', 'Menlo', monospace;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 14px; line-height: 1.45; }
+        button, input, select, textarea { font: inherit; color: inherit; }
+
+        .topbar {
+            position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 16px;
+            height: 60px; padding: 0 24px; background: rgba(255, 255, 255, 0.86);
+            backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid var(--line);
+        }
+        .wordmark { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+        .wordmark span { color: var(--text-muted); font-weight: 400; }
+        .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--panel); color: var(--text-muted); }
+        .topbar .spacer { flex: 1; }
+        .topbar a { color: var(--accent); text-decoration: none; font-size: 13px; }
+        .topbar a:hover { text-decoration: underline; }
+
+        .layout { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 24px; padding: 24px; max-width: 1680px; margin: 0 auto; }
+        @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; padding: 16px; } }
+        .sidebar { display: grid; gap: 14px; align-content: start; min-width: 0; }
+        .main { display: grid; gap: 20px; align-content: start; min-width: 0; }
+
+        details.section { background: var(--panel); border-radius: 16px; padding: 4px 16px; }
+        details.section > summary {
+            list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            padding: 12px 0; font-weight: 600; font-size: 14px;
+        }
+        details.section > summary::-webkit-details-marker { display: none; }
+        details.section > summary::after {
+            content: ''; margin-left: auto; width: 8px; height: 8px; border-right: 1.6px solid var(--text-muted);
+            border-bottom: 1.6px solid var(--text-muted); transform: rotate(-45deg); transition: transform .15s;
+        }
+        details.section[open] > summary::after { transform: rotate(45deg); }
+        .sec-body { display: grid; gap: 12px; padding: 4px 0 16px; }
+        .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+        label.f { display: flex; flex-wrap: wrap; align-items: center; row-gap: 4px; font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        label.f > input, label.f > textarea, label.f > select { flex: 1 1 100%; }
+        input[type=text], input[type=number], select, textarea {
+            width: 100%; padding: 8px 10px; border: 1px solid #d2d2d7; border-radius: 10px; background: #fff; font-size: 13px;
+        }
+        textarea { font-family: var(--font-mono); font-size: 12px; resize: vertical; min-height: 54px; }
+        input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible {
+            outline: 2px solid var(--accent); outline-offset: 1px;
+        }
+        .ch { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--text); }
+        .ch::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        .ch.r { color: var(--ch-r); } .ch.g { color: var(--ch-g); } .ch.b { color: var(--ch-b); }
+        .hint { font-size: 12px; color: var(--text-muted); }
+        .seg { display: inline-flex; background: #e8e8ed; border-radius: 999px; padding: 2px; }
+        .seg button { border: 0; background: transparent; padding: 5px 14px; border-radius: 999px; font-size: 12px; cursor: pointer; }
+        .seg button[aria-pressed=true] { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); font-weight: 600; }
+        .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+        .btn { border: 0; border-radius: 999px; padding: 7px 14px; font-size: 13px; cursor: pointer; background: #e8e8ed; }
+        .btn:hover { background: #dcdce1; }
+        .btn.primary { background: var(--accent); color: #fff; }
+        .btn.primary:hover { background: var(--accent-hover); }
+        .file-label { display: inline-flex; }
+
+        .tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+        @media (max-width: 1300px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 640px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .tile { background: var(--panel); border-radius: 16px; padding: 14px 16px; display: grid; gap: 2px; align-content: start; }
+        .tile .v { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+        .tile .k { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; }
+        .tile .s { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+        .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        @media (max-width: 900px) { .charts { grid-template-columns: 1fr; } }
+        .card { border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px 10px; min-width: 0; }
+        .card h3 { margin: 0 0 2px; font-size: 14px; display: flex; align-items: center; }
+        .card p.sub { margin: 0 0 8px; font-size: 12px; color: var(--text-muted); }
+        .chart-box { position: relative; height: 300px; }
+
+        .warnings { display: grid; gap: 6px; }
+        .warnings:empty { display: none; }
+        .warn { background: var(--warn-bg); color: var(--warn); border-radius: 12px; padding: 8px 12px; font-size: 13px; }
+
+        .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; }
+        table { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+        th, td { padding: 7px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+        th { font-size: 11.5px; color: var(--text-muted); font-weight: 600; background: var(--panel); }
+        th:first-child, td:first-child { text-align: left; }
+        tbody tr:last-child td { border-bottom: 0; }
+        td { font-family: var(--font-mono); font-size: 12px; }
+        td:first-child { font-family: var(--font-sans); font-size: 12.5px; }
+        tr.grey td { background: #f8f8fa; font-weight: 600; }
+        td.r { color: var(--ch-r); } td.g { color: var(--ch-g); } td.b { color: var(--ch-b); }
+        td em { color: var(--warn); font-style: normal; }
+        th.grp { text-align: center; border-left: 1px solid var(--line); }
+        td.sep, th.sep { border-left: 1px solid var(--line); }
+        h2.h { font-size: 15px; margin: 4px 0 0; display: flex; align-items: center; }
+
+        /* Info tips (same pattern as the B&W tool) */
+        .info-tip {
+            display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+            width: 15px; height: 15px; margin-left: 5px; border-radius: 50%;
+            border: 1px solid #c7c7cc; background: #fff; color: #6e6e73;
+            font: 600 10px/1 var(--font-sans); cursor: help; user-select: none; text-transform: none;
+        }
+        .info-tip::before { content: 'i'; }
+        .info-tip:hover, .info-tip:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+        .info-tip > .info-body { display: none !important; }
+        #infoPop {
+            position: fixed; z-index: 1000; max-width: min(340px, calc(100vw - 24px)); padding: 10px 12px;
+            background: #fff; color: var(--text); border: 1px solid #e5e5ea; border-radius: 12px;
+            box-shadow: 0 8px 28px rgba(0,0,0,.14); font-size: 12px; line-height: 1.5; pointer-events: none;
+        }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="wordmark">Analog<span>plotter</span></div>
+        <span class="badge">Color · cine lab</span>
+        <div class="spacer"></div>
+        <a href="index.html">Black &amp; white tool</a>
+    </header>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <details class="section" open>
+                <summary>Scene &amp; camera</summary>
+                <div class="sec-body">
+                    <div class="row">
+                        <label class="f">Scene range (log)<span class="tip" data-tip="Log luminance range from the scene's darkest detail to diffuse white (90% reflectance). 2.20 (7.3 stops) is the normal scene of the B&amp;W tool."></span>
+                            <input type="number" id="sceneRange" step="0.05" min="0.5" max="4" value="2.20"></label>
+                        <label class="f">Camera flare (log at shadow)<span class="tip" data-tip="How much camera flare lifts the scene shadow, in log H. Flare is a constant amount of light added everywhere, so it lifts shadows strongly and leaves highlights almost unchanged. 0.40 is the usual still-camera normal; good cine primes often sit lower."></span>
+                            <input type="number" id="camFlare" step="0.05" min="0" max="1.5" value="0.40"></label>
+                    </div>
+                    <div class="row">
+                        <label class="f">Exposure (stops vs. normal)<span class="tip" data-tip="Over- or underexposure of the camera negative relative to normal exposure at the film's speed."></span>
+                            <input type="number" id="expStops" step="0.333" min="-5" max="5" value="0"></label>
+                        <label class="f">Grey above speed point (log)<span class="tip" data-tip="Where an 18% grey card lands above the ISO 5800 speed point at normal exposure. 0.76 comes from a reflected-light meter with K = 12.5 and lens factor q = 0.65 (H = qK/S ≈ 8.1/S) against the ISO 5800 speed point Hm = √2/S."></span>
+                            <input type="number" id="greyOffset" step="0.01" min="0" max="2" value="0.76"></label>
+                    </div>
+                </div>
+            </details>
+
+            <details class="section" open>
+                <summary>Camera negative</summary>
+                <div class="sec-body">
+                    <div class="row">
+                        <label class="f">Film / process<input type="text" id="negName" value="Example negative (synthetic)"></label>
+                        <label class="f">log H step<span class="tip" data-tip="Exposure increment between the readings, in log H. 0.15 for a standard 21-step tablet. For a tablet with certified densities, paste its log H values below instead."></span>
+                            <input type="number" id="negStep" step="0.01" min="0.01" value="0.15"></label>
+                    </div>
+                    <label class="f">Custom log H values (optional)<textarea id="negLogH" rows="2" placeholder="Leave empty to use the step above"></textarea></label>
+                    <label class="f"><span class="ch r">Red · Status M</span><textarea id="negR" rows="2"></textarea></label>
+                    <label class="f"><span class="ch g">Green · Status M</span><textarea id="negG" rows="2"></textarea></label>
+                    <label class="f"><span class="ch b">Blue · Status M</span><textarea id="negB" rows="2"></textarea></label>
+                    <p class="hint" id="negInfo"></p>
+                </div>
+            </details>
+
+            <details class="section" open>
+                <summary>Printer</summary>
+                <div class="sec-body">
+                    <div class="seg" role="group" aria-label="Printer type">
+                        <button type="button" data-printer="contact" aria-pressed="true">Contact</button>
+                        <button type="button" data-printer="optical" aria-pressed="false">Optical</button>
+                    </div>
+                    <div class="row3">
+                        <label class="f"><span class="ch r">Red light</span><input type="number" id="lightR" step="1" value="25"></label>
+                        <label class="f"><span class="ch g">Green light</span><input type="number" id="lightG" step="1" value="25"></label>
+                        <label class="f"><span class="ch b">Blue light</span><input type="number" id="lightB" step="1" value="25"></label>
+                    </div>
+                    <p class="hint">Timing in printer points. 25-25-25 prints the 18% grey exactly at the aim below; each point is one step of the point size.</p>
+                    <div class="row">
+                        <label class="f">Point size (log E)<span class="tip" data-tip="Exposure change per printer point. 0.025 log E (1/12 stop) is the common lab scale."></span>
+                            <input type="number" id="pointSize" step="0.001" min="0.005" value="0.025"></label>
+                        <label class="f">Printer flare (%)<span class="tip" data-tip="Stray light in the printer as a percentage of the exposure the grey receives. It lifts the print's highlights (thin negative areas get extra light) and lowers contrast there. Contact printing has almost none; optical printers add lens flare."></span>
+                            <input type="number" id="printerFlare" step="0.1" min="0" max="20" value="0"></label>
+                    </div>
+                    <label class="f">Grey aim on print (Status A)<span class="tip" data-tip="Print density the 18% grey should reach, per channel. 1.00 neutral is a starting point; use your lab's aim (e.g. the LAD values for your print stock)."></span></label>
+                    <div class="row3">
+                        <label class="f"><span class="ch r">Red</span><input type="number" id="aimR" step="0.01" value="1.00"></label>
+                        <label class="f"><span class="ch g">Green</span><input type="number" id="aimG" step="0.01" value="1.00"></label>
+                        <label class="f"><span class="ch b">Blue</span><input type="number" id="aimB" step="0.01" value="1.00"></label>
+                    </div>
+                    <label class="f" id="transferWrap">Optical transfer curve (optional)<span class="tip" data-tip="How the optical system maps exposure in to exposure out, as pairs of relative log E: 'in out' per pair, separated by semicolons or new lines, e.g. 0 0; 1 0.95; 2 1.9. Leave empty for a straight 1:1 transfer. Applied after printer flare."></span>
+                        <textarea id="transfer" rows="2" placeholder="e.g. 0 0; 1 0.95; 2 1.9"></textarea></label>
+                </div>
+            </details>
+
+            <details class="section" open>
+                <summary>Print film</summary>
+                <div class="sec-body">
+                    <div class="row">
+                        <label class="f">Film / process<input type="text" id="prtName" value="Example print film (synthetic)"></label>
+                        <label class="f">log E step<input type="number" id="prtStep" step="0.01" min="0.01" value="0.15"></label>
+                    </div>
+                    <label class="f">Custom log E values (optional)<textarea id="prtLogE" rows="2" placeholder="Leave empty to use the step above"></textarea></label>
+                    <label class="f"><span class="ch r">Red · Status A</span><textarea id="prtR" rows="2"></textarea></label>
+                    <label class="f"><span class="ch g">Green · Status A</span><textarea id="prtG" rows="2"></textarea></label>
+                    <label class="f"><span class="ch b">Blue · Status A</span><textarea id="prtB" rows="2"></textarea></label>
+                    <p class="hint" id="prtInfo"></p>
+                </div>
+            </details>
+
+            <details class="section" open>
+                <summary>Projection</summary>
+                <div class="sec-body">
+                    <div class="row">
+                        <label class="f">Open gate (cd/m²)<span class="tip" data-tip="Screen luminance with no film in the gate. 48 cd/m² (14 fL) is the usual cinema reference for an open gate."></span>
+                            <input type="number" id="openGate" step="1" min="1" value="48"></label>
+                        <label class="f">Stray light (% of open gate)<span class="tip" data-tip="Light that reaches the screen without passing through the image: lens flare, port glass, exit signs, reflections from the room. It sets the deepest black the screen can show. 0.2% limits the screen to 500:1."></span>
+                            <input type="number" id="stray" step="0.05" min="0" max="10" value="0.20"></label>
+                    </div>
+                    <label class="f">Lamp balance (relative output per channel)<span class="tip" data-tip="Relative light the projector lamp and screen deliver in the red, green and blue bands, green = 1. A warmer lamp has red above 1 and blue below 1."></span></label>
+                    <div class="row3">
+                        <label class="f"><span class="ch r">Red</span><input type="number" id="lampR" step="0.01" min="0.1" value="1.00"></label>
+                        <label class="f"><span class="ch g">Green</span><input type="number" id="lampG" step="0.01" min="0.1" value="1.00"></label>
+                        <label class="f"><span class="ch b">Blue</span><input type="number" id="lampB" step="0.01" min="0.1" value="1.00"></label>
+                    </div>
+                </div>
+            </details>
+
+            <details class="section" open>
+                <summary>Data</summary>
+                <div class="sec-body">
+                    <div class="btns">
+                        <button type="button" class="btn primary" id="exportBtn">Export JSON</button>
+                        <label class="btn file-label" for="importFile">Import JSON</label>
+                        <input type="file" id="importFile" accept=".json,application/json" hidden>
+                        <button type="button" class="btn" id="exampleBtn">Load example</button>
+                    </div>
+                    <p class="hint">Everything you enter is saved in this browser automatically.</p>
+                </div>
+            </details>
+        </aside>
+
+        <main class="main">
+            <div class="warnings" id="warnings"></div>
+            <div class="tiles" id="tiles"></div>
+            <div class="charts">
+                <div class="card">
+                    <h3>1 · Camera negative<span class="tip" data-tip="The negative's three curves. Dots mark where the scene shadow, the 18% grey and diffuse white land on each layer."></span></h3>
+                    <p class="sub" id="negSub">Density vs. relative log H</p>
+                    <div class="chart-box"><canvas id="chNeg"></canvas></div>
+                </div>
+                <div class="card">
+                    <h3>2 · Print film<span class="tip" data-tip="The print film's three curves on its own relative log E axis. Dots mark where shadow, grey and white of the scene land after the printer, timing and printer flare."></span></h3>
+                    <p class="sub" id="prtSub">Density vs. relative log E</p>
+                    <div class="chart-box"><canvas id="chPrt"></canvas></div>
+                </div>
+                <div class="card">
+                    <h3>3 · Scene → screen<span class="tip" data-tip="Screen luminance per channel against scene luminance, both in log units with 0 at the 18% grey. The dashed lines are references through the grey: slope 1.0 is an exact copy of the scene's contrast; slope 1.5 is the higher overall contrast usually preferred for projection in a dark room (Hunt, The Reproduction of Colour)."></span></h3>
+                    <p class="sub">log screen luminance vs. log scene luminance, 0 = 18% grey</p>
+                    <div class="chart-box"><canvas id="chRep"></canvas></div>
+                </div>
+                <div class="card">
+                    <h3>4 · Neutral balance<span class="tip" data-tip="Red and blue against green on the screen along the grey scale, as a density difference (0.01 ≈ 2.3% in light; positive = more of that colour). Lines on 0 mean a neutral grey scale. A line shifted up or down everywhere is a colour cast from timing, aim or lamp. Lines that tilt or bend are a colour crossover, for example warm shadows and cool highlights, which timing cannot correct."></span></h3>
+                    <p class="sub">Red and blue relative to green on screen (density)</p>
+                    <div class="chart-box"><canvas id="chBal"></canvas></div>
+                </div>
+            </div>
+            <h2 class="h">Tone by tone<span class="tip" data-tip="Each row is one scene tone, in stops from the 18% grey. Values marked in orange lie beyond the measured part of a curve and are held at the last reading."></span></h2>
+            <div class="tbl-wrap"><table id="table"></table></div>
+        </main>
+    </div>
+
+<script>
+'use strict';
+
+// ---------------------------------------------------------------------------
+// Example data: synthetic curves, not measurements of a real film. They have
+// the usual shape of an ECN-2 camera negative (Status M, orange-mask Dmin,
+// gamma ≈ 0.6) and a print film (Status A, gamma ≈ 2.8). 21 steps of 0.15.
+// ---------------------------------------------------------------------------
+const EXAMPLE = {
+    negName: 'Example negative (synthetic)', negStep: '0.15', negLogH: '',
+    negR: '0.23, 0.23, 0.25, 0.27, 0.30, 0.35, 0.41, 0.49, 0.57, 0.65, 0.73, 0.82, 0.90, 0.99, 1.08, 1.17, 1.25, 1.34, 1.43, 1.51, 1.60',
+    negG: '0.63, 0.64, 0.66, 0.69, 0.73, 0.79, 0.86, 0.94, 1.03, 1.12, 1.21, 1.30, 1.40, 1.49, 1.58, 1.67, 1.77, 1.86, 1.95, 2.05, 2.14',
+    negB: '0.88, 0.89, 0.91, 0.95, 1.01, 1.08, 1.16, 1.25, 1.34, 1.44, 1.53, 1.63, 1.73, 1.83, 1.93, 2.03, 2.13, 2.23, 2.33, 2.42, 2.52',
+    prtName: 'Example print film (synthetic)', prtStep: '0.15', prtLogE: '',
+    prtR: '0.11, 0.14, 0.17, 0.22, 0.30, 0.42, 0.59, 0.83, 1.13, 1.50, 1.90, 2.32, 2.70, 3.02, 3.27, 3.46, 3.59, 3.68, 3.74, 3.78, 3.80',
+    prtG: '0.13, 0.16, 0.20, 0.26, 0.35, 0.48, 0.67, 0.91, 1.22, 1.59, 1.99, 2.39, 2.76, 3.07, 3.31, 3.50, 3.63, 3.72, 3.78, 3.82, 3.85',
+    prtB: '0.15, 0.18, 0.23, 0.29, 0.39, 0.53, 0.72, 0.96, 1.28, 1.64, 2.02, 2.40, 2.75, 3.03, 3.26, 3.42, 3.54, 3.63, 3.69, 3.72, 3.75',
+    sceneRange: '2.20', camFlare: '0.40', expStops: '0', greyOffset: '0.76',
+    printer: 'contact', lightR: '25', lightG: '25', lightB: '25', pointSize: '0.025', printerFlare: '0',
+    aimR: '1.00', aimG: '1.00', aimB: '1.00', transfer: '',
+    openGate: '48', stray: '0.20', lampR: '1.00', lampG: '1.00', lampB: '1.00'
+};
+const FIELDS = Object.keys(EXAMPLE).filter(k => k !== 'printer');
+const STORAGE_KEY = 'analogplotter_color_state';
+const CH = ['R', 'G', 'B'];
+const CH_COLOR = { R: '#d70015', G: '#248a3d', B: '#0066cc' };
+const CH_NAME = { R: 'Red', G: 'Green', B: 'Blue' };
+const GREY_REFLECTANCE = 0.18, WHITE_REFLECTANCE = 0.90;
+const LOG_WHITE = Math.log10(WHITE_REFLECTANCE / GREY_REFLECTANCE); // +0.70 above grey
+
+const $ = (id) => document.getElementById(id);
+let printerType = 'contact';
+
+// --- parsing -----------------------------------------------------------------
+// "0.24, 0.26 …" or "0,24; 0,26 …" (decimal commas when the list uses semicolons)
+const parseList = (text) => {
+    const t = String(text || '').trim();
+    if (!t) return [];
+    const parts = t.includes(';') ? t.split(/[;\n]+/).map(s => s.trim().replace(',', '.')) : t.split(/[\s,]+/);
+    return parts.filter(Boolean).map(Number).filter(Number.isFinite);
+};
+// Optical transfer pairs "in out; in out"
+const parsePairs = (text) => String(text || '').split(/[;\n]+/).map(s => s.trim()).filter(Boolean)
+    .map(s => s.replace(/,(?=\d)/g, '.').split(/[\s,]+/).map(Number)).filter(p => p.length >= 2 && p.every(Number.isFinite))
+    .map(([x, y]) => ({ x, y })).sort((a, b) => a.x - b.x);
+
+// --- curves ----------------------------------------------------------------
+// Monotone cubic (Fritsch–Carlson) through sorted points; outside the data the
+// value is held at the end point and the read is flagged.
+const makeCurve = (xs, ys) => {
+    const pts = xs.map((x, i) => ({ x, y: ys[i] })).filter(p => Number.isFinite(p.x) && Number.isFinite(p.y))
+        .sort((a, b) => a.x - b.x);
+    const n = pts.length;
+    if (n < 2) return null;
+    const d = [], m = new Array(n);
+    for (let i = 0; i < n - 1; i++) d.push((pts[i + 1].y - pts[i].y) / ((pts[i + 1].x - pts[i].x) || 1e-9));
+    m[0] = d[0]; m[n - 1] = d[n - 2];
+    for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+    for (let i = 0; i < n - 1; i++) {
+        if (d[i] === 0) { m[i] = m[i + 1] = 0; continue; }
+        const a = m[i] / d[i], b = m[i + 1] / d[i], s = a * a + b * b;
+        if (s > 9) { const t = 3 / Math.sqrt(s); m[i] = t * a * d[i]; m[i + 1] = t * b * d[i]; }
+    }
+    const at = (x) => {
+        if (x <= pts[0].x) return { y: pts[0].y, out: x < pts[0].x - 1e-9 };
+        if (x >= pts[n - 1].x) return { y: pts[n - 1].y, out: x > pts[n - 1].x + 1e-9 };
+        let i = 0;
+        while (i < n - 2 && x > pts[i + 1].x) i++;
+        const h = pts[i + 1].x - pts[i].x, t = (x - pts[i].x) / h;
+        const h00 = 2 * t ** 3 - 3 * t ** 2 + 1, h10 = t ** 3 - 2 * t ** 2 + t, h01 = -2 * t ** 3 + 3 * t ** 2, h11 = t ** 3 - t ** 2;
+        return { y: h00 * pts[i].y + h10 * h * m[i] + h01 * pts[i + 1].y + h11 * h * m[i + 1], out: false };
+    };
+    // x for a given y on a rising curve (bisection); null when y is outside the curve's range
+    const inverse = (y) => {
+        const lo = Math.min(...pts.map(p => p.y)), hi = Math.max(...pts.map(p => p.y));
+        if (y < lo || y > hi) return null;
+        let a = pts[0].x, b = pts[n - 1].x;
+        for (let k = 0; k < 60; k++) { const c = (a + b) / 2; if (at(c).y < y) a = c; else b = c; }
+        return (a + b) / 2;
+    };
+    return { pts, at, inverse, xMin: pts[0].x, xMax: pts[n - 1].x, yMin: Math.min(...pts.map(p => p.y)) };
+};
+
+const axisValues = (custom, step, count) => {
+    const c = parseList(custom);
+    if (c.length) return c;
+    return Array.from({ length: count }, (_, i) => +(i * step).toFixed(6));
+};
+
+// --- state -----------------------------------------------------------------
+const readState = () => {
+    const s = { printer: printerType };
+    FIELDS.forEach(k => { s[k] = $(k).value; });
+    return s;
+};
+const writeState = (s) => {
+    FIELDS.forEach(k => { if (s[k] !== undefined) $(k).value = s[k]; });
+    setPrinter(s.printer === 'optical' ? 'optical' : 'contact');
+};
+const num = (v, fallback) => { const x = parseFloat(String(v).replace(',', '.')); return Number.isFinite(x) ? x : fallback; };
+
+const setPrinter = (type) => {
+    printerType = type;
+    document.querySelectorAll('[data-printer]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.printer === type)));
+    $('transferWrap').hidden = type !== 'optical';
+};
+
+// --- the chain -------------------------------------------------------------
+const compute = (s) => {
+    const warnings = [];
+    const neg = {}, prt = {};
+    for (const c of CH) {
+        const nd = parseList(s['neg' + c]);
+        const nx = axisValues(s.negLogH, num(s.negStep, 0.15), nd.length);
+        if (parseList(s.negLogH).length && parseList(s.negLogH).length !== nd.length)
+            warnings.push(`Negative ${CH_NAME[c].toLowerCase()}: ${nd.length} densities but ${parseList(s.negLogH).length} log H values.`);
+        neg[c] = makeCurve(nx.slice(0, nd.length), nd);
+        const pd = parseList(s['prt' + c]);
+        const px = axisValues(s.prtLogE, num(s.prtStep, 0.15), pd.length);
+        if (parseList(s.prtLogE).length && parseList(s.prtLogE).length !== pd.length)
+            warnings.push(`Print film ${CH_NAME[c].toLowerCase()}: ${pd.length} densities but ${parseList(s.prtLogE).length} log E values.`);
+        prt[c] = makeCurve(px.slice(0, pd.length), pd);
+    }
+    const missing = CH.filter(c => !neg[c]).map(c => 'negative ' + CH_NAME[c].toLowerCase())
+        .concat(CH.filter(c => !prt[c]).map(c => 'print ' + CH_NAME[c].toLowerCase()));
+    if (missing.length) return { error: `Enter at least two readings for: ${missing.join(', ')}.`, warnings };
+
+    // ISO 5800 speed point: green and the slower of red/blue at 0.15 above each layer's minimum
+    const sp = {};
+    for (const c of CH) sp[c] = neg[c].inverse(neg[c].yMin + 0.15);
+    if (sp.G === null || sp.R === null || sp.B === null) return { error: 'A negative curve never rises 0.15 above its minimum, so the ISO 5800 speed point cannot be found.', warnings };
+    const slow = sp.R > sp.B ? 'R' : 'B';
+    const logHm = (sp.G + sp[slow]) / 2;
+
+    const range = num(s.sceneRange, 2.2), flareLog = Math.max(0, num(s.camFlare, 0.4));
+    const rWhite = LOG_WHITE, rShadow = LOG_WHITE - range;
+    const flareRel = Math.pow(10, rShadow) * (Math.pow(10, flareLog) - 1); // flare light, in grey-luminance units
+    const logHGrey = logHm + num(s.greyOffset, 0.76) + num(s.expStops, 0) * Math.log10(2);
+    const logH = (r) => logHGrey + Math.log10(Math.pow(10, r) + flareRel);
+
+    const p = Math.max(0, num(s.printerFlare, 0)) / 100;
+    const transferPairs = printerType === 'optical' ? parsePairs(s.transfer) : [];
+    const transfer = transferPairs.length >= 2 ? makeCurve(transferPairs.map(q => q.x), transferPairs.map(q => q.y)) : null;
+    const point = num(s.pointSize, 0.025);
+    const lights = { R: num(s.lightR, 25), G: num(s.lightG, 25), B: num(s.lightB, 25) };
+    const aims = { R: num(s.aimR, 1), G: num(s.aimG, 1), B: num(s.aimB, 1) };
+    const open = num(s.openGate, 48), stray = Math.max(0, num(s.stray, 0.2)) / 100;
+    const lamp = { R: num(s.lampR, 1), G: num(s.lampG, 1), B: num(s.lampB, 1) };
+
+    // Printer: exposure through the negative, plus flare proportional to the grey's exposure
+    const ch = {};
+    for (const c of CH) {
+        const dnGrey = neg[c].at(logH(0)).y;
+        const printLogE = (K, dn) => {
+            const e = Math.log10(Math.pow(10, K - dn) + p * Math.pow(10, K - dnGrey));
+            return transfer ? transfer.at(e).y : e;
+        };
+        // Balance: printer constant K that prints the grey at its aim with 25-point lights
+        let a = -10, b = 15;
+        const target = aims[c];
+        const f = (K) => prt[c].at(printLogE(K, dnGrey)).y - target;
+        let K0 = null;
+        if (f(a) <= 0 && f(b) >= 0) {
+            for (let k = 0; k < 80; k++) { const m = (a + b) / 2; if (f(m) < 0) a = m; else b = m; }
+            K0 = (a + b) / 2;
+        }
+        if (K0 === null) {
+            warnings.push(`${CH_NAME[c]} grey aim ${target.toFixed(2)} lies outside the print film's measured density range.`);
+            K0 = prt[c].xMin + dnGrey;
+        }
+        const K = K0 + point * (lights[c] - 25);
+        ch[c] = { K, dnGrey, printLogE: (dn) => printLogE(K, dn) };
+    }
+
+    // Run one scene tone through the chain
+    const tone = (r) => {
+        const out = { r, logH: logH(r), neg: {}, logE: {}, prt: {}, L: {}, logL: {}, beyond: {} };
+        for (const c of CH) {
+            const n = neg[c].at(out.logH);
+            const e = ch[c].printLogE(n.y);
+            const d = prt[c].at(e);
+            const L = open * lamp[c] * (Math.pow(10, -d.y) + stray);
+            out.neg[c] = n.y; out.logE[c] = e; out.prt[c] = d.y; out.L[c] = L; out.logL[c] = Math.log10(L);
+            out.beyond[c] = { neg: n.out, prt: d.out };
+        }
+        return out;
+    };
+
+    const N = 160;
+    const samples = Array.from({ length: N + 1 }, (_, i) => tone(rShadow + (rWhite - rShadow) * i / N));
+    const grey = tone(0), white = tone(rWhite), shadow = tone(rShadow);
+
+    // Scene-to-screen gamma through the mid-tones: least squares from −2 to +1 stop around grey
+    const midGamma = (c) => {
+        const pts = samples.filter(t => t.r >= -0.6 && t.r <= 0.3);
+        const mx = pts.reduce((s2, t) => s2 + t.r, 0) / pts.length, my = pts.reduce((s2, t) => s2 + t.logL[c], 0) / pts.length;
+        const sxy = pts.reduce((s2, t) => s2 + (t.r - mx) * (t.logL[c] - my), 0), sxx = pts.reduce((s2, t) => s2 + (t.r - mx) ** 2, 0);
+        return sxy / sxx;
+    };
+    // Largest red/blue drift from green, relative to their offset at the grey
+    let worst = { d: 0, c: 'R', r: 0 };
+    for (const t of samples) for (const c of ['R', 'B']) {
+        const d = (t.logL[c] - t.logL.G) - (grey.logL[c] - grey.logL.G);
+        if (Math.abs(d) > Math.abs(worst.d)) worst = { d, c, r: t.r };
+    }
+
+    for (const c of CH) {
+        if (shadow.beyond[c].neg || white.beyond[c].neg) warnings.push(`Negative ${CH_NAME[c].toLowerCase()}: the scene runs past the measured strip (${shadow.beyond[c].neg ? 'shadow' : 'white'}). Extend the strip or change exposure.`);
+        if (shadow.beyond[c].prt || white.beyond[c].prt) warnings.push(`Print film ${CH_NAME[c].toLowerCase()}: the printed scene runs past the measured strip (${shadow.beyond[c].prt ? 'shadow' : 'white'}).`);
+    }
+
+    return { neg, prt, sp, slow, logHm, logHGrey, range, rShadow, rWhite, samples, grey, white, shadow, open, stray,
+             gamma: { R: midGamma('R'), G: midGamma('G'), B: midGamma('B') }, worst, tone, warnings, lights };
+};
+
+// --- rendering ---------------------------------------------------------------
+const charts = {};
+const fmt = (v, d = 2) => Number.isFinite(v) ? v.toFixed(d) : '—';
+const sign = (v, d = 2) => { const t = fmt(Math.abs(v) < 0.5 * Math.pow(10, -d) ? 0 : v, d); return t.startsWith('-') ? t : '+' + t; };
+const esc = (t) => String(t).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+const baseOptions = (xTitle, yTitle) => ({
+    animation: false, responsive: true, maintainAspectRatio: false, parsing: false,
+    interaction: { mode: 'nearest', intersect: false },
+    plugins: {
+        legend: { labels: { boxWidth: 10, boxHeight: 10, font: { size: 11 }, filter: (it) => !it.text.startsWith('_') } },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label.replace(/^_/, '')}: ${fmt(ctx.parsed.x)}, ${fmt(ctx.parsed.y)}` } }
+    },
+    scales: {
+        x: { type: 'linear', title: { display: true, text: xTitle, font: { size: 11 } }, grid: { color: '#eeeef0' }, ticks: { font: { size: 10 } } },
+        y: { type: 'linear', title: { display: true, text: yTitle, font: { size: 11 } }, grid: { color: '#eeeef0' }, ticks: { font: { size: 10 } } }
+    }
+});
+const line = (label, data, color, extra = {}) => ({ type: 'line', label, data, borderColor: color, backgroundColor: color, borderWidth: 2, pointRadius: 0, tension: 0, ...extra });
+const marks = (label, data, color) => ({ type: 'scatter', label, data, borderColor: '#fff', backgroundColor: color, pointRadius: 5, pointBorderWidth: 1.5, pointHoverRadius: 6 });
+
+const drawChart = (id, datasets, options) => {
+    if (charts[id]) { charts[id].data.datasets = datasets; charts[id].options = options; charts[id].update('none'); return; }
+    charts[id] = new Chart($(id), { type: 'line', data: { datasets }, options });
+};
+
+const render = () => {
+    const s = readState();
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch (e) {}
+    const res = compute(s);
+    $('warnings').innerHTML = (res.error ? [res.error] : res.warnings).map(w => `<div class="warn">${esc(w)}</div>`).join('');
+    if (res.error) return;
+
+    const { neg, prt, samples, grey, white, shadow } = res;
+    const keyTones = [['shadow', shadow], ['grey', grey], ['white', white]];
+
+    $('negInfo').textContent = `ISO 5800 speed point at log H ${fmt(res.logHm)} (green and ${CH_NAME[res.slow].toLowerCase()}, the slower layer). 18% grey at log H ${fmt(res.logHGrey)}.`;
+    $('prtInfo').textContent = `Grey prints at ${CH.map(c => fmt(grey.prt[c])).join(' / ')} (R / G / B). Printer lights ${CH.map(c => res.lights[c]).join('-')}.`;
+    $('negSub').textContent = `${s.negName || 'Camera negative'} · density vs. relative log H`;
+    $('prtSub').textContent = `${s.prtName || 'Print film'} · density vs. relative log E`;
+
+    // 1 negative
+    drawChart('chNeg', [
+        ...CH.map(c => line(CH_NAME[c], neg[c].pts, CH_COLOR[c], { pointRadius: 2 })),
+        ...CH.map(c => marks('_' + CH_NAME[c] + ' scene', keyTones.map(([, t]) => ({ x: t.logH, y: t.neg[c] })), CH_COLOR[c]))
+    ], baseOptions('Relative log H', 'Density (Status M)'));
+
+    // 2 print film
+    drawChart('chPrt', [
+        ...CH.map(c => line(CH_NAME[c], prt[c].pts, CH_COLOR[c], { pointRadius: 2 })),
+        ...CH.map(c => marks('_' + CH_NAME[c] + ' printed', keyTones.map(([, t]) => ({ x: t.logE[c], y: t.prt[c] })), CH_COLOR[c]))
+    ], baseOptions('Relative log E', 'Density (Status A)'));
+
+    // 3 scene → screen, 0 = grey on both axes
+    const gy = grey.logL.G;
+    const ref = (slope, label, dash) => line(label, [res.rShadow, res.rWhite].map(r => ({ x: r, y: slope * r })), '#8e8e93', { borderWidth: 1, borderDash: dash });
+    drawChart('chRep', [
+        ...CH.map(c => line(CH_NAME[c], samples.map(t => ({ x: t.r, y: t.logL[c] - gy })), CH_COLOR[c])),
+        ref(1, 'Slope 1.0', [2, 3]), ref(1.5, 'Slope 1.5', [6, 4]),
+        ...CH.map(c => marks('_' + CH_NAME[c] + ' tones', keyTones.map(([, t]) => ({ x: t.r, y: t.logL[c] - gy })), CH_COLOR[c]))
+    ], baseOptions('log scene luminance (0 = 18% grey)', 'log screen luminance (0 = green grey)'));
+
+    // 4 balance relative to green on screen (a timing cast shifts it, a crossover tilts it)
+    const bal = (c) => samples.map(t => ({ x: t.r, y: t.logL[c] - t.logL.G }));
+    const balOpts = baseOptions('log scene luminance (0 = 18% grey)', 'Δ density vs. green');
+    const span = Math.max(0.1, ...['R', 'B'].flatMap(c => bal(c).map(p => Math.abs(p.y)))) * 1.15;
+    balOpts.scales.y.suggestedMin = -span; balOpts.scales.y.suggestedMax = span;
+    drawChart('chBal', [
+        line('Red − green', bal('R'), CH_COLOR.R), line('Blue − green', bal('B'), CH_COLOR.B),
+        line('_neutral', [{ x: res.rShadow, y: 0 }, { x: res.rWhite, y: 0 }], CH_COLOR.G, { borderWidth: 1 })
+    ], balOpts);
+
+    // tiles
+    const contrast = white.L.G / shadow.L.G;
+    const tiles = [
+        ['Scene → screen gamma', fmt(res.gamma.G), `R ${fmt(res.gamma.R)} · B ${fmt(res.gamma.B)}`, 'Slope of screen against scene luminance through the mid-tones (−2 to +1 stop around grey), green channel. Around 1.5 is the usual aim for projection in a dark room; 1.0 copies the scene.'],
+        ['Grey on screen', `${fmt(grey.L.G, 1)} cd/m²`, `${fmt(100 * grey.L.G / res.open, 1)}% of open gate · cast R ${sign(grey.logL.R - grey.logL.G)} B ${sign(grey.logL.B - grey.logL.G)}`, 'Screen luminance of the 18% grey card, green channel. The cast is red and blue against green on screen, as a density difference: 0.00 is neutral.'],
+        ['White on screen', `${fmt(white.L.G, 1)} cd/m²`, `${fmt(100 * white.L.G / res.open, 0)}% of open gate`, 'Screen luminance of diffuse white (90% reflectance), green channel.'],
+        ['Screen contrast', `${Math.round(contrast)}:1`, `${fmt(Math.log10(contrast) / Math.log10(2), 1)} stops, white to shadow`, 'Diffuse white to the scene shadow on screen, green channel, including stray light.'],
+        ['Colour crossover', sign(res.worst.d), `${CH_NAME[res.worst.c].toLowerCase()} vs. green at ${fmt(res.worst.r / Math.log10(2), 1)} stops`, 'Largest change of red or blue against green along the grey scale, measured from their balance at the grey. Timing moves the whole grey scale and cannot remove this part.']
+    ];
+    $('tiles').innerHTML = tiles.map(([k, v, sub, tip]) =>
+        `<div class="tile"><span class="k">${esc(k)}<span class="tip" data-tip="${esc(tip)}"></span></span><span class="v">${esc(v)}</span><span class="s">${esc(sub)}</span></div>`).join('');
+
+    // table: whole stops from the shadow to white, plus the two ends
+    const stop = Math.log10(2);
+    const rows = [['Scene shadow', shadow]];
+    for (let k = Math.ceil(res.rShadow / stop + 1e-9); k * stop < res.rWhite - 1e-9; k++) rows.push([k === 0 ? '18% grey' : `${k > 0 ? '+' : ''}${k} stops`, res.tone(k * stop)]);
+    rows.push(['Diffuse white', white]);
+    const cell = (v, c, out, d = 2) => `<td class="${c.toLowerCase()}">${out ? `<em title="Beyond the measured strip">${fmt(v, d)}</em>` : fmt(v, d)}</td>`;
+    const head = `<thead><tr><th rowspan="2">Scene tone</th><th rowspan="2">log H</th>
+        <th class="grp" colspan="3">Negative (Status M)</th><th class="grp" colspan="3">Print (Status A)</th>
+        <th class="grp" colspan="3">Screen (cd/m²)</th><th class="grp" colspan="2">Balance vs. green</th></tr>
+        <tr>${['R', 'G', 'B'].map((c, i) => `<th${i === 0 ? ' class="sep"' : ''}>${c}</th>`).join('')}${['R', 'G', 'B'].map((c, i) => `<th${i === 0 ? ' class="sep"' : ''}>${c}</th>`).join('')}${['R', 'G', 'B'].map((c, i) => `<th${i === 0 ? ' class="sep"' : ''}>${c}</th>`).join('')}<th class="sep">R</th><th>B</th></tr></thead>`;
+    const body = rows.map(([label, t]) => {
+        const bR = t.logL.R - t.logL.G, bB = t.logL.B - t.logL.G;
+        return `<tr${label === '18% grey' ? ' class="grey"' : ''}><td>${esc(label)}</td><td>${fmt(t.logH)}</td>`
+            + CH.map(c => cell(t.neg[c], c, t.beyond[c].neg)).join('')
+            + CH.map(c => cell(t.prt[c], c, t.beyond[c].prt)).join('')
+            + CH.map(c => `<td class="${c.toLowerCase()}">${fmt(t.L[c], t.L[c] < 1 ? 3 : 1)}</td>`).join('')
+            + `<td class="r sep">${sign(bR)}</td><td class="b">${sign(bB)}</td></tr>`;
+    }).join('');
+    $('table').innerHTML = head + `<tbody>${body}</tbody>`;
+    // the first group header cells of each block carry the separator line
+    $('table').querySelectorAll('tbody tr').forEach(tr => { [2, 5, 8].forEach(i => tr.children[i]?.classList.add('sep')); });
+    upgradeTips();
+};
+
+// --- info tips: <span class="tip" data-tip="…"> becomes an (i) with a popover ----
+const upgradeTips = () => {
+    document.querySelectorAll('.tip[data-tip]').forEach(el => {
+        const t = document.createElement('span');
+        t.className = 'info-tip'; t.tabIndex = 0; t.setAttribute('role', 'button'); t.setAttribute('aria-label', 'More information');
+        const body = document.createElement('span'); body.className = 'info-body'; body.textContent = el.dataset.tip;
+        t.appendChild(body); el.replaceWith(t);
+    });
+};
+(() => {
+    let pop = null, current = null;
+    const show = (t) => {
+        const body = t.querySelector(':scope > .info-body'); if (!body) return;
+        if (!pop) { pop = document.createElement('div'); pop.id = 'infoPop'; pop.setAttribute('role', 'tooltip'); document.body.appendChild(pop); }
+        pop.textContent = body.textContent; pop.hidden = false; current = t;
+        const r = t.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+        pop.style.left = Math.max(12, Math.min(r.left + r.width / 2 - w / 2, innerWidth - w - 12)) + 'px';
+        pop.style.top = Math.max(8, r.bottom + 8 + h > innerHeight - 8 ? r.top - h - 8 : r.bottom + 8) + 'px';
+    };
+    const hide = () => { if (pop) pop.hidden = true; current = null; };
+    document.addEventListener('mouseover', e => { const t = e.target.closest && e.target.closest('.info-tip'); if (t && t !== current) show(t); else if (!t && current && document.activeElement !== current) hide(); });
+    document.addEventListener('focusin', e => { const t = e.target.closest && e.target.closest('.info-tip'); if (t) show(t); else hide(); });
+    document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('.info-tip'); if (!t) return; e.preventDefault(); e.stopPropagation(); t.focus(); show(t); }, true);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+    addEventListener('scroll', hide, true);
+})();
+
+// --- wiring ----------------------------------------------------------------
+let timer = null;
+const schedule = () => { clearTimeout(timer); timer = setTimeout(render, 120); };
+document.querySelectorAll('.sidebar input, .sidebar textarea, .sidebar select').forEach(el => el.addEventListener('input', schedule));
+document.querySelectorAll('[data-printer]').forEach(b => b.addEventListener('click', () => {
+    setPrinter(b.dataset.printer);
+    // optical printers have lens flare; give it a starting value the first time
+    if (b.dataset.printer === 'optical' && num($('printerFlare').value, 0) === 0) $('printerFlare').value = '0.5';
+    render();
+}));
+$('exampleBtn').addEventListener('click', () => { writeState(EXAMPLE); render(); });
+$('exportBtn').addEventListener('click', () => {
+    const s = readState();
+    const blob = new Blob([JSON.stringify({ _type: 'analogplotter_color', version: 1, ...s }, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = ((s.negName || 'color') + ' to ' + (s.prtName || 'print')).replace(/[^\w.-]+/g, '_') + '.json';
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+$('importFile').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try {
+        const data = JSON.parse(await f.text());
+        if (!data || data._type !== 'analogplotter_color') throw new Error('not a colour file');
+        writeState(data); render();
+    } catch (err) {
+        $('warnings').innerHTML = `<div class="warn">This file could not be read as an Analogplotter Color session (${esc(err.message)}).</div>`;
+    }
+});
+
+let saved = null;
+try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) {}
+writeState(saved && typeof saved === 'object' ? { ...EXAMPLE, ...saved } : EXAMPLE);
+upgradeTips();
+render();
+</script>
+</body>
+</html>
