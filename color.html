@@ -38,6 +38,12 @@
         .topbar .spacer { flex: 1; }
         .topbar a { color: var(--accent); text-decoration: none; font-size: 13px; }
         .topbar a:hover { text-decoration: underline; }
+        @media (max-width: 600px) {
+            .topbar { padding: 0 12px; gap: 8px; }
+            .topbar .badge { display: none; }
+            .topbar .seg button { padding: 5px 10px; }
+            .topbar a { font-size: 12px; }
+        }
 
         .layout { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 24px; padding: 24px; max-width: 1680px; margin: 0 auto; }
         @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; padding: 16px; } }
@@ -97,8 +103,7 @@
         .chart-box { position: relative; height: 300px; }
 
         .quad-card { border: 0; padding: 0; position: relative; }
-        .quad-head { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 2; }
-        .quad-box { position: relative; width: 100%; max-width: min(100%, calc(100vh - 110px)); margin: 0 auto; aspect-ratio: 1 / 1; }
+                .quad-box { position: relative; width: 100%; max-width: min(100%, calc(100vh - 110px)); margin: 0 auto; aspect-ratio: 1 / 1; }
         details.more { border-top: 1px solid var(--line); padding-top: 4px; }
         details.more > summary { cursor: pointer; font-weight: 600; font-size: 14px; padding: 10px 0; color: var(--text-muted); }
         .more-body { display: grid; gap: 20px; padding-top: 8px; }
@@ -144,6 +149,13 @@
     <header class="topbar">
         <div class="wordmark">Analog<span>plotter</span></div>
         <span class="badge">Color · cine lab</span>
+        <div class="spacer"></div>
+        <div class="seg" role="group" aria-label="Traces shown in the diagram">
+            <button type="button" data-trace="all" aria-pressed="true">All</button>
+            <button type="button" data-trace="R" aria-pressed="false">R</button>
+            <button type="button" data-trace="G" aria-pressed="false">G</button>
+            <button type="button" data-trace="B" aria-pressed="false">B</button>
+        </div>
         <div class="spacer"></div>
         <a href="index.html">Black &amp; white tool</a>
     </header>
@@ -262,14 +274,6 @@
         <main class="main">
             <div class="warnings" id="warnings"></div>
             <div class="card quad-card">
-                <div class="quad-head">
-                    <div class="seg" role="group" aria-label="Traces">
-                        <button type="button" data-trace="all" aria-pressed="true">All</button>
-                        <button type="button" data-trace="R" aria-pressed="false">R</button>
-                        <button type="button" data-trace="G" aria-pressed="false">G</button>
-                        <button type="button" data-trace="B" aria-pressed="false">B</button>
-                    </div>
-                </div>
                 <div class="quad-box"><canvas id="quad" role="img" aria-label="Six-stage tone transfer diagram for red, green and blue, from scene to screen"></canvas></div>
             </div>
             <details class="more">
