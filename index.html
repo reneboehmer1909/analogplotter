@@ -994,7 +994,7 @@
                             <p id="iso6StatusMsg" class="mt-1 font-medium" style="color:#248a3d;"></p>
                         </div>
                         <div id="standardIsoInputContainer">
-                            <label class="font-medium" for="targetIsoInput">Target ISO:</label>
+                            <label class="font-medium" for="targetIsoInput">Target EI:</label>
                             <input type="number" id="targetIsoInput" class="w-full p-2 border border-gray-300 rounded-md" value="400">
                         </div>
                         <div id="refCurveContainer" class="hidden space-y-6"></div>
@@ -1145,14 +1145,14 @@
                             <select id="trSpeedMethod" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1">
                                 <option value="fixedDensity">Fixed Density</option>
                                 <option value="jones">Jones (FG)</option>
-                                <option value="deltaX">Delta-X</option>
+                                <option value="deltaX" selected>Delta-X</option>
                             </select>
                         </div>
                         <div>
                             <label class="font-medium text-xs" style="color:var(--text-muted);">Film Anchor</label>
                             <select id="trFilmAnchor" class="w-full p-1.5 border border-gray-300 rounded-md text-xs mt-1" title="Speed point: Zone System placement. The shadow is spot-metered and placed on its zone without flare (Zone I = the speed point); camera flare then lifts it. Metered: average metering at the box speed (Defining K; Holm 1994; Nelson 1960). The metered gray (12% = 0.92 below the highlight) gets Hg = 8/S, 1.00 log H over the fixed-density point or 1.30 over the ΔX/Jones point. Scene range and flare then decide where the shadow falls: about 0.09 log H over the 0.10 point for a 2.20 scene with 0.40 flare, below it for longer scenes.">
                                 <option value="speed">Speed point (0.10)</option>
-                                <option value="metered">Metered exposure</option>
+                                <option value="metered" selected>Metered exposure</option>
                             </select>
                         </div>
                         <div>
@@ -1461,7 +1461,7 @@
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-1 text-sm">
                     <div>
                         <label class="font-medium text-xs" style="color:var(--text-muted);">Flare Model<span class="info-tip" tabindex="0" role="button" aria-label="More information"><span id="lerHint" class="info-body"></span></span></label>
-                        <select id="flareModelSelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" title="Benskin, What is Normal (pp.3–4), all at LER 1.05. Fixed: the same flare for every scene (strongest pushes and pulls). Variable: flare rises 0.10 log per stop of scene range. Practical: Benskin's split between the two, and his recommendation.">
+                        <select id="flareModelSelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" title="Benskin, What is Normal (pp.3–4). Fixed: the same flare for every scene (strongest pushes and pulls). Variable: flare rises 0.10 log per stop of scene range from the Flare value at the Normal LSLR. Practical: Benskin's equation between the two, 0.05 log per 0.30 of scene range from the same start, and his recommendation.">
                             <option value="fixed">Fixed flare</option>
                             <option value="variable">Variable flare</option>
                             <option value="practical" selected>Practical flare</option>
@@ -1475,13 +1475,19 @@
                             <option value="many">Many elements (×1.40)</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-2 sm:col-span-1">
                         <label class="font-medium text-xs" style="color:var(--text-muted);">Paper LER</label>
                         <input type="number" id="targetLer" step="0.01" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" placeholder="e.g. 1.05" value="1.05" title="Your paper's ISO range R ÷ 100 (ISO 6846, diffuse). 1.05 is the middle of grade 2; Ilford Multigrade FB with filter 2 is R95, so 0.95. This is the ISO T–S range, not Ctein's total exposure range (about 1.7–1.8 for grade 2). The aims match the negative's density range to it exactly, the rule for medium-contrast papers (ISO 6846 Annex A); soft papers print best from a slightly longer negative, hard papers from a slightly shorter one (Jones &amp; Nelson 1942).">
                     </div>
-                    <div>
-                        <label class="font-medium text-xs" style="color:var(--text-muted);">Flare (log H)</label>
-                        <input type="number" id="flareLogH" step="0.01" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" value="0.40" title="Average camera flare at the shadow, as a log flare factor. 0.40 (factor 2.5) is Benskin's and Nelson's normal; Benskin formerly used 0.34 (CI 0.56, Kodak's diffusion aim), Holm 0.30 (factor 2). Used by the fixed and variable models.">
+                    <div class="col-span-2 sm:col-span-1 grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="font-medium text-xs whitespace-nowrap" style="color:var(--text-muted);">Flare (log H)</label>
+                            <input type="number" id="flareLogH" step="0.01" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" value="0.40" title="Average camera flare at the shadow, as a log flare factor. 0.40 (factor 2.5) is Benskin's and Nelson's normal for small format, 0.30 for large format; Benskin formerly used 0.34 (CI 0.56, Kodak's diffusion aim), Holm 0.30 (factor 2). The variable and practical models start from this value at the Normal LSLR.">
+                        </div>
+                        <div>
+                            <label class="font-medium text-xs whitespace-nowrap" style="color:var(--text-muted);">Normal (LSLR)</label>
+                            <input type="number" id="flareNormalLslr" step="0.05" min="0.50" max="4.00" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" value="2.20" title="The scene LSLR at which the flare equals the Flare value: the pivot of the variable and practical models. Benskin's normal is 2.20 (2.10 is the Zone System habit). Not used by the fixed model.">
+                        </div>
                     </div>
                 </div>
 
@@ -1499,8 +1505,8 @@
                                 <th class="py-2 px-2 text-left">Gamma</th>
                                 <th class="py-2 px-2 text-left" title="Nelson &amp; Simonds' average gradient β (often written Ḡ): over 1.50 log H from the fractional-gradient (Jones) point">β</th>
                                 <th class="py-2 px-2 text-left" title="Ilford's Ḡ, as quoted on Ilford datasheets: from 0.10 above b+f over 1.50 log H. Ilford aims: 0.55 condenser, 0.70 diffuser enlarger">Ḡ Ilford</th>
-                                <th class="py-2 px-2 text-left" title="Unrounded effective film speed; hover a value for its ± from reading error">EFS</th>
-                                <th class="py-2 px-2 text-left">FD EI</th>
+                                <th class="py-2 px-2 text-left" id="efsExactHeader" title="Unrounded effective film speed under the selected speed method; hover a value for its ± from reading error">EFS</th>
+                                <th class="py-2 px-2 text-left">FD EI<span class="info-tip" tabindex="0" role="button" aria-label="More information"><span class="info-body">Fixed density overrates speed with extended development and underrates it with reduced development; it agrees with ΔX and the fractional gradient only near CI 0.62 (Benskin).</span></span></th>
                                 <th class="py-2 px-2 text-left">ΔX EI</th>
                                 <th class="py-2 px-2 text-left">Jones EI</th>
                                 <th class="py-2 px-2 text-left text-xs font-medium text-gray-500 iso-ref-col">Ref</th>
@@ -1509,13 +1515,13 @@
                         <tbody id="resultsTable"></tbody>
                     </table>
                 </div>
-                <div class="flex items-center mt-1"><p id="isoRefInfoDisplay" class="text-xs" style="color:var(--text-muted);"></p><span class="info-tip" tabindex="0" role="button" aria-label="More information"><span class="info-body">Note: per ISO 6:1993 a true <strong>ISO speed</strong> exists only at ΔD&nbsp;=&nbsp;0.80. All per-curve values above are effective speeds / exposure indices (EFS&thinsp;/&thinsp;EI) for the development shown; only an interpolated ΔD&nbsp;=&nbsp;0.80 result qualifies as an ISO speed. ISO 6 asks for log&nbsp;Hm within ±0.05 (1/6 stop), so third-stop differences between curves are often within reading error (hover an EFS value for its estimate). ISO 6 and CI apply to black-and-white negatives only; colour negative film is rated under ISO 5800. <span style="white-space:nowrap;">* extrapolated</span>, or a lower bound (Jones point below the search start). Hover a value for the reason.<span id="isoConditionsNote" style="display:block;margin-top:8px;"></span></span></span></div>
+                <div class="flex items-center mt-1"><p id="isoRefInfoDisplay" class="text-xs" style="color:var(--text-muted);"></p><span class="info-tip" tabindex="0" role="button" aria-label="More information"><span class="info-body">Note: per ISO 6:1993 a true <strong>ISO speed</strong> exists only at ΔD&nbsp;=&nbsp;0.80. All per-curve values above are effective speeds / exposure indices (EFS&thinsp;/&thinsp;EI) for the development shown; only an interpolated ΔD&nbsp;=&nbsp;0.80 result qualifies as an ISO speed. ISO 6 asks for log&nbsp;Hm within ±0.05 (1/6 stop), so third-stop differences between curves are often within reading error (hover an EFS value for its estimate). ISO 6 and CI apply to black-and-white negatives only; colour negative film is rated under ISO 5800. <span style="white-space:nowrap;">* extrapolated</span>, a lower bound (Jones point below the search start), or an EFS from the Jones point because the curve's ΔD is above 1.70. Hover a value for the reason.<span id="isoConditionsNote" style="display:block;margin-top:8px;"></span></span></span></div>
                 <p id="instrumentBadge" class="text-xs mt-1 hidden" style="color:#248a3d;" title="Densitometer correction and box-speed reference are saved with the session and the .json export"></p>
                 <div id="speedFallbackNote"></div>
                 </div>
 
-                <h3 class="section-heading mt-6 collapsible" onclick="toggleCollapsible(this)">Exposure &amp; Scene</h3>
-                <div class="collapsible-content">
+                <h3 class="section-heading mt-6 collapsible collapsed" onclick="toggleCollapsible(this)">Exposure &amp; Scene</h3>
+                <div class="collapsible-content collapsed">
                 <div class="overflow-x-auto">
                     <table class="min-w-full border-collapse text-sm">
                         <thead>
@@ -1524,7 +1530,7 @@
                                 <th class="py-2 px-2 text-left">Time</th>
                                 <th class="py-2 px-2 text-left" id="efsColumnHeader">EI</th>
                                 <th class="py-2 px-2 text-left" id="effFlareHeader">Eff. Flare</th>
-                                <th class="py-2 px-2 text-left" title="Pure density range without flare: LER ÷ CI">LER/CI</th>
+                                <th class="py-2 px-2 text-left" title="LER ÷ CI: the log exposure range at the film whose negative density range fills the paper's LER. It is an exposure range after camera flare, not a density range; LSLR = LER/CI + flare.">LER/CI</th>
                                 <th class="py-2 px-2 text-left" style="color: #248a3d;" title="Log Scene Luminance Range including flare">LSLR</th>
                                 <th class="py-2 px-2 text-left" style="color: #248a3d;">Stops</th>
                             </tr>
@@ -1532,20 +1538,17 @@
                         <tbody id="exposureTable"></tbody>
                     </table>
                 </div>
+                </div>
 
                 <div class="mt-4">
                     <h3 class="section-heading">Development Aims</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm mb-3 items-end">
                         <div>
-                            <label class="font-medium text-xs">Method:</label>
+                            <label class="font-medium text-xs flex items-center">Method:<span class="info-tip" tabindex="0" role="button" aria-label="More information"><span class="info-body">Scene-First: Normal is the scene range in Normal (LSLR) in the controls above, the same value the flare models pivot on; the normal CI follows from it (LER ÷ (LSLR − flare)). Target CI: enter a normal CI directly instead.</span></span></label>
                             <select id="zoneTableMethod" class="w-full p-2 border border-gray-300 rounded-md text-sm">
                                 <option value="scene_first" selected>Scene-First</option>
                                 <option value="target_ci">Target CI</option>
                             </select>
-                        </div>
-                        <div id="normalLslrContainer">
-                            <label class="font-medium text-xs">Normal LSLR:</label>
-                            <input type="number" id="normalLslrInput" step="0.01" min="0.50" max="4.00" value="2.20" class="w-full p-2 border border-gray-300 rounded-md text-sm">
                         </div>
                         <div id="targetCiContainer" class="hidden">
                             <label class="font-medium text-xs">Normal CI:</label>
@@ -1564,7 +1567,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
                 </div>
 
                 <div class="mt-6">
@@ -1643,15 +1645,6 @@
 
     <script>
         // --- DATA and MODELS ---
-        const practicalFlareModelData = [
-            { ci: 0.46, lslr: 2.80 },
-            { ci: 0.51, lslr: 2.50 },
-            { ci: 0.58, lslr: 2.20 },
-            { ci: 0.68, lslr: 1.90 },
-            { ci: 0.81, lslr: 1.60 },
-            { ci: 1.02, lslr: 1.30 }
-        ];
-
         // White background plugin for Chart.js export
         const whiteBackgroundPlugin = {
           id: 'whiteBackground',
@@ -1727,6 +1720,7 @@
             showCI: el.querySelector('.show-ci').checked,
             showDX: el.querySelector('.show-dx').checked,
             showGamma: el.querySelector('.show-gamma')?.checked,
+            showFG: el.querySelector('.show-fg')?.checked || false,
             showIsoRef: el.querySelector('.show-iso-ref')?.checked,
             baseFog: el.querySelector('.curve-bf')?.value || ''
         });
@@ -1850,9 +1844,9 @@
             "speedMethod": "deltaX",
             "logHMode": "auto",
             "customLogH": "",
-            "zoneTableMethod": "target_ci",
+            "zoneTableMethod": "scene_first",
             "targetCiInput": "0.58",
-            "normalLslrInput": "2.20",
+            "flareNormalLslr": "2.20",
             "paperStepMode": "auto",
             "paperCustomSteps": "",
             "useMeasuredPaper": true,
@@ -1872,7 +1866,7 @@
             "trSpeedMethod": "deltaX",
             "trFilmAnchor": "speed",
             "trPaperAnchor": "shadow",
-            "trAnchorPct": "80"
+            "trAnchorPct": "90"
           },
           // Grade names follow the measured ISO 6846 LER (ISO R ranges: grade 1 ≈ R115–140,
           // 2 ≈ R95–115, 3 ≈ R80–95, 5 ≈ R50–65) and magenta rises with hardness, as on
@@ -2343,6 +2337,33 @@
                 .filter(p => isNum(p.x) && isNum(p.y))
                 .sort((a, b) => a.x - b.x);
         };
+        // The speed plots also carry the per-method EIs of fixed density and ΔX (fdEI,
+        // dxEI), so the crossover near CI 0.62 shows (Benskin: plot both). The active
+        // method stays the primary series (EFS above); these are the others, muted.
+        const ANALYSIS_SPEED_PLOTS = ['efsTime', 'efsCi', 'lslrEfs'];
+        const ANALYSIS_METHOD_SERIES = [
+            { method: 'fixedDensity', key: 'fdEI', label: 'FD', color: '#d70015' },
+            { method: 'deltaX', key: 'dxEI', label: 'ΔX', color: '#248a3d' }
+        ];
+        const analysisMethodSeries = (curves, plotId, activeMethod) => {
+            if (!ANALYSIS_SPEED_PLOTS.includes(plotId)) return [];
+            const def = ANALYSIS_PLOTS[plotId];
+            return ANALYSIS_METHOD_SERIES.filter(m => m.method !== activeMethod).map(m => ({
+                ...m,
+                data: (curves || []).map(c => ({ x: def.x(c), y: c[m.key] }))
+                    .filter(p => isNum(p.x) && isNum(p.y) && p.y > 0)
+                    .sort((a, b) => a.x - b.x)
+            })).filter(sr => sr.data.length >= 2);
+        };
+        // Chart.js datasets for those series: points plus the same trend fit, dashed
+        const analysisMethodDatasets = (series, plotId, steps, radius) => series.flatMap(sr => {
+            const ds = [{ type: 'scatter', data: sr.data, label: `EFS (${sr.label})`, backgroundColor: hexToRgba(sr.color, 0.55),
+                          borderColor: hexToRgba(sr.color, 0.55), radius, pointStyle: 'rectRot', order: 4 }];
+            const line = analysisTrendLine(plotId, sr.data, steps).line;
+            if (line.length) ds.push({ type: 'line', data: line, borderColor: hexToRgba(sr.color, 0.55), borderWidth: 1.25,
+                                       borderDash: [5, 4], tension: 0.1, pointRadius: 0, pointHitRadius: 0, fill: false, order: 3 });
+            return ds;
+        });
         // Trend: time plots use the monotone saturating fit (development physics), the
         // cross plots a free parabola. null when the data cannot carry a fit.
         const analysisTrendFn = (plotId, data) => {
@@ -3271,13 +3292,16 @@
             return interpolateX(points, dMin + 0.10);
         };
 
-        // ΔD above which ΔX is abandoned for the whole series in favour of Jones. Nelson &
+        // ΔD above which a curve's ΔX is abandoned in favour of its Jones point. Nelson &
         // Simonds' Table II supports the parabola to ΔD ≈ 1.48; from 1.48 to 1.70 it is
-        // extrapolated (flagged *). Its vertex sits at 1.79. One constant for every path:
-        // main table, reference curve, calibration, compare and tone reproduction.
+        // extrapolated (flagged *). Its vertex sits at 1.79. The switch is per curve:
+        // each criterion is anchored at the reference on its own (ΔD 0.80, where they
+        // agree), so one N+3 strip no longer moves every other curve's speed (Benskin).
+        // One constant for every path: main table, compare and tone reproduction.
         const DELTA_D_FALLBACK_THRESHOLD = 1.70;
         const SPEED_METHOD_SHORT = { fractionalGradient: 'Jones', deltaX: 'ΔX', fixedDensity: 'FD' };
-        // Criterion actually used for a set of curves (anything with .dxParams or .deltaD).
+        // Criterion actually used for a curve, passed as [curve] (anything with .dxParams
+        // or .deltaD); for a longer list, the criterion if any of them were that curve.
         const effectiveSpeedMethodFor = (speedMethod, curves) => {
             if (speedMethod !== 'deltaX') return speedMethod;
             const high = (curves || []).some(c => {
@@ -3416,49 +3440,50 @@
         // Benskin, "What is Normal" pp.1–4: normal = scene LSLR 2.20 with average
         // flare 0.40 → film range 1.80 → CI 0.58 at paper LER 1.05 (formerly flare
         // 0.34 → CI 0.56, still Kodak's and Stroebel's diffusion aim; Holm 1994 uses
-        // flare factor 2 ≈ 0.30). All three of Benskin's models are tabulated at LER 1.05:
-        //   fixed     — the same flare for every scene range (the flare input)
-        //   variable  — flare rises 0.10 log per stop of scene range (0.60 at 2.80 … 0.10 at 1.30)
-        //   practical — Benskin's split-the-difference table (practicalFlareModelData)
+        // flare factor 2 ≈ 0.30). Benskin's three models, all as equations in the
+        // scene LSLR L, with F = the Flare input at the Normal LSLR N (both fields):
+        //   fixed     — F for every scene range
+        //   variable  — F + 0.10 log per stop of scene range (0.60 at 2.80 … 0.10 at 1.30)
+        //   practical — F + 0.05 log per 0.30 of scene range, his split between the two.
+        //               "The PFM is an equation, not a fixed table": at F 0.40, N 2.20,
+        //               LER 1.05 it gives his table, CI 0.46 / 0.51 / 0.58 / 0.68 / 0.81
+        //               at L 2.80 … 1.60 and 1.00 at 1.30 (his table rounds that one to 1.02)
+        // The linear models stop at 0.10 ("flare cannot equal zero"), and every flare
+        // is × the lens factor. CI = LER/(L − flare) at any paper LER.
         // Flare is modelled as a constant log flare factor at the shadow (Jones &
         // Condit; What is Normal p.3), not as a fixed % of white (Hunt) — the
         // variable and practical models carry the rise of flare with scene range.
-        const FLARE_LER_BASE = 1.05;            // LER at which Benskin's tables are given
-        const FLARE_TABLE_LSLR = [1.30, 2.80];  // N+3 … N−2: the range the tables cover
-        const VARIABLE_FLARE_PIVOT = 2.20;      // normal scene LSLR of the variable model
-        const VARIABLE_FLARE_SLOPE = 0.10 / 0.301; // +0.10 log flare per stop of scene range
-        const VARIABLE_FLARE_FLOOR = 0.10;      // "flare cannot equal zero": the model's +3 value
+        const FLARE_TABLE_LSLR = [1.30, 2.80];  // N+3 … N−2 of Benskin's tables (Normal 2.20): the range he tabulated
+        const FLARE_NORMAL_DEFAULT = 2.20;      // Benskin's normal scene LSLR, the pivot N of both linear models
+        const FLARE_SLOPE = { variable: 0.10 / 0.301, practical: 0.05 / 0.30 }; // log flare per log of scene range
+        const FLARE_FLOOR = 0.10;               // "flare cannot equal zero": the variable model's +3 value
         const FLARE_RANGE_TOL = 0.03;           // log H (~1/10 stop): N−2 of a CI 0.58 normal is 2.82, not a real excursion
         const FLARE_MODEL_LABEL = { fixed: 'Fixed flare', variable: 'Variable flare', practical: 'Practical flare' };
 
-        // Flare implied by the practical table at normalised CI n (= CI × 1.05/LER):
-        // table LSLR − 1.05/n. Outside the table (n < 0.46 or > 1.02) the flare is held
-        // at the table-edge value (0.52 long / 0.27 short scenes) instead of extrapolating
-        // the LSLR line, which made flare peak near n 0.40 and fall to zero past N+5.
-        const practicalImpliedFlare = (n) => {
-            const nLo = practicalFlareModelData[0].ci;
-            const nHi = practicalFlareModelData[practicalFlareModelData.length - 1].ci;
-            const nc = Math.min(nHi, Math.max(nLo, n));
-            const lslr = interpolateY(practicalFlareModelData, nc, 'ci', 'lslr');
-            // the log-H tolerance as a relative CI tolerance at each edge (d ln n = dLSLR · n / 1.05)
-            const tol = (edge) => FLARE_RANGE_TOL * edge / FLARE_LER_BASE;
+        // Current flare-model settings. ler is the density range the negative must have:
+        // the Paper LER field, which the user sets for their own enlarger and paper.
+        // An empty Flare or Normal field reads as Benskin's 0.40 / 2.20.
+        const flareModelSettings = () => {
+            const flare = parseFloat(flareLogHInput.value);
+            const normal = parseFloat(flareNormalInput.value);
             return {
-                flare: lslr - FLARE_LER_BASE / nc,
-                extrapolated: n < nLo * (1 - tol(nLo)) || n > nHi * (1 + tol(nHi))
+                model: flareModelSelect.value,
+                ler: filmTargetLer(),
+                flare: Number.isFinite(flare) ? flare : 0.40,
+                normal: Number.isFinite(normal) && normal > 0 ? normal : FLARE_NORMAL_DEFAULT,
+                lensK: lensFlareFactor()
             };
         };
 
-        // Current flare-model settings. ler is the density range the negative must have:
-        // the Paper LER field, which the user sets for their own enlarger and paper.
-        const flareModelSettings = () => ({
-            model: flareModelSelect.value,
-            ler: filmTargetLer(),
-            flare: parseFloat(flareLogHInput.value),
-            lensK: lensFlareFactor()
-        });
-
         const outsideFlareTable = (lslr) =>
             lslr < FLARE_TABLE_LSLR[0] - FLARE_RANGE_TOL || lslr > FLARE_TABLE_LSLR[1] + FLARE_RANGE_TOL;
+
+        // Lens-scaled flare of a linear model (variable, practical) at scene LSLR L:
+        // K · max(floor, F + s·(L − N)). The floor is 0.10, or F itself when F is lower,
+        // so a flare input under 0.10 is never raised.
+        const linearFlareFloor = (m) => Math.min(FLARE_FLOOR, m.flare);
+        const linearModelFlare = (lslr, m) => (m.lensK ?? 1) * Math.max(linearFlareFloor(m),
+            m.flare + FLARE_SLOPE[m.model] * (lslr - (m.normal ?? FLARE_NORMAL_DEFAULT)));
 
         // Forward: film CI → scene LSLR it fits on the paper.
         // Returns { lslr, flare (lens-scaled), extrapolated } or null.
@@ -3466,15 +3491,11 @@
             if (!ci || ci <= 0 || !m.ler || m.ler <= 0) return null;
             const K = m.lensK ?? 1;
             const pure = m.ler / ci;
-            if (m.model === 'practical') {
-                const pf = practicalImpliedFlare(ci * (FLARE_LER_BASE / m.ler));
-                return { lslr: pure + pf.flare * K, flare: pf.flare * K, extrapolated: pf.extrapolated };
-            }
-            if (m.model === 'variable') {
-                // LSLR = pure + K·(F + s·(LSLR − 2.20))  →  solved for LSLR
-                const s = VARIABLE_FLARE_SLOPE;
-                let lslr = (pure + K * (m.flare - s * VARIABLE_FLARE_PIVOT)) / (1 - K * s);
-                const floor = K * Math.min(VARIABLE_FLARE_FLOOR, m.flare);
+            if (FLARE_SLOPE[m.model] !== undefined) {
+                // LSLR = pure + K·(F + s·(LSLR − N))  →  solved for LSLR (1 − K·s > 0 for every tier)
+                const s = FLARE_SLOPE[m.model];
+                let lslr = (pure + K * (m.flare - s * (m.normal ?? FLARE_NORMAL_DEFAULT))) / (1 - K * s);
+                const floor = K * linearFlareFloor(m);
                 if (lslr - pure < floor) lslr = pure + floor;
                 return { lslr, flare: lslr - pure, extrapolated: outsideFlareTable(lslr) };
             }
@@ -3487,34 +3508,20 @@
         // shorter than the flare itself (no development can fit it).
         const requiredCiForLslr = (lslr, m) => {
             if (!lslr || lslr <= 0 || !m.ler || m.ler <= 0) return null;
-            const K = m.lensK ?? 1;
-            if (m.model === 'practical') {
-                // pure(ci) + K·flare(n(ci)) falls strictly as ci rises: bisect in log ci
-                const g = (ci) => modelLslrForCi(ci, m).lslr - lslr;
-                let lo = 0.01, hi = 20;
-                if (!(g(lo) > 0) || !(g(hi) < 0)) return null;
-                for (let i = 0; i < 80; i++) {
-                    const mid = Math.sqrt(lo * hi);
-                    if (g(mid) > 0) lo = mid; else hi = mid;
-                }
-                const ci = Math.sqrt(lo * hi);
-                const r = modelLslrForCi(ci, m);
-                return { ci, flare: r.flare, extrapolated: r.extrapolated };
-            }
             let f, extrapolated = false;
-            if (m.model === 'variable') {
-                f = K * Math.max(Math.min(VARIABLE_FLARE_FLOOR, m.flare),
-                                 m.flare + VARIABLE_FLARE_SLOPE * (lslr - VARIABLE_FLARE_PIVOT));
+            if (FLARE_SLOPE[m.model] !== undefined) {
+                f = linearModelFlare(lslr, m);
                 extrapolated = outsideFlareTable(lslr);
             } else {
-                f = m.flare * K;
+                f = m.flare * (m.lensK ?? 1);
             }
             if (!(lslr > f)) return null;
             return { ci: m.ler / (lslr - f), flare: f, extrapolated };
         };
 
-        const calculateSBR = (ci, targetLer, flareLogH, flareModel, lensK = lensFlareFactor()) => {
-            const r = modelLslrForCi(ci, { model: flareModel, ler: targetLer, flare: flareLogH, lensK });
+        // Scene range in stops that a CI fits, under flare settings m (flareModelSettings shape)
+        const calculateSBR = (ci, m) => {
+            const r = modelLslrForCi(ci, m);
             return r ? r.lslr / 0.301 : null;
         };
 
@@ -3526,9 +3533,11 @@
             const el = document.getElementById('lerHint');
             const m = flareModelSettings();
             if (el) {
-                el.textContent = ({ fixed: 'Fixed flare: one flare value for every scene range.',
-                         variable: 'Variable flare: 0.10 log more flare per stop of scene range (Benskin).',
-                         practical: 'Practical flare: Benskin\'s table between fixed and variable; the flare input is not used.' })[m.model];
+                const at = `${m.flare.toFixed(2)} at a ${m.normal.toFixed(2)} scene`;
+                el.textContent = ({ fixed: `Fixed flare: ${m.flare.toFixed(2)} log H for every scene range. The Normal (LSLR) field is not used.`,
+                         variable: `Variable flare (Benskin): ${at}, 0.10 log more per stop of scene range, never below 0.10.`,
+                         practical: `Practical flare (Benskin's equation, between fixed and variable): ${at}, 0.05 log more per 0.30 of scene range, never below 0.10. At 0.40 / 2.20 it gives his table: CI 0.58 for a 2.20 scene at LER 1.05.` })[m.model]
+                    + ' Flare and Normal are the camera flare at the shadow (log H) and the scene LSLR it applies to; the lens setting multiplies the flare. Every aim is CI = LER ÷ (LSLR − flare).';
             }
             const th = document.getElementById('effFlareHeader');
             if (th) {
@@ -3621,7 +3630,7 @@
             const m = flareModelSettings();
             const method = document.getElementById('zoneTableMethod').value;
             const { normalLslr, normalCi, normalFlare } = normalAimFor(method,
-                document.getElementById('targetCiInput').value, document.getElementById('normalLslrInput').value, m);
+                document.getElementById('targetCiInput').value, document.getElementById('flareNormalLslr').value, m);
             const timeModel = buildDevTimeModel(curvesData);
             const isoPts = curvesData.filter(c => c.ci > 0 && c.calculatedIso).map(c => ({ x: c.ci, y: c.calculatedIso })).sort((a, b) => a.x - b.x);
             const ciLo = timeModel.pts.length ? timeModel.pts[0].x : null;
@@ -3666,7 +3675,7 @@
             if (a.rows.some(r => r.time.unreachable))
                 notes.push(`Not reachable: at or above ${Math.round(GAMMA_INF_REACH * 100)}% of the fitted CI ceiling. Use a harder paper grade or a more active developer.`);
             if (a.rows.some(r => r.flareExtrapolated))
-                notes.push('† Outside the flare model\'s tabulated range (LSLR 1.30–2.80 at LER 1.05).');
+                notes.push('† Outside the scene range Benskin tabulated (LSLR 1.30–2.80): the flare model\'s equation is extended there.');
             return notes;
         };
         // Processing conditions the time aims hold for (R76)
@@ -3695,10 +3704,10 @@
         const addCurveBtn = document.getElementById('addCurveBtn');
         const resultsTable = document.getElementById('resultsTable');
         const exposureTable = document.getElementById('exposureTable');
-        const normalLslrInput = document.getElementById('normalLslrInput');
         const exportPdfBtn = document.getElementById('exportPdfBtn');
         const targetLerInput = document.getElementById('targetLer');
         const flareLogHInput = document.getElementById('flareLogH');
+        const flareNormalInput = document.getElementById('flareNormalLslr');
         const flareModelSelect = document.getElementById('flareModelSelect');
         const exportJsonBtn = document.getElementById('export-json');
         const importFileInput = document.getElementById('file-import');
@@ -3745,7 +3754,7 @@
         let sensitometerCalibration = null; // { data: string, iso: number, smooth: boolean }
         let calibrationInfo = null;         // last derived { offsets: {method: offset}, deltaD, method, error }
         let logH_Offset = null;             // offset for the criterion in use (derived)
-        let currentEffectiveSpeedMethod = 'deltaX'; // criterion the last update actually used
+        let currentEffectiveSpeedMethod = 'deltaX'; // series criterion of the last update (curves past ΔD 1.70 use Jones on their own)
         let densityCorrection = null; // Densitometer density-axis correction: { slope, intercept, r2 }
         // Linear-correct raw densitometer readings so different instruments agree.
         // certified ≈ slope * measured + intercept, fitted from a calibrated step wedge.
@@ -4257,7 +4266,7 @@
                             <div class="space-y-3">
                                 <textarea class="data-input w-full p-2 border border-gray-300 rounded-md" placeholder="Paste Density values for reference curve..."></textarea>
                                 <div>
-                                    <label class="text-sm font-medium">Reference ISO:</label>
+                                    <label class="text-sm font-medium">Reference EI:</label>
                                     <input type="number" class="reference-iso w-full p-2 border border-gray-300 rounded-md" value="400">
                                 </div>
                             </div>
@@ -4295,7 +4304,7 @@
                 targetIsoInput.disabled = true;
                 targetIsoInput.parentElement.classList.add('opacity-50');
             } else {
-                label.textContent = 'Target ISO:';
+                label.textContent = 'Target EI:';
                 targetIsoInput.disabled = false;
                 targetIsoInput.parentElement.classList.remove('opacity-50');
             }
@@ -4422,6 +4431,7 @@
                             <div><input type="checkbox" id="show-ci-${curveId}" class="show-ci" ${curveInfo.showCI ? 'checked' : ''}><label for="show-ci-${curveId}" class="ml-2">Show CI</label></div>
                             <div><input type="checkbox" id="show-dx-${curveId}" class="show-dx" ${curveInfo.showDX ? 'checked' : ''}><label for="show-dx-${curveId}" class="ml-2">Show ΔX</label></div>
                             <div><input type="checkbox" id="show-gamma-${curveId}" class="show-gamma" ${curveInfo.showGamma ? 'checked' : ''}><label for="show-gamma-${curveId}" class="ml-2" title="Shade this curve's Gamma straight-line window on the chart">Show γ</label></div>
+                            <div><input type="checkbox" id="show-fg-${curveId}" class="show-fg" ${curveInfo.showFG ? 'checked' : ''}><label for="show-fg-${curveId}" class="ml-2" title="Mark this curve's fractional-gradient (Jones) speed point on the chart, whatever the speed method: where the gradient is 0.3 × the average gradient over the next 1.50 log H">Show FG</label></div>
                             <div class="iso-ref-toggle-container hidden"><input type="checkbox" id="show-iso-ref-${curveId}" class="show-iso-ref" ${curveInfo.showIsoRef === false ? '' : 'checked'}><label for="show-iso-ref-${curveId}" class="ml-2">Show EFS Ref</label></div>
                         </div>
                         <div class="ca-more-wrap">
@@ -4566,7 +4576,7 @@
          *
          * input = { curves: [{ id, name, time, densities, smooth, baseFog, gammaStart, gammaEnd }],
          *           xValues (logHValuesFor), logHMode, isoMethod, speedMethod, targetIso,
-         *           flare: { model, ler (film-side), flare, lensK } as flareModelSettings(),
+         *           flare: { model, ler (film-side), flare, normal, lensK } as flareModelSettings(),
          *           aboveFbf, refCurveId | refCurveIndex (manual pick), calibration: { data, iso, smooth } | null,
          *           densityCorrection: { slope, intercept } | null (optional; default this session's) }
          * isoMethod is 'standard' (Pick a Reference) or 'iso6_interpolated', the two choices the
@@ -4621,7 +4631,7 @@
                 const ciDiag = {};
                 const ciResult = calculateCI(points, dMin, ciDiag);
                 const ci = ciResult ? ciResult.ci : null;
-                const matchedSbr = calculateSBR(ci, fm.ler, fm.flare, fm.model, fm.lensK);
+                const matchedSbr = calculateSBR(ci, fm);
                 if (!ciResult) {
                     list.push(ciDiag.reason === 'arc'
                         ? 'No CI: the curve does not reach the 2.2 arc of the CI meter. The strip is too short or too flat (underexposed or underdeveloped).'
@@ -4665,22 +4675,33 @@
                 curves.push(curve);
             });
 
-            // --- SPEED POINT ASSIGNMENT (two-pass for consistent criterion) ---
-            // With Delta X selected, if ANY curve has ΔD above DELTA_D_FALLBACK_THRESHOLD the
-            // whole series switches to Jones: mixing criteria in a ratio comparison is invalid.
-            // Below the threshold ΔX is kept (beyond Table II's 1.48 it is flagged *).
-            const effectiveSpeedMethod = effectiveSpeedMethodFor(speedMethod, curves);
-            const globalFallback = effectiveSpeedMethod !== speedMethod;
+            // CI must rise with development time (Benskin). The saturating CI/time fit is
+            // monotone by construction and would hide a swapped or bad strip, so a curve
+            // whose CI is more than 0.02 below a shorter-developed curve's is flagged.
+            const timedCurves = curves.filter(c => isNum(c.time) && isNum(c.ci)).sort((a, b) => a.time - b.time);
+            timedCurves.forEach(c => {
+                const above = timedCurves.filter(o => o.time < c.time && o.ci > c.ci + 0.02);
+                if (!above.length) return;
+                const o = above.reduce((a, b) => (b.ci > a.ci ? b : a));
+                notes[c.id].push(`CI falls with longer development — check this strip: CI ${c.ci.toFixed(2)} at ${formatMinSec(c.time) || c.time} min, below ${o.name}'s ${o.ci.toFixed(2)} at ${formatMinSec(o.time) || o.time} min.`);
+            });
+
+            // --- SPEED POINT ASSIGNMENT (per curve) ---
+            // With Delta X selected, a curve whose ΔD is above DELTA_D_FALLBACK_THRESHOLD
+            // uses its Jones point (flagged *); every other curve keeps ΔX (beyond Table
+            // II's 1.48 flagged * too). The series-level criterion stays the selected one.
+            const effectiveSpeedMethod = speedMethod;
 
             curves.forEach(curve => {
-                curve.speedPoint = effectiveSpeedMethod === 'fractionalGradient' ? curve.jonesSpeedPoint
-                    : effectiveSpeedMethod === 'deltaX' ? curve.dxSpeedPoint : curve.fdSpeedPoint;
-                curve.speedFallback = globalFallback;
+                const method = curve.speedMethodUsed = effectiveSpeedMethodFor(speedMethod, [curve]);
+                curve.speedPoint = method === 'fractionalGradient' ? curve.jonesSpeedPoint
+                    : method === 'deltaX' ? curve.dxSpeedPoint : curve.fdSpeedPoint;
+                curve.speedFallback = method !== speedMethod;
                 // ±1σ of log H at the speed point from ±0.01 D on the reading AND on b+f,
                 // divided by the local gradient there (ISO 6 §6.3 asks for < 0.05 overall).
                 // (ΔX is read at Hm and shifted by a computed ΔX, so its reading error is Hm's.)
                 curve.speedPointSigma = null;
-                const readAt = effectiveSpeedMethod === 'deltaX' ? curve.fdSpeedPoint : curve.speedPoint;
+                const readAt = method === 'deltaX' ? curve.fdSpeedPoint : curve.speedPoint;
                 if (curve.speedPoint !== null && readAt !== null) {
                     const spl = pchipInterpolator(curve.points);
                     const g = spl ? spl.deriv(Math.min(Math.max(readAt, spl.xMin), spl.xMax)) : null;
@@ -4688,13 +4709,14 @@
                 }
                 // Smoothing must not quietly move the speed point (R16): compare with raw readings.
                 if (curve.rawPoints && curve.speedPoint !== null) {
-                    const rawSp = speedPointFor(curve.rawPoints, effectiveSpeedMethod, curve.dMin);
+                    const rawSp = speedPointFor(curve.rawPoints, method, curve.dMin);
                     if (rawSp !== null && Math.abs(rawSp - curve.speedPoint) > 0.02) {
                         const d = curve.speedPoint - rawSp;
-                        (notes[curve.id] || []).push(`Smoothing moves the ${SPEED_METHOD_SHORT[effectiveSpeedMethod]} speed point by ${d > 0 ? '+' : ''}${d.toFixed(3)} log H (${(Math.abs(d) / 0.301).toFixed(2)} stop) against the raw readings.`);
+                        (notes[curve.id] || []).push(`Smoothing moves the ${SPEED_METHOD_SHORT[method]} speed point by ${d > 0 ? '+' : ''}${d.toFixed(3)} log H (${(Math.abs(d) / 0.301).toFixed(2)} stop) against the raw readings.`);
                     }
                 }
             });
+            const globalFallback = curves.some(c => c.speedFallback);
 
             // --- BOX-SPEED REFERENCE ("calibration") ---
             // offset_m = log10(k_m / boxISO) − refSpeedPoint_m for each criterion m, so every
@@ -4726,11 +4748,13 @@
             let referenceCurve = null;
             let iso6Curve = null;
             if (logHOffset !== null) {
-                // When calibrated, every curve's EFS is calculated absolutely.
+                // When calibrated, every curve's EFS is calculated absolutely, through the
+                // offset of the criterion that curve uses.
                 curves.forEach(curve => {
-                    if (curve.speedPoint !== null) {
-                        const speedConstant = getSpeedConstant(effectiveSpeedMethod);
-                        const absoluteLogH = curve.speedPoint + logHOffset;
+                    const off = calibrationInfo.offsets[curve.speedMethodUsed];
+                    if (curve.speedPoint !== null && off !== null) {
+                        const speedConstant = getSpeedConstant(curve.speedMethodUsed);
+                        const absoluteLogH = curve.speedPoint + off;
                         const absoluteH = Math.pow(10, absoluteLogH);
                         curve.calculatedIso = speedConstant / absoluteH;
                     }
@@ -4756,6 +4780,8 @@
                             referenceCurve = {
                                 speedPoint: refSpeedPoint,
                                 iso: refIsoValue,
+                                // each criterion's own anchor, for curves that fall back to Jones
+                                speedPoints: { fixedDensity: iso6Result.speedPointFD, deltaX: iso6Result.speedPointDX, fractionalGradient: iso6Result.speedPointJones },
                                 name: iso6Result.time !== null ? `ΔD=0.80 @ ${iso6Result.time.toFixed(1)} min` : 'ΔD=0.80 (interpolated)',
                                 isCalculated: logHMode === 'lux_s',
                                 speedMethod: effectiveSpeedMethod,
@@ -4803,6 +4829,7 @@
                         if (!isNaN(refIsoValue) && refIsoValue > 0) {
                             referenceCurve = {
                                 speedPoint: refSpeedPoint,
+                                speedPoints: { fixedDensity: refCurveData.fdSpeedPoint, deltaX: refCurveData.dxSpeedPoint, fractionalGradient: refCurveData.jonesSpeedPoint },
                                 iso: refIsoValue,
                                 name: refCurveData.name,
                                 isCalculated: logHMode === 'lux_s',
@@ -4816,15 +4843,17 @@
             if (referenceCurve && referenceCurve.speedPoint !== null && !isNaN(referenceCurve.iso)) {
                 curves.forEach(curve => {
                     if (curve.speedPoint !== null) {
-                        const speedConstant = getSpeedConstant(effectiveSpeedMethod);
+                        const speedConstant = getSpeedConstant(curve.speedMethodUsed);
                         const currentSpeedPoint = curve.speedPoint;
+                        // the reference's speed point under this curve's own criterion
+                        const refSP = referenceCurve.speedPoints[curve.speedMethodUsed];
 
                         if (logHMode === 'lux_s') {
                             const H_val = Math.pow(10, currentSpeedPoint);
                             curve.calculatedIso = speedConstant / H_val;
-                        } else {
-                            // In relative mode k cancels out. We just apply the log H offset to the target ISO.
-                            curve.calculatedIso = referenceCurve.iso * Math.pow(10, referenceCurve.speedPoint - currentSpeedPoint);
+                        } else if (isNum(refSP)) {
+                            // In relative mode k cancels out. We just apply the log H offset to the target EI.
+                            curve.calculatedIso = referenceCurve.iso * Math.pow(10, refSP - currentSpeedPoint);
                         }
                     }
                 });
@@ -4912,6 +4941,7 @@
             const logHMode = optionOr(g.logHMode, ['auto', 'relative', 'lux_s', 'step_tablet'], 'auto');
             const paperLer = parseFloat(numberInputText(g.targetLer)) || 1.05;
             const flare = parseFloat(numberInputText(g.flareLogH ?? '0.40'));
+            const flareNormal = parseFloat(numberInputText(g.flareNormalLslr ?? (g.zoneTableMethod === 'scene_first' && g.normalLslrInput !== undefined ? g.normalLslrInput : '2.20')));
             const manual = data && data.referenceManuallySelected && Number.isInteger(data.referenceCurveIndex);
             const fromSession = [];
             const lensTier = lensTierOf(g.lensQualitySelect);
@@ -4932,12 +4962,13 @@
                 speedMethod: optionOr(g.speedMethod, ['fractionalGradient', 'deltaX', 'fixedDensity'], 'deltaX'),
                 targetIso: numberInputText(g.targetIso ?? '400'),
                 flare: { model: optionOr(g.flareModel, ['fixed', 'variable', 'practical'], 'fixed'), ler: paperLer,
-                         flare: Number.isFinite(flare) ? flare : 0.40, lensK: lensFlareFactor(lensTier || undefined) },
+                         flare: Number.isFinite(flare) ? flare : 0.40,
+                         normal: flareNormal > 0 ? flareNormal : FLARE_NORMAL_DEFAULT, lensK: lensFlareFactor(lensTier || undefined) },
                 paperLer,
                 // development-aims normal (page defaults: Scene-First at LSLR 2.20, CI 0.58)
                 aims: {
                     method: optionOr(g.zoneTableMethod, ['scene_first', 'target_ci'], 'scene_first'),
-                    targetCi: g.targetCiInput ?? '0.58', normalLslr: g.normalLslrInput ?? '2.20'
+                    targetCi: g.targetCiInput ?? '0.58', normalLslr: String(flareNormal > 0 ? flareNormal : FLARE_NORMAL_DEFAULT)
                 },
                 aboveFbf: false,
                 refCurveIndex: manual ? data.referenceCurveIndex : null,
@@ -4979,8 +5010,9 @@
             const targetLer = fm.ler; // the density range the negative needs
             const flareModel = fm.model;
 
-            flareLogHInput.disabled = flareModel === 'practical';
-            flareLogHInput.parentElement.classList.toggle('opacity-50', flareModel === 'practical');
+            // Flare drives every model; the Normal pivot only the variable and practical ones
+            flareNormalInput.disabled = flareModel === 'fixed';
+            flareNormalInput.parentElement.classList.toggle('opacity-50', flareModel === 'fixed');
             updateLerHint();
 
             // Read the cards; all the arithmetic happens in computeFilmSeries
@@ -5036,6 +5068,7 @@
                     showCi: el.querySelector('.show-ci').checked,
                     showDx: el.querySelector('.show-dx').checked,
                     showGamma: el.querySelector('.show-gamma')?.checked || false,
+                    showFg: el.querySelector('.show-fg')?.checked || false,
                     showIsoRef: el.querySelector('.show-iso-ref').checked,
                     speedPointColor: el.querySelector('.speedpoint-color').value
                 });
@@ -5238,6 +5271,17 @@
                             });
                         }
                     }
+                    // Fractional-gradient (Jones) point, independent of the speed method (Benskin's FG tick-box)
+                    if (c.showFg && isNum(c.jonesSpeedPoint) && c.points.length > 0) {
+                        const fgY = interpolateY(c.points, c.jonesSpeedPoint);
+                        if (fgY !== null) {
+                            datasets.push({
+                                label: `${c.name} FG Pt${c.jonesCensored ? ' (lower bound)' : ''}`, data: [{x: c.jonesSpeedPoint, y: fgY}],
+                                borderColor: '#ffffff', backgroundColor: '#0066cc', pointStyle: 'rectRot',
+                                radius: 6.5, hoverRadius: 8.5, borderWidth: 1.75, isAnnotation: true, isFgPoint: true, order: 0
+                            });
+                        }
+                    }
                 }
             });
 
@@ -5388,7 +5432,8 @@
                 const ilfordText = c.ilfordGBar !== null ? c.ilfordGBar.toFixed(2) : '—';
                 const sigmaTitle = c.speedPointSigma !== null && c.speedPointSigma !== undefined
                     ? ` title="±${c.speedPointSigma.toFixed(2)} log H (≈ ${(c.speedPointSigma / 0.1003).toFixed(1)}/3 stop) from ±0.01 D on the reading and on b+f at the local gradient. ISO 6 asks for a log Hm error below 0.05."` : '';
-                const efsExactText = c.calculatedIso ? c.calculatedIso.toFixed(1) : '—';
+                let efsExactText = c.calculatedIso ? c.calculatedIso.toFixed(1) : '—';
+                if (c.calculatedIso && c.speedFallback) efsExactText = `<em title="${speedFallbackTitle(c)}">${efsExactText}*</em>`;
                 resultsTable.innerHTML += `
                     <tr>
                         <td class="py-1.5 px-2"><span class="font-medium font-sans" style="color:${c.color};">${escapeHtml(c.name)}</span></td>
@@ -5410,7 +5455,7 @@
             // --- SYNTHETIC ISO 6 CURVE ROW (UI only) ---
             if (isoMethod === 'iso6_interpolated' && globalIso6Curve && globalIso6Curve.points) {
                 const syn = iso6RowCells(globalIso6Curve, logHMode, parseFloat(targetIsoInput.value));
-                const anchorTitle = 'Relative log H: this curve is the EFS anchor, so it carries the Target ISO by definition. A measured ISO speed needs log H in lux·s.';
+                const anchorTitle = 'Relative log H: this curve is the EFS anchor, so it carries the Target EI by definition. A measured ISO speed needs log H in lux·s.';
                 const synCell = (t) => syn.anchored && t !== '—' ? `<span title="${anchorTitle}">${t}</span>` : t;
                 const synCIText = syn.ci, synGammaText = syn.gamma, synGBarText = syn.gBar, synIlfordText = syn.ilford;
                 const synDeltaDText = syn.deltaD, synTimeText = syn.time;
@@ -5436,15 +5481,18 @@
             // Show fallback note (built from the shared threshold)
             const fallbackEl = document.getElementById('speedFallbackNote');
             fallbackEl.innerHTML = globalFallback
-                ? `<p class="text-xs mt-1" style="color:#b25000;">${speedFallbackText()}</p>`
+                ? `<p class="text-xs mt-1" style="color:#b25000;">${escapeHtml(speedFallbackText(curvesData))}</p>`
                 : '';
 
             // --- EXPOSURE & SCENE TABLE ---
             const speedMethodName = SPEED_METHOD_SHORT[effectiveSpeedMethod];
             document.getElementById('efsColumnHeader').textContent = `EI (${speedMethodName})`;
+            document.getElementById('efsExactHeader').textContent = `EFS (${speedMethodName})`;
             exposureTable.innerHTML = '';
             curvesData.forEach(c => {
-                const efsText = fmtFlaggedEI(c.calculatedIso, c, effectiveSpeedMethod);
+                const efsText = c.speedFallback && formatEI(c.calculatedIso) !== '—'
+                    ? `<em title="${speedFallbackTitle(c)}">${formatEI(c.calculatedIso)}*</em>`
+                    : fmtFlaggedEI(c.calculatedIso, c, c.speedMethodUsed);
                 const lslrText = c.matchedSbr ? `${(c.matchedSbr * 0.301).toFixed(2)}` : '—';
                 const stopsText = c.matchedSbr ? `${c.matchedSbr.toFixed(1)}` : '—';
                 const timeText = formatMinSec(c.time) || '—';
@@ -5453,7 +5501,7 @@
                 if (c.ci) {
                     lerCiText = (targetLer / c.ci).toFixed(2);
                     const fm = modelLslrForCi(c.ci, flareModelSettings());
-                    if (fm) effFlareText = fm.flare.toFixed(2) + (fm.extrapolated ? '<span style="color:#b25000;" title="Outside the flare model\'s tabulated range (scene LSLR 1.30–2.80 at LER 1.05)">†</span>' : '');
+                    if (fm) effFlareText = fm.flare.toFixed(2) + (fm.extrapolated ? '<span style="color:#b25000;" title="Outside the scene range Benskin tabulated (LSLR 1.30–2.80): the flare model\'s equation is extended there">†</span>' : '');
                 }
                 exposureTable.innerHTML += `
                     <tr>
@@ -5481,7 +5529,7 @@
             const zoneTableOutput = document.getElementById('zoneTableOutput');
             if (curvesData.length >= 2) {
                 const aims = buildDevAims();
-                const flareTip = 'Outside the flare model\'s tabulated range (scene LSLR 1.30–2.80 at LER 1.05); flare held at the table edge';
+                const flareTip = 'Outside the scene range Benskin tabulated (LSLR 1.30–2.80): the flare model\'s equation is extended there';
                 let rows = '';
                 aims.rows.forEach(r => {
                     let ciText = '—', timeText = '—', isoText = '—';
@@ -5606,7 +5654,7 @@
         // Cells of the synthesized ΔD 0.80 row of the film table (screen and PDF).
         // Absolute log H (lux·s): a real ISO speed, shown as arithmetic/logarithmic
         // (e.g. 400/27°). Relative log H: the ΔD 0.80 curve IS the anchor, so its speed
-        // cells just restate the Target ISO.
+        // cells just restate the Target EI.
         const iso6RowCells = (syn, logHMode, targetIso) => {
             const pts = syn.points, bf = syn.dMin;
             const fx = (v) => isNum(v) ? v.toFixed(2) : '—';
@@ -5628,7 +5676,7 @@
                 return targetIso > 0 ? formatEI(targetIso) : '—';
             };
             return {
-                // relative log H: the speeds are the Target ISO by definition (shown on hover)
+                // relative log H: the speeds are the Target EI by definition (shown on hover)
                 anchored: logHMode !== 'lux_s',
                 time: syn.time ? syn.time.toFixed(1) : '—',
                 ci: ci && ci.ci ? ci.ci.toFixed(2) : '—',
@@ -5641,8 +5689,14 @@
                 jones: speed(syn.speedPointJones, 'fractionalGradient')
             };
         };
-        // The note under the film table after the series fell back to Jones (#28)
-        const speedFallbackText = () => `High-contrast curve detected (ΔD > ${DELTA_D_FALLBACK_THRESHOLD.toFixed(2)}, beyond the range of the ΔX formula). Every EFS uses the Jones criterion for consistency.`;
+        // Why one curve's EFS uses Jones although ΔX is selected: the title of its * flag
+        const speedFallbackTitle = (c) => `ΔD ${c.dxParams.deltaD.toFixed(2)} is above ${DELTA_D_FALLBACK_THRESHOLD.toFixed(2)}, beyond the range of the ΔX formula: this curve's EFS uses its Jones (fractional-gradient) point, anchored at the same reference`;
+        // The note under the film table when curves fell back to Jones (#28), naming them
+        const speedFallbackText = (curves) => {
+            const names = (curves || []).filter(c => c.speedFallback).map(c => c.name);
+            return `ΔD above ${DELTA_D_FALLBACK_THRESHOLD.toFixed(2)} (beyond the range of the ΔX formula) on ${names.join(', ')}: `
+                + `${names.length === 1 ? 'its EFS uses' : 'their EFS use'} the Jones criterion, marked *. The other curves keep ΔX.`;
+        };
         // Per-curve notes of the last update (the cards' warning boxes), for the PDF
         let currentCurveNotes = {};
 
@@ -5920,7 +5974,7 @@
             // Same cells and flags as the screen table: * extrapolated (ΔD read past the
             // data, ΔX outside Nelson & Simonds' range, β anchored at the search start),
             // * also marks a Jones lower bound; '—' where the screen shows a dash.
-            const filmTableHead = [['Curve', 'Time', 'Fb+f', 'CI', 'Delta D', 'Gamma', 'Beta', 'Ilford G', 'EFS', 'FD EI', 'Delta X EI', 'Jones EI']];
+            const filmTableHead = [['Curve', 'Time', 'Fb+f', 'CI', 'Delta D', 'Gamma', 'Beta', 'Ilford G', `EFS (${SPEED_METHOD_SHORT[currentEffectiveSpeedMethod] || 'FD'})`, 'FD EI', 'Delta X EI', 'Jones EI']];
             await exportProgress.set(0.18, 'Building result tables…');
             const dxFlagged = (c) => !!(c.dxParams && (c.dxParams.hnExtrapolated || c.dxParams.outOfTable));
             const pdfFlaggedEI = (iso, c, method) => {
@@ -5935,7 +5989,7 @@
                 const deltaDText = dp && dp.deltaD !== null ? dp.deltaD.toFixed(2) + (dp.hnExtrapolated ? '*' : '') : '—';
                 const gBarText = c.gBar !== null ? c.gBar.toFixed(2) + (c.jonesCensored ? '*' : '') : '—';
                 const ilfordText = isNum(c.ilfordGBar) ? c.ilfordGBar.toFixed(2) : '—';
-                const efsExactText = isNum(c.calculatedIso) && c.calculatedIso > 0 ? c.calculatedIso.toFixed(1) : '—';
+                const efsExactText = isNum(c.calculatedIso) && c.calculatedIso > 0 ? c.calculatedIso.toFixed(1) + (c.speedFallback ? '*' : '') : '—';
                 return [
                     { content: c.name + (c.isReference && isoMethodForPdf === 'standard' ? ' (ref)' : ''), styles: { fontStyle: 'bold', textColor: c.color } },
                     formatTime(c.time),
@@ -5977,10 +6031,10 @@
                 doc.autoTable({ ...pdfTableDefaults, startY: finalY, head: filmTableHead, body: filmTableBody, margin: { left: margin, right: margin } });
                 finalY = doc.autoTable.previous.finalY + 3;
                 const legend = ['Per ISO 6:1993 an ISO speed exists only at Delta D = 0.80; the EFS/EI values above are effective speeds for the development shown.',
-                    '* extrapolated (Delta D outside 0.50-1.48, point n past the data, or Beta anchored at the search start), or a lower bound (Jones point below the search start). Beta = Nelson & Simonds average gradient; Ilford G from 0.10 over b+f. EFS = exact value; the EI columns are rounded to the ISO third-stop scale.'
+                    '* extrapolated (Delta D outside 0.50-1.48, point n past the data, or Beta anchored at the search start), a lower bound (Jones point below the search start), or an EFS from the Jones point (Delta D above 1.70). Beta = Nelson & Simonds average gradient; Ilford G from 0.10 over b+f. EFS = exact value; the EI columns are rounded to the ISO third-stop scale.'
                         + (curvesData.some(c => c.fbfEntered) ? ' e = entered unexposed b+f.' : '')
                         + (curvesData.some(c => c.isReference) && isoMethodForPdf === 'standard' ? ' (ref) = EFS reference curve.' : '')];
-                if (currentEffectiveSpeedMethod !== speedMethodSelect.value) legend.push(speedFallbackText());
+                if (curvesData.some(c => c.speedFallback)) legend.push(speedFallbackText(curvesData));
                 // What each curve card shows: CI failures, reversed or mismatched entry,
                 // toe warnings, plus a curve with two straight sections
                 const sigmas = curvesData.map(c => c.speedPointSigma).filter(isNum);
@@ -6022,7 +6076,7 @@
                 finalY += 8;
             }
 
-            // Labelled with the criterion the series actually used (Jones after the ΔD 1.70 fallback, #28)
+            // Labelled with the selected criterion; a curve past the ΔD 1.70 fallback is flagged * (#28)
             const speedMethodLabel = SPEED_METHOD_SHORT[currentEffectiveSpeedMethod] || 'FD';
             const expFlareSettings = flareModelSettings();
             const expTableHead = [['Curve', 'Time', `EI (${speedMethodLabel})`, flareModel === 'fixed' ? 'Flare' : 'Eff. Flare (implied)', 'LER/CI',
@@ -6040,7 +6094,7 @@
                 return [
                     { content: c.name, styles: { fontStyle: 'bold', textColor: c.color } },
                     formatTime(c.time),
-                    pdfFlaggedEI(c.calculatedIso, c, currentEffectiveSpeedMethod),
+                    c.speedFallback && formatEI(c.calculatedIso) !== '—' ? formatEI(c.calculatedIso) + '*' : pdfFlaggedEI(c.calculatedIso, c, c.speedMethodUsed),
                     effFlare, lerCi,
                     { content: lslrText, styles: { textColor: [45, 106, 79] } },
                     { content: stopsText, styles: { textColor: [45, 106, 79] } }
@@ -6051,8 +6105,8 @@
             doc.autoTable({ ...pdfTableDefaults, startY: finalY, head: expTableHead, body: expTableBody, margin: { left: margin, right: margin } });
             finalY = doc.autoTable.previous.finalY + 4;
             const expNotes = [];
-            if (expTableBody.some(r => /†$/.test(r[3]))) expNotes.push('† Outside the flare model\'s tabulated range (scene LSLR 1.30-2.80 at LER 1.05): flare held at the table edge.');
-            if (currentEffectiveSpeedMethod !== speedMethodSelect.value) expNotes.push(speedFallbackText());
+            if (expTableBody.some(r => /†$/.test(r[3]))) expNotes.push('† Outside the scene range Benskin tabulated (LSLR 1.30-2.80): the flare model\'s equation is extended there.');
+            if (curvesData.some(c => c.speedFallback)) expNotes.push(speedFallbackText(curvesData));
             expNotes.forEach(t => { finalY = pdfNote(t, finalY); });
             if (expNotes.length) finalY += 1;
 
@@ -6064,7 +6118,7 @@
             if (isoMethod === 'iso6_interpolated' && globalReferenceCurve && globalReferenceCurve.isIso6Synthetic) {
                 refLines.push(`EFS Reference: Interpolated virtual Delta D = 0.80 curve, synthesized at ${globalReferenceCurve.name} per ISO 6:1993 Annex A.`);
                 if (globalIso6Curve && globalIso6Curve.status) refLines.push(globalIso6Curve.status + '.');
-                if (!globalReferenceCurve.isCalculated) refLines.push(`Target ISO: ${targetIsoVal}. All EFS values calculated relative to the synthetic curve's speed point.`);
+                if (!globalReferenceCurve.isCalculated) refLines.push(`Target EI: ${targetIsoVal}. All EFS values calculated relative to the synthetic curve's speed point.`);
             } else if (isoMethod === 'iso6_interpolated') {
                 refLines.push('EFS Reference: the ISO 6 Annex A interpolation failed' + (globalIso6Curve && globalIso6Curve.error ? ` (${globalIso6Curve.error})` : '') + '; no EFS reference.');
             } else if (isoMethod === 'standard' && globalReferenceCurve) {
@@ -6079,7 +6133,7 @@
                         refLines.push(`"${refCurveForPdf.name}" (Delta D: ${ddText}${extrap}) was the closest match. True speed: EFS ${Math.round(globalReferenceCurve.iso)}.`);
                     } else {
                         refLines.push('EFS Reference: Curve with Delta D closest to the ISO target of 0.80.');
-                        refLines.push(`"${refCurveForPdf.name}" (Delta D: ${ddText}${extrap}), ${refCurveManuallySelected ? 'manually selected' : 'auto-selected'}, set to ISO ${targetIsoVal}.`);
+                        refLines.push(`"${refCurveForPdf.name}" (Delta D: ${ddText}${extrap}), ${refCurveManuallySelected ? 'manually selected' : 'auto-selected'}, set to EI ${targetIsoVal}.`);
                     }
                     if (dd !== null && Math.abs(dd - 0.80) > 0.05 + 1e-9)
                         refLines.push('Outside 0.80 +/- 0.05, so the reference itself is off by more than ISO 6 allows. Use Interpolated Reference, or develop a strip closer to Delta D 0.80.');
@@ -6348,8 +6402,8 @@
                             ['FD EI', cell(9)],
                             ['Delta X EI', cell(10)],
                             ['Jones EI', cell(11)],
-                            ['EFS (exact)', cell(8)],
-                            [`EI (${SPEED_METHOD_SHORT[currentEffectiveSpeedMethod] || 'FD'})`, pdfFlaggedEI(curve.calculatedIso, curve, currentEffectiveSpeedMethod)],
+                            [`EFS (${SPEED_METHOD_SHORT[curve.speedMethodUsed] || 'FD'}, exact)`, cell(8)],
+                            [`EI (${SPEED_METHOD_SHORT[curve.speedMethodUsed] || 'FD'})`, curve.speedFallback && formatEI(curve.calculatedIso) !== '—' ? formatEI(curve.calculatedIso) + '*' : pdfFlaggedEI(curve.calculatedIso, curve, curve.speedMethodUsed)],
                             ['LSLR', isNum(curve.matchedSbr) ? `${(curve.matchedSbr * 0.301).toFixed(2)}` : '—']
                         ];
                         doc.autoTable({ ...pdfTableDefaults, startY: yPos, body: singleCurveTableBody, showHead: 'never', margin: { left: margin, right: margin }});
@@ -6394,15 +6448,15 @@
                 'CI is defined for black-and-white pictorial negatives. It is not intended for reversal or colour films.'
             ]);
 
-            // Describes the criterion the series actually used; after the ΔD 1.70 fallback
-            // that is Jones, with the selected ΔX named in the note below (#28)
+            // Describes the selected criterion; curves past the ΔD 1.70 fallback are named
+            // in the note below (#28)
             const pdfSpeedMethod = currentEffectiveSpeedMethod;
             const speedMethodText = pdfSpeedMethod === 'deltaX' ? [
                 'This tool uses the Delta X criterion of Nelson & Simonds (1956). It approximates the fractional-gradient speed point from two readings: it starts at the ISO 6 point m and shifts it by a correction based on the film\'s contrast. It equals the ISO 6 speed only at Delta D = 0.80; at other contrasts the result is an effective speed, not an ISO speed. The steps are:',
                 '1. Find the initial speed point (Hm) at a density of 0.10 above the film base plus fog.',
                 '2. Find a second point (Hn) on the curve that is 1.30 log H units to the right of Hm.',
                 '3. Calculate the density difference between these two points. This is called Delta D.',
-                '4. Calculate a correction factor called Delta X using the formula: Delta X equals 0.83 minus (0.86 times Delta D) plus (0.24 times Delta D squared). Nelson & Simonds\' data cover Delta D 0.50 to 1.48; values outside are marked *. Above Delta D 1.70 the whole series switches to the Jones criterion, and Delta D is clamped at the parabola\'s vertex (1.79) as a mathematical guard.',
+                '4. Calculate a correction factor called Delta X using the formula: Delta X equals 0.83 minus (0.86 times Delta D) plus (0.24 times Delta D squared). Nelson & Simonds\' data cover Delta D 0.50 to 1.48; values outside are marked *. A curve above Delta D 1.70 uses its Jones criterion instead (marked *), anchored at the same reference as the others; Delta D is clamped at the parabola\'s vertex (1.79) as a mathematical guard.',
                 '5. The final speed point (Hfg) is found by subtracting Delta X from the log H value of the initial speed point.'
             ] : pdfSpeedMethod === 'fractionalGradient' ? [
                 'This tool uses the true Fractional Gradient (Jones Criterion) method.',
@@ -6415,24 +6469,27 @@
                 '1. The speed point is determined by finding the log H value on the curve that produces a density of exactly 0.10 above the film base plus fog (ISO 6 point m, S = 0.80 / Hm).',
                 'This is a simple and direct method but can be less consistent than fractional methods when comparing curves with different contrast levels.'
             ];
+            // Benskin: the FD EI column is always shown, so its bias is stated whatever the method
+            speedMethodText.push('Fixed density overrates speed with extended development and underrates it with reduced development; it agrees with Delta X and the fractional gradient only near CI 0.62 (Benskin).');
             
             if (pdfSpeedMethod === 'deltaX' || pdfSpeedMethod === 'fractionalGradient') {
                 speedMethodText.push('When using the Standard EFS method, the tool finds which of your curves has a Delta D value closest to the ISO standard of 0.80. That curve is then assigned the target EFS and used as the reference for all others. ISO 6 itself requires Delta D = 0.80 exactly (Annex A interpolation); a reference more than 0.05 away is flagged.');
             }
             const selectedSpeedText = speedMethodSelect.options[speedMethodSelect.selectedIndex].text;
-            const speedFellBack = pdfSpeedMethod !== speedMethodSelect.value;
+            const fellBack = curvesData.filter(c => c.speedFallback).map(c => c.name);
+            const speedFellBack = fellBack.length > 0;
             if (speedFellBack) {
-                speedMethodText.push(`Note: ${selectedSpeedText} was selected, but a curve in this series exceeds Delta D ${DELTA_D_FALLBACK_THRESHOLD.toFixed(2)}, beyond the range of the Delta X formula, so every EFS in this report uses the Jones (fractional gradient) criterion described above.`);
+                speedMethodText.push(`Note: ${fellBack.join(', ')} ${fellBack.length === 1 ? 'exceeds' : 'exceed'} Delta D ${DELTA_D_FALLBACK_THRESHOLD.toFixed(2)}, beyond the range of the Delta X formula, so ${fellBack.length === 1 ? 'its EFS uses' : 'their EFS use'} the Jones (fractional gradient) criterion: the point where the local gradient is 0.3 x the average gradient over the next 1.50 log H. Every other curve keeps ${selectedSpeedText}.`);
             }
 
             await exportProgress.set(0.62, 'Method documentation…');
             const usedSpeedText = [...speedMethodSelect.options].find(o => o.value === pdfSpeedMethod)?.text || selectedSpeedText;
-            writePlainTextSection(speedFellBack ? `Effective Film Speed: ${usedSpeedText}, fallback from Delta X` : `Effective Film Speed (${usedSpeedText})`, speedMethodText);
+            writePlainTextSection(speedFellBack ? `Effective Film Speed (${usedSpeedText}, Jones above Delta D ${DELTA_D_FALLBACK_THRESHOLD.toFixed(2)})` : `Effective Film Speed (${usedSpeedText})`, speedMethodText);
 
             writePlainTextSection('Log Scene Luminance Range (LSLR)', [
                 'LSLR is the log range of scene luminance that a given film and development combination is suited for. It is based on the film\'s Contrast Index (CI), the target printing paper (LER), and camera flare.',
-                'LSLR = LER / CI + flare. Higher CI (more development) captures a narrower scene range, while lower CI captures wider scenes. Benskin ("What is Normal") gives three flare models, all tabulated at LER 1.05: Fixed flare uses the same flare for every scene range (the Flare value); Variable flare adds 0.10 log of flare per stop of scene range around a 2.20 scene (never below 0.10); Practical flare, his recommendation, splits the difference and is used as a table of CI against LSLR (N-2 to N+3). Outside that table the practical flare is held at the table-edge value and the result is marked.',
-                'The lens setting multiplies the flare part of every model (x0.75 / x1.00 / x1.40, a heuristic of this tool). This report used: ' + (FLARE_MODEL_LABEL[flareModelSelect.value] || flareModelSelect.value) + ', lens x' + lensFlareFactor().toFixed(2) + ', paper LER ' + targetLerInput.value + '.'
+                'LSLR = LER / CI + flare. Higher CI (more development) captures a narrower scene range, while lower CI captures wider scenes. Benskin ("What is Normal") gives three flare models, used here as equations in the scene LSLR with the Flare value F at the Normal LSLR N: Fixed flare uses F for every scene range; Variable flare adds 0.10 log of flare per stop of scene range (never below 0.10); Practical flare, his recommendation, splits the difference with 0.05 log per 0.30 of scene range (never below 0.10). At F 0.40, N 2.20 and LER 1.05 the practical equation reproduces his table (CI 0.46 / 0.51 / 0.58 / 0.68 / 0.81 / 1.00 from LSLR 2.80 to 1.30). The required CI is LER / (LSLR - flare) at any paper LER; scene ranges outside his tabulated 1.30-2.80 are marked.',
+                'The lens setting multiplies the flare part of every model (x0.75 / x1.00 / x1.40, a heuristic of this tool). This report used: ' + (FLARE_MODEL_LABEL[flareModelSelect.value] || flareModelSelect.value) + ', flare ' + flareModelSettings().flare.toFixed(2) + (flareModelSelect.value === 'fixed' ? '' : ' at Normal LSLR ' + flareModelSettings().normal.toFixed(2)) + ', lens x' + lensFlareFactor().toFixed(2) + ', paper LER ' + targetLerInput.value + '.'
             ]);
 
             writePlainTextSection('Tone Reproduction Quality (Q-Index)', [
@@ -6495,10 +6552,16 @@
                 const def = ANALYSIS_PLOTS[plotId];
                 const canvas = document.createElement('canvas'); canvas.id = canvasId; canvas.width = 400; canvas.height = 300; plotContainer.appendChild(canvas);
                 chartOptions.scales.x.title.text = def.xLabel; chartOptions.scales.y.title.text = def.yLabel; chartOptions.plugins.title.text = def.title;
-                const datasets = [{ type: 'scatter', data: data, backgroundColor: '#1d1d1f', borderColor: '#1d1d1f', radius: 2.5 }];
+                // speed plots carry the other methods' EIs, as on the Analysis tab
+                const methodSeries = analysisMethodSeries(curvesData, plotId, currentEffectiveSpeedMethod);
+                const datasets = [{ type: 'scatter', data: data, backgroundColor: '#1d1d1f', borderColor: '#1d1d1f', radius: 2.5,
+                                    label: methodSeries.length ? `EFS (${SPEED_METHOD_SHORT[currentEffectiveSpeedMethod] || 'FD'})` : undefined }];
                 // Same trend fit as the Analysis tab, sampled to the last data point
                 const trendlineData = analysisTrendLine(plotId, data, 20).line;
                 if (trendlineData.length) datasets.push({ type: 'line', data: trendlineData, borderColor: '#8b2500', borderWidth: 1.5, tension: 0.1, pointRadius: 0, fill: false });
+                datasets.push(...analysisMethodDatasets(methodSeries, plotId, 20, 2));
+                chartOptions.plugins.legend = { display: methodSeries.length > 0, position: 'bottom',
+                    labels: { usePointStyle: true, boxWidth: 6, font: { size: 9 }, color: '#424245', filter: (item) => !!item.text } };
                 const tmpChart = new Chart(canvas.getContext('2d'), { data: { datasets: datasets }, options: chartOptions });
                 await new Promise(resolve => setTimeout(resolve, 300));
                 const imgUrl = canvas.toDataURL('image/png', 1.0); tmpChart.destroy(); return imgUrl;
@@ -7001,6 +7064,7 @@
                     targetLer: document.getElementById('targetLer').value,
                     lensQualitySelect: document.getElementById('lensQualitySelect').value,
                     flareLogH: document.getElementById('flareLogH').value,
+                    flareNormalLslr: flareNormalInput.value,
                     isoMethod: document.querySelector('input[name="isoMethod"]:checked').value,
                     targetIso: document.getElementById('targetIsoInput').value,
                     speedMethod: speedMethodSelect.value,
@@ -7008,7 +7072,6 @@
                     customLogH: customLogHInput.value,
                     zoneTableMethod: document.getElementById('zoneTableMethod').value,
                     targetCiInput: document.getElementById('targetCiInput').value,
-                    normalLslrInput: document.getElementById('normalLslrInput').value,
                     paperStepMode: document.getElementById('paperStepMode').value,
                     paperCustomSteps: document.getElementById('paperCustomSteps').value,
                     useMeasuredPaper: document.getElementById('trUseMeasuredPaper').checked,
@@ -7298,7 +7361,7 @@
                 // How the speeds were set, in words for the table (helvetica: ASCII only)
                 const ref = series.referenceCurve;
                 const crit = ({ fractionalGradient: 'Jones', deltaX: 'Delta X', fixedDensity: 'FD' })[series.effectiveSpeedMethod]
-                    + (series.speedFallback ? ` (Delta D > ${DELTA_D_FALLBACK_THRESHOLD.toFixed(2)})` : '');
+                    + (series.speedFallback ? ` (Jones above Delta D ${DELTA_D_FALLBACK_THRESHOLD.toFixed(2)})` : '');
                 const basis = series.logHOffset !== null ? 'box-speed reference'
                     : input.logHMode === 'lux_s' ? 'lux-s'
                     : !ref ? 'no reference'
@@ -7898,7 +7961,6 @@
                     toggleLogH_UI();
                     toggleIsoMethodUI();
                     document.getElementById('targetCiContainer').classList.toggle('hidden', document.getElementById('zoneTableMethod').value !== 'target_ci');
-                    document.getElementById('normalLslrContainer').classList.toggle('hidden', document.getElementById('zoneTableMethod').value !== 'scene_first');
 
                     // 3. Add curves sorted by time ascending, each with its own color
                     //    BTZS densities are already reversed to match descending tablet order
@@ -8503,7 +8565,11 @@
                     // session had, so Compare Films (sessionSeriesInput) names the same Normal
                     if (data.globals.zoneTableMethod === undefined) data.globals.zoneTableMethod = 'scene_first';
                     if (data.globals.targetCiInput === undefined) data.globals.targetCiInput = '0.58';
-                    if (data.globals.normalLslrInput === undefined) data.globals.normalLslrInput = '2.20';
+                    // One Normal (LSLR) now serves the flare models and Scene-First aims. Older
+                    // files: a Scene-First file brings its own Normal, others Benskin's 2.20
+                    if (data.globals.flareNormalLslr === undefined)
+                        data.globals.flareNormalLslr = data.globals.zoneTableMethod === 'scene_first' && data.globals.normalLslrInput !== undefined
+                            ? data.globals.normalLslrInput : '2.20';
                     // Lens tier: old tier names map to the new ones; files without it keep this session's
                     if (data.globals.lensQualitySelect !== undefined) {
                         const tier = lensTierOf(data.globals.lensQualitySelect);
@@ -8564,7 +8630,6 @@
                     toggleIsoMethodUI();
                     step = 'toggling zone containers';
                     document.getElementById('targetCiContainer').classList.toggle('hidden', document.getElementById('zoneTableMethod').value !== 'target_ci');
-                    document.getElementById('normalLslrContainer').classList.toggle('hidden', document.getElementById('zoneTableMethod').value !== 'scene_first');
 
                     // Restore paper curve data
                     step = 'restoring paper settings';
@@ -8748,7 +8813,7 @@
             if (data.globals.flareModel === undefined) data.globals.flareModel = flareModelSelect.value;
             if (data.globals.trMeterK === undefined) data.globals.trMeterK = document.getElementById('trMeterK').value;
             PAPER_TEST_FIELDS.forEach(id => { if (data.globals[id] === undefined) data.globals[id] = document.getElementById(id).value; });
-            ['zoneTableMethod', 'targetCiInput', 'normalLslrInput'].forEach(id => {
+            ['zoneTableMethod', 'targetCiInput', 'flareNormalLslr'].forEach(id => {
                 if (data.globals[id] === undefined) data.globals[id] = document.getElementById(id).value;
             });
             // A new test: its own date (missing process / title fields are cleared by applySessionData)
@@ -8822,6 +8887,7 @@
                 ctx.restore();
             };
             const arrowHead = (x, y, angle, color, size = 5) => {
+                if (ctx.__animObs) ctx.__animObs.push({ x, y, r: size + 2 });
                 ctx.save();
                 ctx.translate(x, y);
                 ctx.rotate(angle);
@@ -8836,6 +8902,7 @@
             };
             // Technical dimension line: arrowheads at both ends + small end ticks
             const dimLine = (x1, y1, x2, y2, color) => {
+                if (ctx.__animSegs) ctx.__animSegs.push([x1, y1, x2, y2]);
                 ctx.save();
                 ctx.strokeStyle = color;
                 ctx.lineWidth = 1.25;
@@ -8885,9 +8952,10 @@
                 ctx.restore();
             };
             const px = (p) => ({ x: chart.scales.x.getPixelForValue(p.x), y: chart.scales.y.getPixelForValue(p.y) });
+            const chartRef = chart;
             const pxX = (x) => chart.scales.x.getPixelForValue(x);
             const pxY = (y) => chart.scales.y.getPixelForValue(y);
-            return { ctx, area, drawBadge, arrowHead, dimLine, haloMarker, px, pxX, pxY };
+            return { ctx, area, chart: chartRef, drawBadge, arrowHead, dimLine, haloMarker, px, pxX, pxY };
         };
 
         const visualizerPlugin = {
@@ -9097,6 +9165,8 @@
         // Stroke a partial line from (x1,y1) toward (x2,y2), revealing fraction t
         const growLine = (ctx, x1, y1, x2, y2, t, color, width, dash) => {
             if (t <= 0) return;
+            // animations with the annotation layout record every line as an obstacle
+            if (ctx.__animSegs) ctx.__animSegs.push([x1, y1, lerpN(x1, x2, t), lerpN(y1, y2, t)]);
             ctx.save();
             ctx.strokeStyle = color;
             ctx.lineWidth = width;
@@ -9111,43 +9181,61 @@
         const eiText = (v) => v ? 'EI ' + formatEI(v) : 'EI (needs reference or calibration)';
 
         // --- Fixed Density: D = B+F + 0.10 ------------------------------------
+        // Annotation design (see Delta-X): geometry and short tags in the plot,
+        // values on the axes and in the readout card.
         const buildFdAnim = (curve) => {
             const pts = curve.points;
             if (!pts || pts.length < 2 || curve.fdSpeedPoint === null || curve.fdSpeedPoint === undefined) return null;
             const dMin = curve.dMin !== undefined ? curve.dMin : baseFogOf(pts);
             const hmX = curve.fdSpeedPoint;
-            const C = ANIM_C.fd;
+            const dFd = dMin + 0.10;
+            const C = ANIM_C.fd, M = ANIM_C.mute;
+            // B+F is read from the least exposed step, so the 0.10 rise stands there
+            const xLow = pts[0].x;
 
             const sBase = (H, t) => {
                 const y = H.pxY(dMin);
-                growLine(H.ctx, H.area.left, y, H.area.right, y, easeInOut(t), hexToRgba(ANIM_C.mute, 0.9), 1.25, [5, 4]);
-                if (t > 0.55) H.drawBadge('B+F = ' + dMin.toFixed(3), H.area.left + 8, y + 13, ANIM_C.mute, 'left');
+                growLine(H.ctx, H.area.left, y, H.area.right, y, easeInOut(t), hexToRgba(M, 0.9), 1.25, [5, 4]);
+                if (t > 0.55) {
+                    const a = sub(t, 0.55, 0.8);
+                    H.tag({ id: 'bf', text: 'B+F', x: H.area.right - 24, y, color: M, side: 'above', a });
+                    H.axisY({ id: 'bf', v: dMin, color: M });
+                    H.read({ id: 'bf', label: 'B+F', value: dMin.toFixed(2), color: M, a });
+                }
             };
             const sRise = (H, t) => {
-                const x = H.pxX(pts[0].x) + 18;
-                const y0 = H.pxY(dMin), y1 = H.pxY(dMin + 0.10);
+                const x = H.pxX(xLow), y0 = H.pxY(dMin), y1 = H.pxY(dFd);
                 const e = easeInOut(t);
                 growLine(H.ctx, x, y0, x, y1, e, C, 1.5, []);
                 if (t > 0.5) H.arrowHead(x, lerpN(y0, y1, e), -Math.PI / 2, C, 5);
-                if (t > 0.7) H.drawBadge('+0.10 D', x + 8, (y0 + y1) / 2, C, 'left');
+                if (t > 0.7) {
+                    const a = sub(t, 0.7, 0.9);
+                    H.tag({ id: 'rise', text: '0.10', x, y: (y0 + y1) / 2, color: C, side: 'left', a });
+                    H.axisY({ id: 'fd', v: dFd, color: C, from: xLow });
+                    H.read({ id: 'fd', label: 'B+F + 0.10', value: dFd.toFixed(2), color: C, a });
+                }
             };
             const sSweep = (H, t) => {
-                const y = H.pxY(dMin + 0.10);
+                const y = H.pxY(dFd);
                 const xEnd = H.pxX(hmX);
                 growLine(H.ctx, H.area.left, y, xEnd, y, easeInOut(sub(t, 0, 0.72)), C, 1.5, [5, 4]);
                 if (t > 0.72) {
                     H.haloMarker(xEnd, y, C, 'circle', 3 + 2 * sub(t, 0.72, 1));
-                    H.drawBadge('Hm', xEnd + 12, y - 15, C, 'left');
+                    H.tag({ id: 'hm', text: 'Hm', x: xEnd, y, color: C, side: 'upper-left', a: sub(t, 0.72, 0.9) });
                 }
             };
-            const sResult = (H, t) => {
-                const xEnd = H.pxX(hmX), y = H.pxY(dMin + 0.10);
-                growLine(H.ctx, xEnd, y, xEnd, H.area.bottom, easeInOut(sub(t, 0, 0.6)), hexToRgba(C, 0.5), 1, [3, 3]);
-                if (t > 0.35) H.drawBadge('log H = ' + hmX.toFixed(3), xEnd, H.area.bottom - 12, C);
-                if (t > 0.65) H.drawBadge(eiText(curve.fdEI), xEnd + 14, y + 20, C, 'left');
+            const sResult = (H, t, done) => {
+                const xEnd = H.pxX(hmX), y = H.pxY(dFd);
+                // the drop grows down to the axis, then the axis mark takes over
+                if (!done && t < 0.5) growLine(H.ctx, xEnd, y + 7, xEnd, H.area.bottom, easeInOut(sub(t, 0, 0.5)), hexToRgba(C, 0.35), 1, [2, 3]);
+                if (t >= 0.5) {
+                    H.axisX({ id: 'hm', v: hmX, color: C, from: dFd });
+                    H.read({ id: 'hm', label: 'log Hm', value: hmX.toFixed(2), color: C, a: sub(t, 0.5, 0.7) });
+                }
+                if (t > 0.65) H.read({ id: 'res', label: 'S = 0.80 / Hm → ' + (curve.fdEI ? 'EI' : 'speed'), value: curve.fdEI ? formatEI(curve.fdEI) : 'needs reference', color: C, big: true, a: sub(t, 0.65, 0.9) });
             };
 
-            return { steps: [
+            return { layout: true, steps: [
                 { dur: 1300, draw: sBase, caption: 'Read <b>base + fog</b> from the least exposed step. Everything after this is measured relative to it, so absolute density never enters the criterion.' },
                 { dur: 1200, draw: sRise, caption: 'Step up a <b>fixed 0.10 density</b> above B+F. This height is the whole criterion: it does not know, and cannot react to, the shape of the toe.' },
                 { dur: 1500, draw: sSweep, caption: 'Travel right until that density line meets the curve. The crossing is <b>Hm</b>, the fixed density speed point.' },
@@ -9156,60 +9244,74 @@
         };
 
         // --- Delta-X (Nelson & Simonds 1956) ----------------------------------
+        // Annotation design: the plot carries only geometry and short tags (m, n, fg),
+        // values sit on the axes (H.axisX / H.axisY) and in the readout card (H.read).
         const buildDxAnim = (curve) => {
             const dp = curve.dxParams;
             if (!dp || !dp.hm || !dp.hn || !dp.hfg) return null;
             const hm = dp.hm, hn = dp.hn, deltaD = dp.deltaD, deltaX = dp.deltaX, hfg = dp.hfg;
-            const C = ANIM_C.dx, Cm = ANIM_C.fd;
+            const C = ANIM_C.dx, Cm = ANIM_C.fd, Ci = ANIM_C.ink;
             const dd = Math.min(deltaD, DX_VERTEX);
+            const dMin = curve.dMin !== undefined ? curve.dMin : baseFogOf(curve.points);
 
             const sHm = (H, t) => {
-                const y = H.pxY(hm.y), xEnd = H.pxX(hm.x);
-                const yb = H.pxY(curve.dMin !== undefined ? curve.dMin : baseFogOf(curve.points));
+                const y = H.pxY(hm.y), xEnd = H.pxX(hm.x), yb = H.pxY(dMin);
                 growLine(H.ctx, H.area.left, yb, H.area.right, yb, easeInOut(sub(t, 0, 0.4)), hexToRgba(ANIM_C.mute, 0.7), 1, [5, 4]);
                 growLine(H.ctx, H.area.left, y, xEnd, y, easeInOut(sub(t, 0.3, 0.85)), hexToRgba(Cm, 0.8), 1.5, [5, 4]);
-                if (t > 0.85) { H.haloMarker(xEnd, y, Cm); H.drawBadge('Hm · B+F +0.10', xEnd + 12, y - 16, Cm, 'left'); }
+                if (t > 0.3) { H.axisY({ id: 'bf', v: dMin, color: ANIM_C.mute }); H.read({ id: 'bf', label: 'B+F', value: dMin.toFixed(2), color: ANIM_C.mute, a: sub(t, 0.3, 0.5) }); }
+                if (t > 0.85) {
+                    H.haloMarker(xEnd, y, Cm);
+                    H.tag({ id: 'm', text: 'm', x: xEnd, y, color: Cm, side: 'upper-left', a: sub(t, 0.85, 1) });
+                    H.axisY({ id: 'hmy', v: hm.y, color: Cm });
+                    H.axisX({ id: 'hmx', v: hm.x, color: Cm, from: hm.y });
+                    H.read({ id: 'hm', label: 'Hm = B+F + 0.10', value: 'log H ' + hm.x.toFixed(2), color: Cm, a: sub(t, 0.85, 1) });
+                }
             };
             const sSpan = (H, t) => {
                 const y = H.pxY(hm.y), x1 = H.pxX(hm.x), x2 = H.pxX(hn.x);
-                growLine(H.ctx, x1, y, x2, y, easeInOut(t), ANIM_C.ink, 1.25, [4, 3]);
-                if (t > 0.55) H.drawBadge('Δ log H = 1.30', (x1 + x2) / 2, y - 13, ANIM_C.ink);
+                growLine(H.ctx, x1, y, x2, y, easeInOut(sub(t, 0.1, 0.9)), Ci, 1.25, [4, 3]);
+                if (t > 0.55) H.tag({ id: 'span', text: '1.30', x: (x1 + x2) / 2, y, color: Ci, side: 'below', a: sub(t, 0.55, 0.75) });
                 if (t > 0.9) {
-                    const ctx = H.ctx;
-                    ctx.save(); ctx.fillStyle = ANIM_C.ink;
-                    ctx.beginPath(); ctx.arc(x2, y, 2.5, 0, Math.PI * 2); ctx.fill();
-                    ctx.restore();
+                    H.haloMarker(x2, y, Ci, 'circle', 2.5);
+                    H.axisX({ id: 'hnx', v: hn.x, color: Ci, from: hm.y });
+                    H.read({ id: 'hn', label: 'n = m + 1.30', value: 'log H ' + hn.x.toFixed(2), color: Ci, a: sub(t, 0.9, 1) });
                 }
             };
             const sRise = (H, t) => {
                 const x2 = H.pxX(hn.x), y0 = H.pxY(hm.y), y1 = H.pxY(hn.y);
                 const e = easeInOut(t);
-                growLine(H.ctx, x2, y0, x2, y1, e, ANIM_C.ink, 1.5, []);
-                if (t > 0.6) H.arrowHead(x2, lerpN(y0, y1, e), -Math.PI / 2, ANIM_C.ink, 5);
+                growLine(H.ctx, x2, y0, x2, y1, e, Ci, 1.5, []);
+                if (t > 0.6) H.arrowHead(x2, lerpN(y0, y1, e), -Math.PI / 2, Ci, 5);
                 if (t > 0.75) {
-                    H.haloMarker(x2, y1, ANIM_C.ink, 'circle', 3.5);
-                    H.drawBadge('ΔD = ' + deltaD.toFixed(3), x2 + 8, (y0 + y1) / 2, ANIM_C.ink, 'left');
+                    H.haloMarker(x2, y1, Ci, 'circle', 3.5);
+                    H.tag({ id: 'n', text: 'n', x: x2, y: y1, color: Ci, side: 'upper-left', a: sub(t, 0.75, 0.9) });
+                    H.tag({ id: 'dd', text: 'ΔD', x: x2, y: (y0 + y1) / 2, color: Ci, side: 'right', a: sub(t, 0.75, 0.9) });
+                    H.axisY({ id: 'hny', v: hn.y, color: Ci, from: hn.x });
+                    H.read({ id: 'dd', label: 'ΔD', value: deltaD.toFixed(2), color: Ci, a: sub(t, 0.75, 0.95) });
                 }
             };
             const sPoly = (H, t) => {
-                const x1 = H.pxX(hm.x), y = H.pxY(hm.y);
-                if (t > 0.25) H.drawBadge('ΔX = ' + deltaX.toFixed(3) + ' log H  (' + (deltaX / 0.301).toFixed(2) + ' stop)', x1, y - 40, C);
+                if (t > 0.25) H.read({ id: 'dx', label: 'ΔX = 0.83 − 0.86ΔD + 0.24ΔD²', value: deltaX.toFixed(3), color: C, a: sub(t, 0.25, 0.45) });
             };
+            // The shift is drawn at the speed point's own density: a guide drops from m to
+            // that level, and the dimension line runs left to the point, stopping at its marker
             const sShift = (H, t) => {
-                const y = H.pxY(hm.y), x1 = H.pxX(hm.x), x2 = H.pxX(hfg.x);
-                const arrowY = y + 20;
-                const e = easeInOut(t);
-                H.dimLine(lerpN(x1, x2, e), arrowY, x1, arrowY, C);
-                if (t > 0.5) H.drawBadge('ΔX = ' + deltaX.toFixed(3), (x1 + lerpN(x1, x2, e)) / 2, arrowY + 15, C);
+                const y = H.pxY(hm.y), x1 = H.pxX(hm.x), x2 = H.pxX(hfg.x), yf = H.pxY(hfg.y);
+                const tip = x2 + 8;   // clear of the fg diamond
+                growLine(H.ctx, x1, y + 6, x1, yf, easeInOut(sub(t, 0, 0.3)), hexToRgba(C, 0.5), 1, [2, 3]);
+                const e = easeInOut(sub(t, 0.3, 1));
+                if (e > 0) H.dimLine(lerpN(x1, tip, e), yf, x1, yf, C);
+                if (t > 0.7) H.tag({ id: 'dxt', text: 'ΔX', x: (x1 + tip) / 2, y: yf, color: C, side: 'below', a: sub(t, 0.7, 0.9) });
+                if (t > 0.7) H.read({ id: 'dx', label: 'ΔX shift left', value: deltaX.toFixed(2) + ' log H · ' + (deltaX / 0.301).toFixed(2) + ' st', color: C, a: sub(t, 0.7, 0.9) });
             };
             const sResult = (H, t) => {
-                const x2 = H.pxX(hfg.x), yf = H.pxY(hfg.y), arrowY = H.pxY(hm.y) + 20;
-                growLine(H.ctx, x2, arrowY - 4, x2, yf + 7, easeInOut(sub(t, 0, 0.5)), hexToRgba(C, 0.5), 1, [2, 3]);
+                const x2 = H.pxX(hfg.x), yf = H.pxY(hfg.y);
                 if (t > 0.4) {
                     H.haloMarker(x2, yf, C, 'diamond', 4.5);
-                    H.drawBadge('Speed point Hfg', x2 - 10, yf - 15, C, 'right');
+                    H.tag({ id: 'fg', text: 'fg', x: x2, y: yf, color: C, side: 'upper-left', a: sub(t, 0.4, 0.6) });
+                    H.axisX({ id: 'hfgx', v: hfg.x, color: C, from: hfg.y });
                 }
-                if (t > 0.7) H.drawBadge(eiText(curve.dxEI), x2 - 10, yf - 34, C, 'right');
+                if (t > 0.55) H.read({ id: 'res', label: 'Speed point fg → ' + (curve.dxEI ? 'EI' : 'speed'), value: curve.dxEI ? formatEI(curve.dxEI) : 'needs reference', color: C, big: true, a: sub(t, 0.55, 0.8) });
             };
 
             const p1 = (0.86 * dd).toFixed(3), p2 = (0.24 * dd * dd).toFixed(3);
@@ -9217,12 +9319,12 @@
             // Same flags as the table: point n read past the data, or ΔD outside Table II
             const flagNote = dp.hnExtrapolated ? ' Point n lies past the last reading, so this &Delta;D is extrapolated (*).'
                 : dp.outOfTable ? ' This &Delta;D lies outside Nelson &amp; Simonds\' data (0.50&ndash;1.48), so &Delta;X is extrapolated (*).' : '';
-            return { steps: [
-                { dur: 1400, draw: sHm, caption: 'Start from the same <b>Hm</b> the fixed density method uses, B+F + 0.10. Delta-X does not replace that point, it corrects it.' },
-                { dur: 1200, draw: sSpan, caption: 'Step <b>1.30 log H</b> to the right along the exposure axis. That is the ISO measuring interval.' },
+            return { layout: true, steps: [
+                { dur: 1600, draw: sHm, caption: 'Start from the same <b>Hm</b> the fixed density method uses, B+F + 0.10. Delta-X does not replace that point, it corrects it.' },
+                { dur: 1600, draw: sSpan, caption: 'Step <b>1.30 log H</b> to the right along the exposure axis. That is the ISO measuring interval.' },
                 { dur: 1400, draw: sRise, caption: 'Measure the density rise over that interval: <b>&Delta;D = ' + deltaD.toFixed(3) + '</b>. This one number stands in for how far development has been pushed.' + flagNote },
                 { dur: 1800, draw: sPoly, caption: 'Nelson-Simonds fit: &Delta;X = 0.83 &minus; 0.86&middot;&Delta;D + 0.24&middot;&Delta;D<sup>2</sup> = 0.83 &minus; ' + p1 + ' + ' + p2 + ' = <b>' + deltaX.toFixed(3) + '</b>' + clampNote },
-                { dur: 1500, draw: sShift, caption: 'Shift <b>left of Hm by &Delta;X</b>. At &Delta;D = 0.80 this evaluates to 0.296 log H, which is exactly where fixed density and fractional gradient agree.' },
+                { dur: 1800, draw: sShift, caption: 'Shift <b>left of Hm by &Delta;X</b>. At &Delta;D = 0.80 this evaluates to 0.296 log H, which is exactly where fixed density and fractional gradient agree.' },
                 { dur: 1500, draw: sResult, caption: '<b>Hfg</b> is the Delta-X speed point. S = <b>0.40</b> / Hfg, the fractional-gradient constant for daylight sensitometry (Nelson 1960, Eq. 17). At &Delta;D = 0.80, Hfg lies 0.296 log H below Hm, so 0.40 / Hfg &asymp; 0.79 / Hm and the result lands on the ISO scale.' }
             ] };
         };
@@ -9236,7 +9338,7 @@
             let startH = interpolateX(pts, bf + 0.02);
             if (startH === null || jx < startH) startH = pts[0].x;
             const eps = jonesEpsilon(pts);
-            const C = ANIM_C.jones;
+            const C = ANIM_C.jones, INK = ANIM_C.ink, OK = '#248a3d';
 
             const gAt = (h) => {
                 const d0 = interpolateY(pts, h), d1 = interpolateY(pts, h + 1.50);
@@ -9245,7 +9347,7 @@
             };
             const atPoint = gAt(jx);
 
-            // The probe apparatus at exposure h
+            // The probe apparatus at exposure h; `live` adds the moving axis mark
             const probe = (H, h, live) => {
                 const g = gAt(h);
                 if (!g) return;
@@ -9254,13 +9356,13 @@
                 const x1 = H.pxX(h + 1.50), y1 = H.pxY(g.d1);
                 ctx.save();
                 // 1.50 log H averaging window
-                ctx.strokeStyle = hexToRgba(ANIM_C.ink, 0.35);
+                ctx.strokeStyle = hexToRgba(INK, 0.35);
                 ctx.lineWidth = 1;
                 ctx.setLineDash([3, 3]);
                 ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); ctx.lineTo(x1, y1); ctx.stroke();
                 // the chord = G-bar
                 ctx.setLineDash([]);
-                ctx.strokeStyle = hexToRgba(ANIM_C.ink, 0.75);
+                ctx.strokeStyle = hexToRgba(INK, 0.75);
                 ctx.lineWidth = 1.75;
                 ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
                 // local tangent
@@ -9271,23 +9373,28 @@
                 ctx.lineWidth = 2.25;
                 ctx.beginPath(); ctx.moveTo(tx0, ty0); ctx.lineTo(tx1, ty1); ctx.stroke();
                 ctx.restore();
-                if (live) {
-                    const thr = 0.3 * g.gAvg;
-                    const met = g.gInst >= thr;
-                    // At the crossing itself the two are equal to displayed precision;
-                    // showing "<" there would read as the criterion having failed.
-                    const rel = Math.abs(g.gInst - thr) < 0.0005 ? ' = ' : (met ? ' > ' : ' < ');
-                    H.haloMarker(x0, y0, met ? '#248a3d' : C, 'circle', 4);
-                    H.drawBadge('ḡ = ' + g.gAvg.toFixed(3) + '  →  0.3ḡ = ' + thr.toFixed(3), x1, y1 - 14, ANIM_C.ink);
-                    H.drawBadge('g = ' + g.gInst.toFixed(3) + rel + '0.3ḡ', x0 - 12, y0 - 16, met ? '#248a3d' : C, 'right');
-                }
+                H.polyline([[x0, y0], [x0, y1], [x1, y1]]);
+                H.seg(x0, y0, x1, y1);
+                H.seg(tx0, ty0, tx1, ty1);
+                const thr = 0.3 * g.gAvg;
+                const met = g.gInst >= thr;
+                // equal to displayed precision reads as "≈", never as a failed "<"
+                const rel = ' vs ';
+                H.haloMarker(x0, y0, met ? OK : C, 'circle', 4);
+                H.tag({ id: 'gbar', text: 'ḡ', x: (x0 + x1) / 2, y: (y0 + y1) / 2, color: INK, side: 'lower-right' });
+                H.tag({ id: 'win', text: '1.50', x: (x0 + x1) / 2, y: y1, color: INK, side: 'above' });
+                H.tag({ id: 'g', text: 'g', x: tx0, y: ty0, color: C, side: 'left' });
+                // the start mark already names the search start, so no second pill on top of it
+                if (live && Math.abs(h - startH) > 0.03) H.axisX({ id: 'probe', v: h, color: C, from: g.d0 });
+                H.read({ id: 'gbar', label: 'ḡ over 1.50 log H', value: g.gAvg.toFixed(2), color: INK });
+                H.read({ id: 'g', label: 'g here vs 0.3ḡ', value: g.gInst.toFixed(2) + rel + thr.toFixed(2), color: met ? OK : C });
             };
 
             const sRange = (H, t) => {
                 const ctx = H.ctx;
                 const xa = H.pxX(startH), xb = H.pxX(jx + 1.50);
                 ctx.save();
-                ctx.globalAlpha = easeInOut(t);
+                ctx.globalAlpha *= easeInOut(t);
                 ctx.fillStyle = hexToRgba(C, 0.05);
                 ctx.fillRect(xa, H.area.top, Math.max(0, xb - xa), H.area.bottom - H.area.top);
                 ctx.strokeStyle = hexToRgba(C, 0.35);
@@ -9295,35 +9402,46 @@
                 ctx.setLineDash([4, 4]);
                 ctx.beginPath(); ctx.moveTo(xa, H.area.top); ctx.lineTo(xa, H.area.bottom); ctx.stroke();
                 ctx.restore();
-                if (t > 0.5) H.drawBadge('search starts at B+F + 0.02', xa + 8, H.area.top + 28, C, 'left');
+                H.seg(xa, H.area.top, xa, H.area.bottom);
+                if (t > 0.5) {
+                    H.axisX({ id: 'start', v: startH, color: C });
+                    H.read({ id: 'start', label: 'search from B+F + 0.02', value: 'log H ' + startH.toFixed(2), color: C, a: sub(t, 0.5, 0.7) });
+                }
             };
-            const sScan = (H, t) => probe(H, lerpN(startH, jx, easeInOut(t)), true);
-            const sLock = (H, t) => {
-                probe(H, jx, true);
+            // the finished scan is the locked probe, which the next step draws
+            const sScan = (H, t, done) => { if (!done) probe(H, lerpN(startH, jx, easeInOut(t)), true); };
+            const sLock = (H, t, done) => {
+                probe(H, jx, !done);
                 if (!atPoint) return;
                 const x0 = H.pxX(jx), y0 = H.pxY(atPoint.d0);
                 const e = easeInOut(t);
-                const ctx = H.ctx;
-                ctx.save();
-                ctx.globalAlpha = 0.5 * (1 - e);
-                ctx.strokeStyle = '#248a3d';
-                ctx.lineWidth = 2;
-                ctx.beginPath(); ctx.arc(x0, y0, 6 + 26 * e, 0, Math.PI * 2); ctx.stroke();
-                ctx.restore();
+                if (e < 1) {
+                    const ctx = H.ctx;
+                    ctx.save();
+                    ctx.globalAlpha *= 0.5 * (1 - e);
+                    ctx.strokeStyle = OK;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.arc(x0, y0, 6 + 26 * e, 0, Math.PI * 2); ctx.stroke();
+                    ctx.restore();
+                }
             };
             const sResult = (H, t) => {
                 if (!atPoint) return;
                 const x0 = H.pxX(jx), y0 = H.pxY(atPoint.d0);
-                growLine(H.ctx, x0, y0, x0, H.area.bottom, easeInOut(sub(t, 0, 0.55)), hexToRgba(C, 0.45), 1, [3, 3]);
                 H.haloMarker(x0, y0, C, 'diamond', 5);
-                if (t > 0.3) H.drawBadge('log Hfg = ' + jx.toFixed(3), x0, H.area.bottom - 12, C);
-                if (t > 0.6) H.drawBadge(eiText(curve.jonesEI), x0 - 12, y0 - 34, C, 'right');
+                if (t > 0.3) {
+                    const a = sub(t, 0.3, 0.5);
+                    H.tag({ id: 'fg', text: 'fg', x: x0, y: y0, color: C, side: 'upper-left', a });
+                    if (Math.abs(jx - startH) > 0.03) H.axisX({ id: 'hfg', v: jx, color: C, from: atPoint.d0 });
+                    H.read({ id: 'hfg', label: 'Hfg' + (curve.jonesCensored ? ' (search start, bound)' : ''), value: 'log H ' + jx.toFixed(2), color: C, a });
+                }
+                if (t > 0.6) H.read({ id: 'res', label: 'S = 0.40 / Hfg → ' + (curve.jonesEI ? (curve.jonesCensored ? 'EI, lower bound' : 'EI') : 'speed'), value: curve.jonesEI ? formatEI(curve.jonesEI) + (curve.jonesCensored ? '*' : '') : 'needs reference', color: C, big: true, a: sub(t, 0.6, 0.85) });
             };
 
             const gTxt = atPoint
                 ? 'Here ḡ = ' + atPoint.gAvg.toFixed(3) + ', so the threshold is 0.3ḡ = ' + (0.3 * atPoint.gAvg).toFixed(3) + '.'
                 : '';
-            return { steps: [
+            return { layout: true, steps: [
                 { dur: 1200, draw: sRange, caption: 'Search the toe only, from B+F + 0.02 up to the last exposure where the full 1.50 log H averaging window still fits inside the data.' },
                 { dur: 3400, draw: sScan, caption: 'Walk right. At every position measure <b>two</b> things: the average gradient ḡ over the next 1.50 log H (grey chord), and the local gradient g right here (blue tangent). <b>Both move as you walk</b>, which is why this criterion follows development instead of ignoring it.' },
                 { dur: 1200, draw: sLock, caption: (curve.jonesCensored
@@ -9339,24 +9457,24 @@
             const pts = curve.points;
             if (!cp || !pts || pts.length < 2 || cp.logHCenter === null || !cp.pLow || !cp.pHigh) return null;
             const dMin = curve.dMin !== undefined ? curve.dMin : baseFogOf(pts);
-            const C = ANIM_C.ci;
+            const C = ANIM_C.ci, M = ANIM_C.mute;
 
             // Same meter as calculateCI: first cuts AHEAD of the pivot, interpolated.
             const dense = ciDenseSamples(pts);
             const probeAt = (c) => ciProbe(dense, c, dMin) || { pLow: null, pHigh: null };
             const startC = dense[0].x - 0.6;
 
-            const drawRig = (H, c, showErr) => {
+            const drawRig = (H, c, values) => {
                 const ctx = H.ctx;
                 const cx = H.pxX(c), cy = H.pxY(dMin);
-                const rx1 = H.pxX(c + 0.2) - cx, ry1 = cy - H.pxY(dMin + 0.2);
-                const rx2 = H.pxX(c + 2.2) - cx, ry2 = cy - H.pxY(dMin + 2.2);
+                const rx1 = Math.abs(H.pxX(c + 0.2) - cx), ry1 = Math.abs(cy - H.pxY(dMin + 0.2));
+                const rx2 = Math.abs(H.pxX(c + 2.2) - cx), ry2 = Math.abs(cy - H.pxY(dMin + 2.2));
                 ctx.save();
                 ctx.strokeStyle = hexToRgba(C, 0.5);
                 ctx.lineWidth = 1;
                 ctx.setLineDash([4, 3]);
-                ctx.beginPath(); ctx.ellipse(cx, cy, Math.abs(rx1), Math.abs(ry1), 0, -Math.PI / 2, 0); ctx.stroke();
-                ctx.beginPath(); ctx.ellipse(cx, cy, Math.abs(rx2), Math.abs(ry2), 0, -Math.PI / 2, 0); ctx.stroke();
+                ctx.beginPath(); ctx.ellipse(cx, cy, rx1, ry1, 0, -Math.PI / 2, 0); ctx.stroke();
+                ctx.beginPath(); ctx.ellipse(cx, cy, rx2, ry2, 0, -Math.PI / 2, 0); ctx.stroke();
                 ctx.setLineDash([]);
                 ctx.strokeStyle = hexToRgba(C, 0.8);
                 ctx.lineWidth = 1.25;
@@ -9364,6 +9482,9 @@
                 ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy);
                 ctx.moveTo(cx, cy - 5); ctx.lineTo(cx, cy + 5);
                 ctx.stroke();
+                H.arcSegs(cx, cy, rx1, ry1, -Math.PI / 2, 0, 16);
+                H.arcSegs(cx, cy, rx2, ry2, -Math.PI / 2, 0, 32);
+                H.obstacle(cx, cy, 6);
                 const pr = probeAt(c);
                 if (pr.pLow && pr.pHigh) {
                     const a = H.px(pr.pLow), b = H.px(pr.pHigh);
@@ -9372,28 +9493,38 @@
                     ctx.moveTo(cx, cy); ctx.lineTo(a.x, a.y);
                     ctx.moveTo(cx, cy); ctx.lineTo(b.x, b.y);
                     ctx.stroke();
+                    H.seg(cx, cy, a.x, a.y); H.seg(cx, cy, b.x, b.y);
                 }
                 ctx.restore();
-                if (showErr && pr.diff !== undefined) {
-                    H.drawBadge('|slope 0.2 − slope 2.2| = ' + Math.abs(pr.diff).toFixed(3), cx, cy + 26, C);
+                // arc names, at the middle of each quarter arc
+                const q = -Math.PI / 4;
+                H.tag({ id: 'arc1', text: '0.2', x: cx + rx1 * Math.cos(q), y: cy + ry1 * Math.sin(q), color: C, side: 'upper-right' });
+                H.tag({ id: 'arc2', text: '2.2', x: cx + rx2 * Math.cos(q), y: cy + ry2 * Math.sin(q), color: C, side: 'upper-right' });
+                if (values) {
+                    H.axisX({ id: 'piv', v: c, color: C, from: dMin });
+                    H.read({ id: 'piv', label: 'pivot on B+F', value: 'log H ' + c.toFixed(2), color: C });
+                    if (pr.diff !== undefined) H.read({ id: 'err', label: '|slope 0.2 − slope 2.2|', value: Math.abs(pr.diff).toFixed(2), color: C });
                 }
                 return pr;
             };
 
             const sPivot = (H, t, done) => {
                 const yb = H.pxY(dMin);
-                growLine(H.ctx, H.area.left, yb, H.area.right, yb, easeInOut(sub(t, 0, 0.5)), hexToRgba(ANIM_C.mute, 0.8), 1.25, [5, 4]);
+                growLine(H.ctx, H.area.left, yb, H.area.right, yb, easeInOut(sub(t, 0, 0.5)), hexToRgba(M, 0.8), 1.25, [5, 4]);
+                if (t > 0.4) {
+                    H.axisY({ id: 'bf', v: dMin, color: M });
+                    H.read({ id: 'bf', label: 'B+F', value: dMin.toFixed(2), color: M, a: sub(t, 0.4, 0.6) });
+                }
                 // The starting rig is scaffolding: once the pivot has slid away it
                 // would just leave stray arcs and radii across the plot.
                 if (done) return;
                 if (t > 0.4) {
                     const ctx = H.ctx;
                     ctx.save();
-                    ctx.globalAlpha = easeInOut(sub(t, 0.4, 1));
+                    ctx.globalAlpha *= easeInOut(sub(t, 0.4, 1));
                     drawRig(H, startC, false);
                     ctx.restore();
                 }
-                if (t > 0.75) H.drawBadge('pivot rides the B+F line', H.pxX(startC), yb + 26, C);
             };
             const sSlide = (H, t) => drawRig(H, lerpN(startC, cp.logHCenter, easeInOut(t)), true);
             const sLock = (H, t) => {
@@ -9403,18 +9534,28 @@
                 H.haloMarker(a.x, a.y, C, 'circle', 3.5 + 1.5 * e);
                 H.haloMarker(b.x, b.y, C, 'circle', 3.5 + 1.5 * e);
                 if (t > 0.5) {
-                    H.drawBadge('0.2 arc', a.x - 10, a.y + 16, C, 'right');
-                    H.drawBadge('2.2 arc', b.x + 10, b.y - 14, C, 'left');
+                    H.axisX({ id: 'lx', v: cp.pLow.x, color: C, from: cp.pLow.y });
+                    H.axisX({ id: 'hx', v: cp.pHigh.x, color: C, from: cp.pHigh.y });
+                    H.axisY({ id: 'ly', v: cp.pLow.y, color: C, from: cp.pLow.x });
+                    H.axisY({ id: 'hy', v: cp.pHigh.y, color: C, from: cp.pHigh.x });
                 }
             };
             const sChord = (H, t) => {
                 const a = H.px(cp.pLow), b = H.px(cp.pHigh);
                 growLine(H.ctx, a.x, a.y, b.x, b.y, easeInOut(t), C, 2.25, []);
-                if (t > 0.6 && curve.ci) H.drawBadge('CI = ' + curve.ci.toFixed(3), (a.x + b.x) / 2 - 14, (a.y + b.y) / 2 - 15, C);
+                if (t > 0.4) {
+                    const ra = sub(t, 0.4, 0.6);
+                    H.read({ id: 'dd', label: 'ΔD', value: (cp.pHigh.y - cp.pLow.y).toFixed(2), color: C, a: ra });
+                    H.read({ id: 'dh', label: 'Δlog H', value: (cp.pHigh.x - cp.pLow.x).toFixed(2), color: C, a: ra });
+                }
+                if (t > 0.6 && curve.ci) {
+                    H.tag({ id: 'ci', text: 'CI', x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, color: C, side: 'upper-left', a: sub(t, 0.6, 0.8) });
+                    H.read({ id: 'res', label: 'CI = ΔD / Δlog H', value: curve.ci.toFixed(2), color: C, big: true, a: sub(t, 0.6, 0.85) });
+                }
             };
 
             const dD = cp.pHigh.y - cp.pLow.y, dH = cp.pHigh.x - cp.pLow.x;
-            return { steps: [
+            return { layout: true, steps: [
                 { dur: 1400, draw: sPivot, caption: 'Put a two armed compass on the <b>base + fog</b> line. One arm spans 0.2, the other 2.2, measured as straight line distance in the density / log H plane rather than distance along the curve.' },
                 { dur: 2600, draw: sSlide, caption: 'Slide the pivot until <b>both arms cut the curve at the same slope from the pivot</b>. Only cuts ahead of the pivot count, and a curve that never reaches the 2.2 arc gets no CI.' },
                 { dur: 1300, draw: sLock, caption: 'Lock the two intersections. They are found geometrically, with no straight line fitting and no judgement call about where the curve "goes linear".' },
@@ -9427,7 +9568,7 @@
             const gr = curve.gammaResult;
             const pts = curve.points;
             if (!gr || gr.gamma === null || !pts || pts.length < 2) return null;
-            const C = ANIM_C.gamma;
+            const C = ANIM_C.gamma, M = ANIM_C.mute;
 
             // Regression line through the window centroid
             const win = pts.filter(p => p.x >= gr.startLogH - 1e-9 && p.x <= gr.endLogH + 1e-9);
@@ -9435,6 +9576,7 @@
             const mx = src.reduce((a, p) => a + p.x, 0) / src.length;
             const my = src.reduce((a, p) => a + p.y, 0) / src.length;
             const lineY = (x) => my + gr.gamma * (x - mx);
+            const winTxt = 'log H ' + gr.startLogH.toFixed(2) + '–' + gr.endLogH.toFixed(2);
 
             const shadeWindow = (H, x0, x1, alpha) => {
                 const ctx = H.ctx;
@@ -9450,6 +9592,13 @@
                 ctx.moveTo(b, H.area.top); ctx.lineTo(b, H.area.bottom);
                 ctx.stroke();
                 ctx.restore();
+                H.seg(a, H.area.top, a, H.area.bottom); H.seg(b, H.area.top, b, H.area.bottom);
+            };
+            const windowMarks = (H, a) => {
+                H.axisX({ id: 'w0', v: gr.startLogH, color: C, from: lineY(gr.startLogH) });
+                H.axisX({ id: 'w1', v: gr.endLogH, color: C, from: lineY(gr.endLogH) });
+                // replaces the walk's "straight section" row with the window it produced
+                H.read({ id: 'span', label: gr.method === 'manual' || !gr.detail ? 'window (set by hand)' : 'straight line window', value: winTxt, color: C, a });
             };
             const drawFit = (H, t) => {
                 const x0 = gr.startLogH, x1 = gr.endLogH;
@@ -9458,63 +9607,84 @@
                 growLine(H.ctx, a.x, a.y, b.x, b.y, easeInOut(t), C, 2.5, []);
                 // the measured points the slope was actually fitted to
                 if (t > 0.3) src.forEach(p => { const q = H.px(p); H.haloMarker(q.x, q.y, C, 'circle', 3); });
+                if (t > 0.75) {
+                    const ra = sub(t, 0.75, 0.95);
+                    H.tag({ id: 'gam', text: 'γ', x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, color: C, side: 'upper-left', a: ra });
+                    H.read({ id: 'n', label: 'readings in the window', value: String(src.length), color: C, a: ra });
+                    if (gr.bent) H.read({ id: 'up', label: 'upper straight section', value: 'γ ' + gr.bent.upperGamma.toFixed(2), color: M, a: ra });
+                    H.read({ id: 'res', label: 'γ, least squares slope', value: gr.gamma.toFixed(2), color: C, big: true, a: ra });
+                }
             };
 
             const det = gr.detail;
             if (gr.method === 'manual' || !det) {
-                return { steps: [
-                    { dur: 1300, draw: (H, t) => shadeWindow(H, gr.startLogH, gr.endLogH, easeInOut(t)),
+                return { layout: true, steps: [
+                    { dur: 1300, draw: (H, t) => { shadeWindow(H, gr.startLogH, gr.endLogH, easeInOut(t)); if (t > 0.5) windowMarks(H, sub(t, 0.5, 0.7)); },
                       caption: 'This window was set by hand using <b>Measure on chart</b>, from log H ' + gr.startLogH.toFixed(2) + ' to ' + gr.endLogH.toFixed(2) + '. Automatic detection is skipped whenever both bounds are set.' },
                     { dur: 1600, draw: (H, t) => { shadeWindow(H, gr.startLogH, gr.endLogH, 1); drawFit(H, t); },
                       caption: 'Least squares slope over the measured points inside that window: <b>γ = ' + gr.gamma.toFixed(3) + '</b>' }
                 ] };
             }
 
-            // Derivative panel: its own mapping, drawn over the full plot height
+            // Derivative panel: its own mapping over the lower 70% of the plot, so the
+            // top band stays free for the readout card
             const gMax = Math.max(det.peak * 1.15, 1e-6);
-            const gy = (H, g) => H.area.bottom - (g / gMax) * (H.area.bottom - H.area.top);
+            const gy = (H, g) => H.area.bottom - (g / gMax) * 0.7 * (H.area.bottom - H.area.top);
 
             const drawDeriv = (H, upTo) => {
                 const ctx = H.ctx;
                 const n = det.xs.length;
                 const last = Math.max(1, Math.floor(n * upTo));
+                const P = [];
+                for (let i = 0; i < last; i++) P.push([H.pxX(det.xs[i]), gy(H, det.sg[i])]);
                 ctx.save();
                 ctx.strokeStyle = hexToRgba(C, 0.75);
                 ctx.lineWidth = 1.75;
                 ctx.setLineDash([]);
                 ctx.beginPath();
-                for (let i = 0; i < last; i++) {
-                    const X = H.pxX(det.xs[i]), Y = gy(H, det.sg[i]);
-                    if (i === 0) ctx.moveTo(X, Y); else ctx.lineTo(X, Y);
-                }
+                P.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]));
                 ctx.stroke();
                 ctx.restore();
+                H.polyline(P);
+                return P;
             };
 
             const sDeriv = (H, t) => {
-                drawDeriv(H, easeInOut(t));
-                if (t > 0.6) H.drawBadge('dD / d(log H)', H.area.right - 8, gy(H, det.peak * 1.05), C, 'right');
+                const P = drawDeriv(H, easeInOut(t));
+                if (t > 0.6) {
+                    // name the gradient curve where it is drawn, past its peak
+                    const i = Math.min(P.length - 1, Math.max(det.peakIdx, Math.round(det.xs.length * 0.8)));
+                    H.tag({ id: 'deriv', text: 'dD/dlogH', x: P[i][0], y: P[i][1], color: C, side: 'upper-right', a: sub(t, 0.6, 0.8) });
+                }
             };
             const sPeak = (H, t) => {
-                drawDeriv(H, 1);
                 const ctx = H.ctx;
                 // the 3% guard bands at each end, never trusted for the peak
                 ctx.save();
-                ctx.fillStyle = hexToRgba(ANIM_C.mute, 0.10);
+                ctx.fillStyle = hexToRgba(M, 0.10);
                 const gA = H.pxX(det.xs[det.guard]), gB = H.pxX(det.xs[det.xs.length - 1 - det.guard]);
                 ctx.fillRect(H.area.left, H.area.top, gA - H.area.left, H.area.bottom - H.area.top);
                 ctx.fillRect(gB, H.area.top, H.area.right - gB, H.area.bottom - H.area.top);
                 ctx.restore();
                 const X = H.pxX(det.xs[det.peakIdx]), Y = gy(H, det.peak);
                 H.haloMarker(X, Y, C, 'diamond', 3 + 2 * easeInOut(t));
-                if (t > 0.5) H.drawBadge('peak = ' + det.peak.toFixed(3), X, Y - 16, C);
+                if (t > 0.5) {
+                    const a = sub(t, 0.5, 0.7);
+                    H.tag({ id: 'peak', text: 'max', x: X, y: Y, color: C, side: 'above', a });
+                    H.axisX({ id: 'peak', v: det.xs[det.peakIdx], color: C });
+                    H.read({ id: 'peak', label: 'peak gradient', value: det.peak.toFixed(2), color: C, a });
+                    H.read({ id: 'level', label: 'plateau level (median)', value: (det.level !== undefined ? det.level : det.peak).toFixed(2), color: C, a });
+                }
             };
             const sThresh = (H, t) => {
-                drawDeriv(H, 1);
                 const ctx = H.ctx;
                 const Y = gy(H, det.thresh);
                 growLine(ctx, H.area.left, Y, H.area.right, Y, easeInOut(sub(t, 0, 0.4)), C, 1.5, [6, 4]);
-                if (t > 0.3) H.drawBadge('90% of plateau = ' + det.thresh.toFixed(3), H.area.left + 8, Y - 12, C, 'left');
+                if (t > 0.3) {
+                    const a = sub(t, 0.3, 0.5);
+                    H.tag({ id: 'thr', text: '90%', x: H.area.left + 24, y: Y, color: C, side: 'above', a });
+                    H.read({ id: 'thr', label: '90% of plateau', value: det.thresh.toFixed(2), color: C, a });
+                }
                 // walk outward from the peak
                 const e = easeInOut(sub(t, 0.35, 1));
                 const pk = det.peakIdx;
@@ -9525,14 +9695,12 @@
                 ctx.fillRect(a, H.area.top, Math.max(1, b - a), H.area.bottom - H.area.top);
                 ctx.restore();
                 H.haloMarker(H.pxX(det.xs[pk]), gy(H, det.peak), C, 'diamond', 4);
+                if (e >= 1) H.read({ id: 'span', label: 'straight section', value: ((det.xs[det.hi] - det.xs[det.lo]) || 0).toFixed(2) + ' log H', color: C });
             };
             const sFit = (H, t) => {
                 shadeWindow(H, gr.startLogH, gr.endLogH, 1);
+                windowMarks(H, 1);
                 drawFit(H, t);
-                if (t > 0.75) {
-                    const mid = H.px({ x: (gr.startLogH + gr.endLogH) / 2, y: lineY((gr.startLogH + gr.endLogH) / 2) });
-                    H.drawBadge('γ = ' + gr.gamma.toFixed(3), mid.x - 16, mid.y - 16, C, 'right');
-                }
             };
 
             const span = ((det.xs[det.hi] - det.xs[det.lo]) || 0).toFixed(2);
@@ -9540,7 +9708,7 @@
             const bentTxt = gr.bent
                 ? ' This curve has <b>two straight sections</b>: the upper one measures ' + gr.bent.upperGamma.toFixed(3) + ', and γ is reported for the one nearest the toe (SPSE Handbook). For such curves CI is the better contrast measure.'
                 : '';
-            return { steps: [
+            return { layout: true, steps: [
                 { dur: 1800, draw: sDeriv, caption: 'Take the analytic first derivative of a monotone cubic (PCHIP) fit, sampled at 0.01 log H, then average it over one median step spacing. No finite difference staircase, no spline overshoot.' },
                 { dur: 1400, draw: sPeak, caption: 'Find the <b>peak gradient</b>, ignoring the outer 3% at each end where an interpolant is least trustworthy. Peak = ' + det.peak.toFixed(3) + '. A single peak is often noise, so the <b>plateau level</b> is the median gradient around it: ' + levelTxt + '.' },
                 { dur: 2200, draw: sThresh, caption: 'Walk outward from the peak while the gradient stays at or above <b>90% of the plateau level</b>, and never accept less than 0.60 log H. Where it drops below, the straight line has ended: ' + span + ' log H wide. Toe and shoulder exclude themselves.' },
@@ -9560,146 +9728,236 @@
             const resid = y0.map((v, i) => v - y3[i]);
             const residSmooth = smooth3RSSH(resid);
             const y4 = y3.map((v, i) => v + residSmooth[i]);
-            const C = ANIM_C.smooth;
+            const C = ANIM_C.smooth, M = ANIM_C.mute, R = ANIM_C.fd;
 
             const worst = y0.reduce((best, v, i) =>
                 Math.abs(v - y4[i]) > best.d ? { d: Math.abs(v - y4[i]), i } : best, { d: 0, i: 0 });
 
+            // the raw readings: dashed polyline plus open circles (r 3)
             const drawRaw = (H, alpha) => {
                 const ctx = H.ctx;
+                const P = xs.map((x, i) => { const q = H.px({ x, y: y0[i] }); return [q.x, q.y]; });
                 ctx.save();
-                ctx.globalAlpha = alpha;
-                ctx.strokeStyle = hexToRgba(ANIM_C.mute, 0.55);
+                ctx.globalAlpha *= alpha;
+                ctx.strokeStyle = hexToRgba(M, 0.55);
                 ctx.lineWidth = 1;
                 ctx.setLineDash([3, 3]);
                 ctx.beginPath();
-                xs.forEach((x, i) => { const q = H.px({ x, y: y0[i] }); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); });
+                P.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]));
                 ctx.stroke();
                 ctx.setLineDash([]);
-                ctx.strokeStyle = hexToRgba(ANIM_C.mute, 0.9);
+                ctx.strokeStyle = hexToRgba(M, 0.9);
                 ctx.lineWidth = 1.25;
-                xs.forEach((x, i) => {
-                    const q = H.px({ x, y: y0[i] });
-                    ctx.beginPath(); ctx.arc(q.x, q.y, 3, 0, Math.PI * 2); ctx.stroke();
-                });
+                P.forEach(q => { ctx.beginPath(); ctx.arc(q[0], q[1], 3, 0, Math.PI * 2); ctx.stroke(); });
                 ctx.restore();
+                H.polyline(P);
+                P.forEach(q => H.obstacle(q[0], q[1], 5));
             };
             // Morph the polyline from stage `a` to stage `b`
             const morph = (H, a, b, t, color) => {
                 const ctx = H.ctx;
                 const e = easeInOut(t);
+                const P = xs.map((x, i) => { const q = H.px({ x, y: lerpN(a[i], b[i], e) }); return [q.x, q.y]; });
                 ctx.save();
                 ctx.strokeStyle = color;
                 ctx.lineWidth = 2;
                 ctx.setLineDash([]);
                 ctx.beginPath();
-                xs.forEach((x, i) => {
-                    const q = H.px({ x, y: lerpN(a[i], b[i], e) });
-                    i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y);
-                });
+                P.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]));
                 ctx.stroke();
                 ctx.restore();
+                H.polyline(P);
                 // mark the readings this stage actually moved
                 xs.forEach((x, i) => {
                     if (Math.abs(b[i] - a[i]) < 0.004) return;
-                    const q = H.px({ x, y: lerpN(a[i], b[i], e) });
-                    H.haloMarker(q.x, q.y, color, 'circle', 3);
+                    H.haloMarker(P[i][0], P[i][1], color, 'circle', 3);
                 });
+                return P;
             };
             const moved = (a, b) => a.filter((v, i) => Math.abs(v - b[i]) >= 0.004).length;
+            // One smoothing stage: morph, name it at the reading it moved most, count the moves
+            const stage = (a, b, id, tag, label) => (H, t, done) => {
+                const P = morph(H, a, b, t, C);
+                let k = -1, dk = 0.004;
+                a.forEach((v, i) => { const d = Math.abs(b[i] - v); if (d >= dk) { dk = d; k = i; } });
+                if (!done && k >= 0 && t > 0.5) H.tag({ id: 'stage', text: tag, x: P[k][0], y: P[k][1], color: C, side: 'upper-left', a: sub(t, 0.5, 0.7) });
+                if (t > 0.5) H.read({ id, label, value: moved(a, b) + ' moved', color: C, a: sub(t, 0.5, 0.7) });
+            };
 
-            return { steps: [
-                { dur: 1400, draw: (H, t) => drawRaw(H, easeInOut(t)),
-                  caption: 'The <b>raw readings</b>, exactly as measured. A dust speck or a misread step sits here as a single point off the line, and a moving average would smear it into its neighbours instead of removing it.' },
-                { dur: 1600, draw: (H, t) => { drawRaw(H, 0.4); morph(H, y0, y1, t, C); },
-                  caption: '<b>3R</b>: running medians of 3, repeated until nothing changes. A median cannot be dragged by one wild value, so the outlier is deleted rather than averaged in. ' + moved(y0, y1) + ' readings moved.' },
-                { dur: 1400, draw: (H, t) => { drawRaw(H, 0.4); morph(H, y1, y2, t, C); },
-                  caption: '<b>SS</b>: split two point flats. Repeated medians leave short flat pairs that are artefacts of the median itself, and splitting re-slopes them. ' + moved(y1, y2) + ' readings moved.' },
-                { dur: 1400, draw: (H, t) => { drawRaw(H, 0.4); morph(H, y2, y3, t, C); },
-                  caption: '<b>H</b>: hanning, the ¼ ½ ¼ weighting. One light linear pass to take the corners off what the medians left. ' + moved(y2, y3) + ' readings moved.' },
-                { dur: 1900, draw: (H, t) => { drawRaw(H, 0.4); morph(H, y3, y4, t, C); },
-                  caption: '<b>Twice</b>: smooth the residuals (raw minus smooth) and add them back. This is what separates a resistant smoother from a blunt one. Real signal the first pass flattened is recovered, while the outlier stays deleted.' },
-                { dur: 1500, draw: (H, t) => {
-                        drawRaw(H, 0.5);
-                        morph(H, y4, y4, 1, C);
-                        const q = H.px({ x: xs[worst.i], y: y4[worst.i] });
-                        const r = H.px({ x: xs[worst.i], y: y0[worst.i] });
-                        growLine(H.ctx, r.x, r.y, q.x, q.y, easeInOut(t), ANIM_C.fd, 1.5, []);
-                        if (t > 0.5) H.drawBadge('largest correction: ' + worst.d.toFixed(3) + ' D', q.x + 10, (q.y + r.y) / 2, ANIM_C.fd, 'left');
+            const sFinal = (H, t) => {
+                morph(H, y4, y4, 1, C);
+                const q = H.px({ x: xs[worst.i], y: y4[worst.i] });
+                const r = H.px({ x: xs[worst.i], y: y0[worst.i] });
+                // the correction runs from the raw reading's edge to the smoothed one's edge;
+                // when the two nearly coincide the raw one becomes a ring around the smoothed dot
+                const L = Math.abs(q.y - r.y), dir = Math.sign(q.y - r.y), gap = 5.5;
+                const apart = L > 2 * gap + 4;
+                H.haloMarker(r.x, r.y, R, 'circle', apart ? 3.5 : 7);
+                H.haloMarker(q.x, q.y, C, 'circle', 3.5);
+                if (apart) {
+                    const ya = r.y + dir * gap, yb = q.y - dir * gap;
+                    growLine(H.ctx, r.x, ya, r.x, yb, easeInOut(t), R, 1.5, []);
+                    if (t > 0.5) H.arrowHead(r.x, lerpN(ya, yb, easeInOut(t)), dir > 0 ? Math.PI / 2 : -Math.PI / 2, R, 5);
+                }
+                if (t > 0.5) {
+                    const a = sub(t, 0.5, 0.75);
+                    H.tag({ id: 'max', text: 'max', x: r.x, y: (r.y + q.y) / 2, color: R, side: 'right', a });
+                    H.axisX({ id: 'wx', v: xs[worst.i], color: R, from: Math.min(y0[worst.i], y4[worst.i]) });
+                    H.read({ id: 'wd', label: 'step ' + (worst.i + 1) + ', raw → smoothed', value: y0[worst.i].toFixed(2) + ' → ' + y4[worst.i].toFixed(2), color: R, a });
+                    H.read({ id: 'res', label: 'largest correction', value: worst.d.toFixed(2) + ' D', color: R, big: true, a });
+                }
+            };
+
+            return { layout: true, steps: [
+                { dur: 1400, draw: (H, t) => {
+                        drawRaw(H, easeInOut(t));
+                        if (t > 0.5) {
+                            const r = H.px({ x: xs[worst.i], y: y0[worst.i] });
+                            H.tag({ id: 'raw', text: 'raw', x: r.x, y: r.y, color: M, side: 'lower-right', a: sub(t, 0.5, 0.7) });
+                            H.read({ id: 'raw', label: 'raw readings', value: String(raw.length), color: M, a: sub(t, 0.5, 0.7) });
+                        }
                     },
+                  caption: 'The <b>raw readings</b>, exactly as measured. A dust speck or a misread step sits here as a single point off the line, and a moving average would smear it into its neighbours instead of removing it.' },
+                { dur: 1600, draw: stage(y0, y1, 's1', '3R', '3R running medians'),
+                  caption: '<b>3R</b>: running medians of 3, repeated until nothing changes. A median cannot be dragged by one wild value, so the outlier is deleted rather than averaged in. ' + moved(y0, y1) + ' readings moved.' },
+                { dur: 1400, draw: stage(y1, y2, 's2', 'SS', 'SS split flats'),
+                  caption: '<b>SS</b>: split two point flats. Repeated medians leave short flat pairs that are artefacts of the median itself, and splitting re-slopes them. ' + moved(y1, y2) + ' readings moved.' },
+                { dur: 1400, draw: stage(y2, y3, 's3', 'H', 'H hanning'),
+                  caption: '<b>H</b>: hanning, the ¼ ½ ¼ weighting. One light linear pass to take the corners off what the medians left. ' + moved(y2, y3) + ' readings moved.' },
+                { dur: 1900, draw: stage(y3, y4, 's4', '2×', 'twice: residuals added back'),
+                  caption: '<b>Twice</b>: smooth the residuals (raw minus smooth) and add them back. This is what separates a resistant smoother from a blunt one. Real signal the first pass flattened is recovered, while the outlier stays deleted.' },
+                { dur: 1500, draw: sFinal,
                   caption: 'Every number in this app, CI and gamma and all three speed points, is computed on the cleaned curve. The largest single correction here was <b>' + worst.d.toFixed(3) + ' density</b>, at step ' + (worst.i + 1) + '.' }
             ] };
         };
 
         // --- Scene range: paper LER ÷ film CI, plus flare ----------------------
+        // Every dimension starts at the window's anchor, the 0.10 (fixed-density)
+        // point: LER rises from it, LER ÷ CI, flare and the total run along its density.
         const buildSbrAnim = (curve) => {
             if (!curve.ci || curve.matchedSbr === null || curve.matchedSbr === undefined) return null;
             const targetLer = filmTargetLer();
             if (!isFinite(targetLer) || targetLer <= 0) return null;
-            const lerName = 'paper LER';
-            const flareModel = document.getElementById('flareModelSelect').value;
-            const lensK = lensFlareFactor();
+            const fmS = flareModelSettings();
+            const flareModel = fmS.model;
+            const lensK = fmS.lensK;
             const pure = targetLer / curve.ci;
             const lslr = curve.matchedSbr * 0.301;
             const flare = Math.max(0, lslr - pure);
-            const C = ANIM_C.sbr;
+            const C = ANIM_C.sbr, F = ANIM_C.fd;
 
-            const anchorX = curve.speedPoint !== null ? curve.speedPoint : curve.points[0].x;
+            // The window starts at the 0.10 (fixed-density) point whatever the speed
+            // method (Benskin: key the range at 0.10 over b+f, not at the ΔX point)
+            const atFd = isNum(curve.fdSpeedPoint);
+            const anchorX = atFd ? curve.fdSpeedPoint
+                : curve.speedPoint !== null ? curve.speedPoint : curve.points[0].x;
             const anchorY = interpolateY(curve.points, anchorX);
             const baseY = anchorY !== null ? anchorY : curve.points[0].y;
+            const topY = baseY + targetLer;
+            const MR = 4.5, EDGE = MR + 2;   // anchor marker radius and the clearance lines keep from it
+            const anchor = (H) => H.haloMarker(H.pxX(anchorX), H.pxY(baseY), C, 'circle', MR);
+            // a wide window can run past the end of the exposure axis (no zoom): the
+            // clipped dimension then gets a "continues" chevron at the plot edge
+            const offScale = (H, xEnd, y, color) => {
+                if (xEnd <= H.area.right) return;
+                const ctx = H.ctx, x = H.area.right - 4;
+                ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+                ctx.beginPath();
+                [0, 6].forEach(d => { ctx.moveTo(x - d - 5, y - 5); ctx.lineTo(x - d, y); ctx.lineTo(x - d - 5, y + 5); });
+                ctx.stroke(); ctx.restore();
+                H.obstacle(x - 8, y, 9);
+            };
 
             const sLer = (H, t) => {
                 const x = H.pxX(anchorX);
-                const yA = H.pxY(baseY), yB = H.pxY(baseY + targetLer);
+                const yA = H.pxY(baseY), yB = H.pxY(topY);
                 const e = easeInOut(t);
-                H.dimLine(x - 26, yA, x - 26, lerpN(yA, yB, e), C);
-                growLine(H.ctx, x - 30, yA, H.area.right, yA, easeInOut(sub(t, 0.2, 1)), hexToRgba(C, 0.3), 1, [3, 3]);
-                growLine(H.ctx, x - 30, yB, H.area.right, yB, easeInOut(sub(t, 0.5, 1)), hexToRgba(C, 0.3), 1, [3, 3]);
-                if (t > 0.6) H.drawBadge(lerName + ' = ' + targetLer.toFixed(2), x - 32, (yA + yB) / 2, C, 'right');
+                // the window top, which the CI line has to reach in the next step
+                growLine(H.ctx, x, yB, H.area.right, yB, easeInOut(sub(t, 0.5, 1)), hexToRgba(C, 0.3), 1, [3, 3]);
+                H.dimLine(x, yA - EDGE, x, lerpN(yA - EDGE, yB, e), C);
+                anchor(H);
+                H.tag({ id: 'hm', text: atFd ? 'Hm' : 'S', x, y: yA, color: C, side: 'lower-right', a: sub(t, 0, 0.3) });
+                H.axisY({ id: 'y0', v: baseY, color: C, from: anchorX });
+                H.axisX({ id: 'x0', v: anchorX, color: C, from: baseY });
+                H.read({ id: 'x0', label: atFd ? 'window start, B+F + 0.10' : 'window start, speed point', value: 'log H ' + anchorX.toFixed(2), color: C, a: sub(t, 0, 0.3) });
+                if (t > 0.6) {
+                    const a = sub(t, 0.6, 0.8);
+                    H.tag({ id: 'ler', text: 'LER', x, y: (yA + yB) / 2, color: C, side: 'left', a });
+                    H.axisY({ id: 'y1', v: topY, color: C, from: anchorX });
+                    H.read({ id: 'ler', label: 'paper LER', value: targetLer.toFixed(2), color: C, a });
+                }
             };
-            const rowA = (H) => H.area.bottom - 58;   // LER ÷ CI  and  + flare
-            const rowB = (H) => H.area.bottom - 22;   // total LSLR
             const sDivide = (H, t) => {
-                const yA = H.pxY(baseY), yB = H.pxY(baseY + targetLer);
+                const yA = H.pxY(baseY), yB = H.pxY(topY);
                 const xA = H.pxX(anchorX), xB = H.pxX(anchorX + pure);
                 const e = easeInOut(t);
                 const ctx = H.ctx;
+                const xe = lerpN(xA, xB, e), ye = lerpN(yA, yB, e);
                 // the CI slope triangle: rise = LER, run = LER / CI
                 ctx.save();
                 ctx.fillStyle = hexToRgba(C, 0.07);
                 ctx.beginPath();
-                ctx.moveTo(xA, yA); ctx.lineTo(lerpN(xA, xB, e), yA); ctx.lineTo(lerpN(xA, xB, e), lerpN(yA, yB, e));
+                ctx.moveTo(xA, yA); ctx.lineTo(xe, yA); ctx.lineTo(xe, ye);
                 ctx.closePath(); ctx.fill();
                 ctx.strokeStyle = hexToRgba(C, 0.6);
                 ctx.lineWidth = 1.25;
                 ctx.setLineDash([4, 3]);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(xA, yA); ctx.lineTo(xe, ye); ctx.lineTo(xe, yA); ctx.stroke();
                 ctx.restore();
-                H.dimLine(xA, rowA(H), lerpN(xA, xB, e), rowA(H), C);
-                if (t > 0.55) H.drawBadge('LER ÷ CI = ' + targetLer.toFixed(2) + ' ÷ ' + curve.ci.toFixed(2) + ' = ' + pure.toFixed(2) + ' log H', (xA + xB) / 2, rowA(H) - 14, C);
+                H.seg(xA, yA, xe, ye); H.seg(xe, ye, xe, yA);
+                // the run itself, at the anchor's density, from the anchor marker's edge
+                if (xe > xA + EDGE) H.dimLine(xA + EDGE, yA, xe, yA, C);
+                offScale(H, xe, yA, C);
+                anchor(H);
+                if (t > 0.55) {
+                    const a = sub(t, 0.55, 0.75);
+                    H.tag({ id: 'ci', text: 'CI', x: (xA + xB) / 2, y: (yA + yB) / 2, color: C, side: 'upper-left', a });
+                    H.tag({ id: 'run', text: 'LER÷CI', x: (xA + EDGE + xB) / 2, y: yA, color: C, side: 'below', a });
+                    H.axisX({ id: 'x1', v: anchorX + pure, color: C, from: baseY });
+                    H.read({ id: 'ci', label: 'film CI', value: curve.ci.toFixed(2), color: C, a });
+                    H.read({ id: 'pure', label: 'LER ÷ CI', value: pure.toFixed(2) + ' log H', color: C, a });
+                }
             };
             const sFlare = (H, t) => {
+                const yA = H.pxY(baseY);
                 const xB = H.pxX(anchorX + pure), xC = H.pxX(anchorX + pure + flare);
                 const e = easeInOut(t);
                 const ctx = H.ctx;
                 ctx.save();
-                ctx.fillStyle = hexToRgba(ANIM_C.fd, 0.10);
+                ctx.fillStyle = hexToRgba(F, 0.10);
                 ctx.fillRect(xB, H.area.top, Math.max(0, lerpN(xB, xC, e) - xB), H.area.bottom - H.area.top);
                 ctx.restore();
-                H.dimLine(xB, rowA(H), lerpN(xB, xC, e), rowA(H), ANIM_C.fd);
-                if (t > 0.55) H.drawBadge('+ flare ' + flare.toFixed(2), (xB + xC) / 2, rowA(H) - 14, ANIM_C.fd);
+                if (xC - xB > 2) H.dimLine(xB, yA, lerpN(xB, xC, e), yA, F);
+                if (xB < H.area.right) offScale(H, lerpN(xB, xC, e), yA, F);
+                if (t > 0.55) {
+                    const a = sub(t, 0.55, 0.75);
+                    if (xC - xB > 2) {
+                        H.tag({ id: 'fl', text: 'flare', x: (xB + xC) / 2, y: yA, color: F, side: 'below', a });
+                        H.axisX({ id: 'x2', v: anchorX + pure + flare, color: F, from: baseY });
+                    }
+                    H.read({ id: 'fl', label: '+ flare (×' + lensK.toFixed(2) + ' lens)', value: flare.toFixed(2) + ' log H', color: F, a });
+                }
             };
             const sTotal = (H, t) => {
+                const yA = H.pxY(baseY);
                 const xA = H.pxX(anchorX), xC = H.pxX(anchorX + pure + flare);
-                H.dimLine(xA, rowB(H), lerpN(xA, xC, easeInOut(t)), rowB(H), C);
-                if (t > 0.5) H.drawBadge('LSLR = ' + lslr.toFixed(2) + ' log H = ' + curve.matchedSbr.toFixed(1) + ' stops of scene', (xA + xC) / 2, rowB(H) - 14, C);
+                const xe = lerpN(xA + EDGE, xC, easeInOut(t));
+                H.dimLine(xA + EDGE, yA, xe, yA, C);
+                offScale(H, xe, yA, C);
+                anchor(H);
+                if (t > 0.5) {
+                    const a = sub(t, 0.5, 0.75);
+                    H.tag({ id: 'tot', text: 'LSLR', x: (xA + EDGE + xC) / 2, y: yA, color: C, side: 'above', a });
+                    H.read({ id: 'lslr', label: 'LSLR = LER ÷ CI + flare', value: lslr.toFixed(2) + ' log H', color: C, a });
+                    H.read({ id: 'res', label: 'scene range', value: curve.matchedSbr.toFixed(1) + ' stops', color: C, big: true, a });
+                }
             };
 
             const modelTxt = ({
-                practical: 'Benskin\'s practical model (flare grows with the scene range, from his "What is Normal" table)',
-                variable: 'Benskin\'s variable model (' + document.getElementById('flareLogH').value + ' log H at a 2.20 scene, 0.10 more per stop of range)'
-            })[flareModel] || ('the fixed model (' + document.getElementById('flareLogH').value + ' log H)');
-            return { steps: [
+                practical: 'Benskin\'s practical model (' + fmS.flare.toFixed(2) + ' log H at a ' + fmS.normal.toFixed(2) + ' scene, 0.05 more per 0.30 of range)',
+                variable: 'Benskin\'s variable model (' + fmS.flare.toFixed(2) + ' log H at a ' + fmS.normal.toFixed(2) + ' scene, 0.10 more per stop of range)'
+            })[flareModel] || ('the fixed model (' + fmS.flare.toFixed(2) + ' log H)');
+            return { layout: true, steps: [
                 { dur: 1500, draw: sLer, caption: 'Start at the paper, not the film. Your enlarging paper can hold a <b>log exposure range of ' + targetLer.toFixed(2) + '</b>. That is a fixed density window the negative has to fit into.' },
                 { dur: 1800, draw: sDivide, caption: 'Divide by the film\'s contrast: <b>LER ÷ CI = ' + pure.toFixed(2) + ' log H</b>. That is how much exposure range the negative can carry. Steeper development means a narrower window, which is the entire N&minus;/N+ mechanism.' },
                 { dur: 1600, draw: sFlare, caption: 'Now add <b>flare</b>, using ' + modelTxt + ', scaled by the lens setting (×' + lensK.toFixed(2) + '). Flare lifts the shadows, so the real scene has to be <i>wider</i> than the film window to fill it.' },
@@ -9707,11 +9965,9 @@
             ] };
         };
         // --- G-bar (average gradient) -----------------------------------------
-        // Ḡ is the slope of the chord from the speed point across a fixed 1.50 log H.
-        // Built as a slope triangle: each step draws ONE edge (run, rise, chord).
-        // The engine redraws completed steps with prior=true — those draw their edge
-        // as a muted line with NO label, so only the active step is ever labelled and
-        // badges never stack on top of each other.
+        // Ḡ is the slope of the chord from the speed point across a fixed 1.50 log H,
+        // built as a slope triangle: each step draws ONE edge (run, rise, chord).
+        // Earlier steps are redrawn faded by the engine, so each step only adds its edge.
         const buildGbarAnim = (curve) => {
             const pts = curve.points;
             const jx = curve.jonesSpeedPoint;
@@ -9722,61 +9978,62 @@
             const gAvg = (d1 - d0) / 1.50;
             const C = ANIM_C.gbar;
             const RUN = ANIM_C.ink;
+            const R0 = 4.5, R1 = 3.5;   // speed point / end-of-run marker radii
 
-            const stroke = (H, x1, y1, x2, y2, color, width, dash) => {
-                const ctx = H.ctx; ctx.save();
-                ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash);
-                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-                ctx.restore();
-            };
-
-            // Step 1 — anchor the speed point (single label, well clear of the axis one).
-            const sAnchor = (H, t, prior) => {
+            // Step 1: anchor at the speed point
+            const sAnchor = (H, t) => {
                 const x0 = H.pxX(jx), y0 = H.pxY(d0);
-                if (!prior) growLine(H.ctx, x0, y0, x0, H.area.bottom, easeInOut(t), hexToRgba(C, 0.3), 1, [3, 3]);
-                H.haloMarker(x0, y0, C, 'circle', 4.5);
-                if (!prior && t > 0.35) H.drawBadge('speed point · log H = ' + jx.toFixed(2), x0, y0 - 16, C);
-            };
-            // Step 2 — the run: 1.50 log H baseline from the speed point.
-            const sRun = (H, t, prior) => {
-                const x0 = H.pxX(jx), y0 = H.pxY(d0);
-                H.haloMarker(x0, y0, C, 'circle', 4.5);
-                if (prior) {
-                    stroke(H, x0, y0, H.pxX(jx + 1.50), y0, hexToRgba(RUN, 0.4), 1, [4, 3]);
-                    H.haloMarker(H.pxX(jx + 1.50), y0, C, 'circle', 3.5);
-                } else {
-                    const e = easeInOut(t);
-                    const xE = H.pxX(jx + 1.50 * e);
-                    stroke(H, x0, y0, xE, y0, hexToRgba(RUN, 0.7), 1.5, []);
-                    H.haloMarker(xE, y0, C, 'circle', 3.5);
-                    if (t > 0.2) H.drawBadge('run = 1.50 log H  (≈5 stops)', (x0 + H.pxX(jx + 1.50)) / 2, y0 + 17, RUN);
+                H.haloMarker(x0, y0, C, 'circle', 3 + (R0 - 3) * easeInOut(t));
+                if (t > 0.35) {
+                    const a = sub(t, 0.35, 0.6);
+                    H.tag({ id: 'fg', text: 'fg', x: x0, y: y0, color: C, side: 'upper-left', a });
+                    H.axisX({ id: 'x0', v: jx, color: C, from: d0 });
+                    H.axisY({ id: 'y0', v: d0, color: C, from: jx });
+                    H.read({ id: 'fg', label: 'speed point fg' + (curve.jonesCensored ? ' (bound)' : ''), value: 'log H ' + jx.toFixed(2), color: C, a });
                 }
             };
-            // Step 3 — the rise: vertical ΔD at the far end of the run.
-            const sRise = (H, t, prior) => {
+            // Step 2: the run, 1.50 log H along the speed point's density
+            const sRun = (H, t) => {
+                const x0 = H.pxX(jx), y0 = H.pxY(d0), x1 = H.pxX(jx + 1.50);
+                const xE = lerpN(x0 + R0 + 2, x1, easeInOut(t));
+                growLine(H.ctx, x0 + R0 + 2, y0, xE, y0, 1, hexToRgba(RUN, 0.7), 1.5, []);
+                H.haloMarker(x0, y0, C, 'circle', R0);
+                H.haloMarker(xE, y0, C, 'circle', R1);
+                if (t > 0.2) {
+                    const a = sub(t, 0.2, 0.4);
+                    H.tag({ id: 'run', text: '1.50', x: (x0 + x1) / 2, y: y0, color: RUN, side: 'below', a });
+                    H.read({ id: 'run', label: 'run (≈ 5 stops)', value: '1.50 log H', color: RUN, a });
+                }
+                if (t > 0.9) H.axisX({ id: 'x1', v: jx + 1.50, color: RUN, from: d0 });
+            };
+            // Step 3: the rise, from the end of the run up to the curve
+            const sRise = (H, t) => {
                 const x1 = H.pxX(jx + 1.50), y0 = H.pxY(d0), y1 = H.pxY(d1);
-                stroke(H, H.pxX(jx), y0, x1, y0, hexToRgba(RUN, 0.4), 1, [4, 3]); // muted run baseline for context
-                H.haloMarker(H.pxX(jx), y0, C, 'circle', 4.5);
-                H.haloMarker(x1, y1, C, 'circle', 4.5);
-                if (prior) {
-                    stroke(H, x1, y0, x1, y1, hexToRgba(RUN, 0.4), 1, [4, 3]);
-                } else {
-                    H.dimLine(x1, y0, x1, lerpN(y0, y1, easeInOut(t)), RUN);
-                    if (t > 0.45) H.drawBadge('rise = ΔD = ' + (d1 - d0).toFixed(2), x1 + 8, (y0 + y1) / 2, RUN, 'left');
+                const ya = y0 - (R1 + 2), yb = y1 + (R0 + 2);
+                H.dimLine(x1, ya, x1, lerpN(ya, yb, easeInOut(t)), RUN);
+                H.haloMarker(x1, y0, C, 'circle', R1);
+                H.haloMarker(x1, y1, C, 'circle', R0);
+                if (t > 0.45) {
+                    const a = sub(t, 0.45, 0.65);
+                    H.tag({ id: 'dd', text: 'ΔD', x: x1, y: (y0 + y1) / 2, color: RUN, side: 'right', a });
+                    H.axisY({ id: 'y1', v: d1, color: RUN, from: jx + 1.50 });
+                    H.read({ id: 'dd', label: 'rise ΔD', value: (d1 - d0).toFixed(2), color: RUN, a });
                 }
             };
-            // Step 4 — the chord: rise / run = Ḡ. Legs shown muted so the chord reads.
+            // Step 4: the chord, rise / run = β
             const sChord = (H, t) => {
                 const x0 = H.pxX(jx), y0 = H.pxY(d0), x1 = H.pxX(jx + 1.50), y1 = H.pxY(d1);
-                stroke(H, x0, y0, x1, y0, hexToRgba(RUN, 0.35), 1, [4, 3]);
-                stroke(H, x1, y0, x1, y1, hexToRgba(RUN, 0.35), 1, [4, 3]);
                 growLine(H.ctx, x0, y0, x1, y1, easeInOut(t), C, 2.5, []);
-                H.haloMarker(x0, y0, C, 'circle', 4.5);
+                H.haloMarker(x0, y0, C, 'circle', R0);
                 H.haloMarker(x1, y1, C, 'diamond', 5);
-                if (t > 0.5) H.drawBadge('β = rise / run = ' + gAvg.toFixed(3), (x0 + x1) / 2, (y0 + y1) / 2 - 16, C);
+                if (t > 0.5) {
+                    const a = sub(t, 0.5, 0.75);
+                    H.tag({ id: 'b', text: 'β', x: (x0 + x1) / 2, y: (y0 + y1) / 2, color: C, side: 'upper-left', a });
+                    H.read({ id: 'res', label: 'β = ΔD / 1.50', value: gAvg.toFixed(2), color: C, big: true, a });
+                }
             };
 
-            return { steps: [
+            return { layout: true, steps: [
                 { dur: 1300, draw: sAnchor, caption: '<b>β</b> (Nelson &amp; Simonds\' Ḡ) is the average gradient. It is anchored at the <b>fractional-gradient point</b> the Jones method finds, so it always starts down in the toe. Ilford\'s datasheet Ḡ starts higher, at 0.10 over b+f, and reads 0.05–0.10 higher.' },
                 { dur: 1600, draw: sRun, caption: 'Step a fixed <b>1.50 log H</b> to the right along the exposure axis. That is about 5 stops, the range of an average scene. This baseline is the <b>run</b>.' },
                 { dur: 1500, draw: sRise, caption: 'Measure how far the curve climbs across that run: <b>ΔD = ' + (d1 - d0).toFixed(2) + '</b>. This vertical is the <b>rise</b>.' },
@@ -9873,7 +10130,7 @@
             if (!animPrevHidden) animPrevHidden = captureAnimVisibility();
             const avail = {};
             ANIM_ORDER.forEach(m => { try { avail[m] = !!(ANIM_BUILDERS[m] && ANIM_BUILDERS[m](curve)); } catch (e) { avail[m] = false; } });
-            curveAnim = { curveId: curveId, method: method, soloIds: soloIds, steps: built.steps, avail: avail, idx: 0, t: 0, playing: true, speed: 1, last: null, raf: null };
+            curveAnim = { curveId: curveId, method: method, soloIds: soloIds, steps: built.steps, layout: !!built.layout, avail: avail, idx: 0, t: 0, playing: true, speed: 1, last: null, raf: null };
             applyAnimSolo();
             renderAnimBar();
             animDirty = true;
@@ -9971,6 +10228,228 @@
             if (item) item.classList.add('ca-menu-item-active');
         };
 
+        // --- animation label layout -----------------------------------------------
+        // Each label has an anchor (the thing it names), a level and a preferred side.
+        // It is tried at 8 positions around the anchor on widening rings and takes the
+        // cheapest one that stays inside the plot and clear of other labels and markers;
+        // crossing the curve costs extra. A label pushed off its first ring gets a thin
+        // leader back to its anchor. Levels: 'result' (filled), 'value' (outlined pill),
+        // 'note' (plain text). Labels of earlier steps are drawn faded; results stay.
+        const ANIM_LABEL_STYLE = {
+            result: { font: "700 11px -apple-system, 'SF Pro Text', sans-serif", h: 21, padX: 9 },
+            value: { font: "600 10px -apple-system, 'SF Pro Text', sans-serif", h: 18, padX: 7 },
+            note: { font: "500 10px -apple-system, 'SF Pro Text', sans-serif", h: 14, padX: 2 },
+            tag: { font: "italic 600 12px -apple-system, 'SF Pro Text', sans-serif", h: 15, padX: 2 }
+        };
+        // Preferred side → direction (canvas angles: 0 = right, 90 = down)
+        const LABEL_ANGLE = { right: 0, 'lower-right': 45, below: 90, 'lower-left': 135, left: 180, 'upper-left': 225, above: 270, 'upper-right': 315 };
+        // Does segment (x1,y1)-(x2,y2) touch rectangle r (Liang–Barsky clip)?
+        const segHitsRect = (x1, y1, x2, y2, r) => {
+            const dx = x2 - x1, dy = y2 - y1;
+            let t0 = 0, t1 = 1;
+            const edges = [[-dx, x1 - r.x], [dx, r.x + r.w - x1], [-dy, y1 - r.y], [dy, r.y + r.h - y1]];
+            for (const [pp, q] of edges) {
+                if (pp === 0) { if (q < 0) return false; continue; }
+                const tt = q / pp;
+                if (pp < 0) { if (tt > t1) return false; if (tt > t0) t0 = tt; }
+                else { if (tt < t0) return false; if (tt < t1) t1 = tt; }
+            }
+            return true;
+        };
+        const LABEL_GAP = 5;   // clear space every label keeps from lines, markers and other labels
+        const layoutAnimLabels = (H, curve, currentStep, segs) => {
+            const ctx = H.ctx, A = H.area;
+            const lines = segs || [];
+            const grow = (r, m) => ({ x: r.x - m, y: r.y - m, w: r.w + 2 * m, h: r.h + 2 * m });
+            const touchesLine = (r) => { const g = grow(r, LABEL_GAP); return lines.some(sg => segHitsRect(sg[0], sg[1], sg[2], sg[3], g)); };
+            const lineHits = (r) => { const g = grow(r, LABEL_GAP); return lines.filter(sg => segHitsRect(sg[0], sg[1], sg[2], sg[3], g)).length; };
+            const clash = (a, b, pad) => !(a.x + a.w + pad <= b.x || b.x + b.w + pad <= a.x || a.y + a.h + pad <= b.y || b.y + b.h + pad <= a.y);
+            const inside = (r) => r.x >= A.left + 4 && r.y >= A.top + 4 && r.x + r.w <= A.right - 4 && r.y + r.h <= A.bottom - 4;
+            // results first, then the current step, then older steps
+            const rank = (L) => (L.level === 'result' ? 0 : L.step === currentStep ? 1 : 2);
+            // a label whose anchor is out of view is not shown
+            const inView = (L) => L.x >= A.left - 1 && L.x <= A.right + 1 && L.y >= A.top - 1 && L.y <= A.bottom + 1;
+            const order = H.labels.filter(inView).sort((a, b) => rank(a) - rank(b) || b.step - a.step);
+            const placed = [];
+            const blocks = H.obstacles.concat(ctx.__animObs || []).map(o => ({ x: o.x - o.r, y: o.y - o.r, w: 2 * o.r, h: 2 * o.r })).concat(H.reserved || []);
+            const out = [];
+            // dev check: labels that could only be placed touching a line, or not at all
+            const stats = { fallback: 0, dropped: 0, fallbackIds: [], droppedIds: [] };
+            for (const L of order) {
+                const st = ANIM_LABEL_STYLE[L.level] || ANIM_LABEL_STYLE.value;
+                ctx.font = st.font;
+                const w = ctx.measureText(L.text).width + st.padX * 2, h = st.h;
+                const pref = LABEL_ANGLE[L.side] !== undefined ? LABEL_ANGLE[L.side] : 0;
+                // 16 directions, nearest to the preferred side first
+                const angDist = (a) => Math.abs(((a - pref + 540) % 360) - 180);
+                const dirs = Array.from({ length: 16 }, (_, i) => i * 22.5).sort((p, q) => angDist(p) - angDist(q));
+                let best = null, fallback = null;
+                for (let ring = 0; ring < 8 && !best; ring++) {
+                    const g = LABEL_GAP + 3 + ring * 9;
+                    for (let di = 0; di < dirs.length && !best; di++) {
+                        const ang = dirs[di] * Math.PI / 180, c = Math.cos(ang), sn = Math.sin(ang);
+                        const r = { x: L.x + c * (g + w / 2) - w / 2, y: L.y + sn * (g + h / 2) - h / 2, w, h };
+                        if (!inside(r)) continue;
+                        if (placed.some(q => clash(r, q, LABEL_GAP + 2)) || blocks.some(q => clash(r, q, LABEL_GAP))) continue;
+                        if (!touchesLine(r)) { best = { ...r, ring }; break; }
+                        const hits = lineHits(r);
+                        if (!fallback || hits < fallback.hits) fallback = { ...r, ring, hits };
+                    }
+                }
+                if (!best && fallback) { best = fallback; stats.fallback++; stats.fallbackIds.push(L.id || L.text); }
+                if (!best) { stats.dropped++; stats.droppedIds.push(L.id || L.text); continue; }   // no room anywhere inside the plot: leave it out rather than cut it
+                placed.push(best);
+                const fade = L.step < currentStep && L.level !== 'result' ? 0.45 : 1;
+                out.push({ L, r: best, st, alpha: Math.max(0, Math.min(1, L.a)) * fade });
+            }
+            window.__animLayoutStats = stats;
+            // leaders under the labels
+            out.forEach(({ L, r, alpha }) => {
+                if (r.ring === 0 || alpha <= 0) return;
+                const tx = Math.max(r.x, Math.min(L.x, r.x + r.w)), ty = Math.max(r.y, Math.min(L.y, r.y + r.h));
+                ctx.save(); ctx.globalAlpha = alpha * 0.6; ctx.strokeStyle = L.color; ctx.lineWidth = 1; ctx.setLineDash([]);
+                ctx.beginPath(); ctx.moveTo(L.x, L.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.restore();
+            });
+            out.forEach(({ L, r, st, alpha }) => {
+                if (alpha <= 0) return;
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.font = st.font; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                const cx = r.x + r.w / 2, cy = r.y + r.h / 2 + 0.5;
+                if (L.level === 'note' || L.level === 'tag') {
+                    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.95)'; ctx.lineJoin = 'round';
+                    ctx.strokeText(L.text, cx, cy); ctx.fillStyle = L.color; ctx.fillText(L.text, cx, cy);
+                } else {
+                    ctx.shadowColor = 'rgba(0,0,0,0.12)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 1;
+                    ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, r.h / 2);
+                    ctx.fillStyle = L.level === 'result' ? L.color : 'rgba(255,255,255,0.96)'; ctx.fill();
+                    ctx.shadowColor = 'transparent';
+                    if (L.level !== 'result') { ctx.strokeStyle = hexToRgba(L.color, 0.4); ctx.lineWidth = 1; ctx.stroke(); }
+                    ctx.fillStyle = L.level === 'result' ? '#ffffff' : L.color;
+                    ctx.fillText(L.text, cx, cy);
+                }
+                ctx.restore();
+            });
+        };
+
+        // --- annotation design for animations -----------------------------------------
+        // The plot holds geometry and short tags only. Values go to the axes as coloured
+        // marks (like highlighted tick labels, with a faint guide back to the point) and
+        // into a readout card in the top-left corner, which is empty on every
+        // characteristic curve. The card lists each step's values in order, tints the
+        // current step and ends with the result in large type.
+        const drawAnimAnnotations = (H, curve, currentStep, method) => {
+            const ctx = H.ctx, A = H.area;
+            const fontS = "-apple-system, 'SF Pro Text', sans-serif";
+            // every line in the plot: recorded step geometry, the curve, and the axis guides
+            const segs = (ctx.__animSegs || []).slice();
+            const poly = (curve.points || []).map(p => [H.pxX(p.x), H.pxY(p.y)]);
+            for (let i = 0; i < poly.length - 1; i++) segs.push([poly[i][0], poly[i][1], poly[i + 1][0], poly[i + 1][1]]);
+            H.axisMarks.forEach(m => {
+                if (m.axis === 'x') { const x = H.pxX(m.v); segs.push([x, m.from !== undefined ? H.pxY(m.from) : A.bottom, x, A.bottom]); }
+                else { const y = H.pxY(m.v); segs.push([m.from !== undefined ? H.pxX(m.from) : A.left, y, A.left, y]); }
+            });
+            // readout card geometry first, so tags keep clear of it
+            const rows = H.rows.filter(r => r.a > 0);
+            let card = null;
+            if (rows.length) {
+                const padX = 12, rowH = 20, bigH = 34, titleH = 22;
+                ctx.font = '600 12px ' + fontS;
+                const valW = Math.max(...rows.map(r => { ctx.font = (r.big ? '700 20px ' : '600 12px ') + fontS; return ctx.measureText(r.value).width; }));
+                ctx.font = '500 11px ' + fontS;
+                const labW = Math.max(...rows.map(r => ctx.measureText(r.label).width));
+                const w = Math.min(A.right - A.left - 24, Math.max(200, labW + valW + padX * 2 + 18));
+                const h = titleH + rows.reduce((acc, r) => acc + (r.big ? bigH : rowH), 0) + 10;
+                // first corner where the card and its margin touch no line; else the one touching fewest
+                const m = 12, corners = [[A.left + m, A.top + m], [A.right - m - w, A.top + m], [A.right - m - w, A.bottom - m - h], [A.left + m, A.bottom - m - h]];
+                const hitsAt = ([x, y]) => segs.filter(sg => segHitsRect(sg[0], sg[1], sg[2], sg[3], { x: x - 8, y: y - 8, w: w + 16, h: h + 16 })).length;
+                const scored = corners.map((c, i) => ({ c, i, n: hitsAt(c) })).sort((a2, b2) => a2.n - b2.n || a2.i - b2.i);
+                const [cx0, cy0] = scored[0].c;
+                card = { x: cx0, y: cy0, w, h, padX, rowH, bigH, titleH };
+                H.reserved = [{ x: card.x - 6, y: card.y - 6, w: card.w + 12, h: card.h + 12 }];
+            }
+            layoutAnimLabels(H, curve, currentStep, segs);
+
+            // axis marks: faint guide from the point, then a value pill on the axis
+            const marks = H.axisMarks.map(m => {
+                const old = m.step < currentStep;
+                ctx.font = '600 10px ' + fontS;
+                const text = m.text || m.v.toFixed(2);
+                const w = ctx.measureText(text).width + 10, h = 16;
+                return m.axis === 'x'
+                    ? { ...m, text, w, h, c: H.pxX(m.v), old }
+                    : { ...m, text, w, h, c: H.pxY(m.v), old };
+            }).filter(m => m.axis === 'x' ? (m.c >= A.left && m.c <= A.right) : (m.c >= A.top && m.c <= A.bottom));
+            // spread marks on the same axis so they never overlap
+            ['x', 'y'].forEach(ax => {
+                const list = marks.filter(m => m.axis === ax).sort((a, b) => a.c - b.c);
+                const size = (m) => ax === 'x' ? m.w : m.h;
+                list.forEach((m, i) => { m.p = m.c; if (i) { const prev = list[i - 1]; const minP = prev.p + (size(prev) + size(m)) / 2 + 6; if (m.p < minP) m.p = minP; } });
+            });
+            // a value mark replaces any tick label it would touch: hide the whole label
+            const chart = H.chart;
+            if (chart) {
+                ctx.save();
+                ctx.fillStyle = '#ffffff';
+                const tickFont = (sc) => { const f = sc.options.ticks.font || {}; return (f.size || 11); };
+                const xs = chart.scales.x, ys = chart.scales.y;
+                (xs.ticks || []).forEach(tk => {
+                    const px = xs.getPixelForValue(tk.value); ctx.font = tickFont(xs) + 'px monospace';
+                    const tw = ctx.measureText(String(tk.label)).width;
+                    const lab = { x: px - tw / 2 - 2, y: A.bottom + 2, w: tw + 4, h: tickFont(xs) + 10 };
+                    if (marks.some(m => m.axis === 'x' && Math.abs(m.p - px) < (m.w + tw) / 2 + 6)) ctx.fillRect(lab.x, lab.y, lab.w, lab.h);
+                });
+                (ys.ticks || []).forEach(tk => {
+                    const py = ys.getPixelForValue(tk.value); ctx.font = tickFont(ys) + 'px monospace';
+                    const tw = ctx.measureText(String(tk.label)).width;
+                    if (marks.some(m => m.axis === 'y' && Math.abs(m.p - py) < (m.h + tickFont(ys)) / 2 + 6)) ctx.fillRect(A.left - tw - 14, py - tickFont(ys) / 2 - 3, tw + 12, tickFont(ys) + 6);
+                });
+                ctx.restore();
+            }
+            marks.forEach(m => {
+                ctx.save();
+                ctx.globalAlpha = m.old ? 0.75 : 1;
+                ctx.strokeStyle = hexToRgba(m.color, 0.35); ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+                ctx.beginPath();
+                if (m.axis === 'x') { const yFrom = m.from !== undefined ? H.pxY(m.from) : A.bottom; ctx.moveTo(m.c, yFrom); ctx.lineTo(m.c, A.bottom); }
+                else { const xFrom = m.from !== undefined ? H.pxX(m.from) : A.left; ctx.moveTo(xFrom, m.c); ctx.lineTo(A.left, m.c); }
+                ctx.stroke(); ctx.setLineDash([]);
+                const r = m.axis === 'x' ? { x: m.p - m.w / 2, y: A.bottom + 3, w: m.w, h: m.h } : { x: A.left - m.w - 4, y: m.p - m.h / 2, w: m.w, h: m.h };
+                ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 5);
+                ctx.fillStyle = m.color; ctx.fill();
+                ctx.fillStyle = '#ffffff'; ctx.font = '600 10px ' + fontS; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(m.text, r.x + r.w / 2, r.y + r.h / 2 + 0.5);
+                ctx.restore();
+            });
+
+            // readout card
+            if (card) {
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.10)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 2;
+                ctx.beginPath(); ctx.roundRect(card.x, card.y, card.w, card.h, 12);
+                ctx.fillStyle = 'rgba(255,255,255,0.97)'; ctx.fill();
+                ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#e5e5ea'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.font = '600 10px ' + fontS; ctx.fillStyle = '#86868b'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                ctx.fillText((ANIM_LABELS[method] || '').replace(/[a-z]+/g, w => w.toUpperCase()), card.x + card.padX, card.y + card.titleH / 2 + 4);
+                let y = card.y + card.titleH;
+                rows.forEach(r => {
+                    const h = r.big ? card.bigH : card.rowH, a = Math.max(0, Math.min(1, r.a));
+                    ctx.globalAlpha = a;
+                    if (r.step === currentStep && !r.big) {
+                        ctx.beginPath(); ctx.roundRect(card.x + 6, y + 1, card.w - 12, h - 2, 6);
+                        ctx.fillStyle = hexToRgba(r.color, 0.09); ctx.fill();
+                    }
+                    if (r.big) { ctx.strokeStyle = '#e5e5ea'; ctx.beginPath(); ctx.moveTo(card.x + card.padX, y + 3); ctx.lineTo(card.x + card.w - card.padX, y + 3); ctx.stroke(); }
+                    ctx.font = '500 11px ' + fontS; ctx.fillStyle = '#6e6e73'; ctx.textAlign = 'left';
+                    ctx.fillText(r.label, card.x + card.padX, y + h / 2 + (r.big ? 2 : 0));
+                    ctx.font = (r.big ? '700 20px ' : '600 12px ') + fontS; ctx.fillStyle = r.color; ctx.textAlign = 'right';
+                    ctx.fillText(r.value, card.x + card.w - card.padX, y + h / 2 + (r.big ? 2 : 0));
+                    y += h;
+                });
+                ctx.restore();
+            }
+        };
+
         const curveAnimPlugin = {
             id: 'curveMethodAnim',
             afterDraw: (chart) => {
@@ -9978,12 +10457,57 @@
                 const curve = curvesData.find(c => c.id === curveAnim.curveId);
                 if (!curve) return;
                 const H = createDrawHelpers(chart);
+                // Label layout: steps register labels (H.label) and markers become
+                // obstacles; everything is placed after all steps have drawn
+                H.labels = []; H.obstacles = [];
+                H.ctx.__animSegs = []; H.ctx.__animObs = [];
+                const drawMarker = H.haloMarker;
+                H.haloMarker = (x, y, color, shape, r) => { H.obstacles.push({ x, y, r: (r || 4.5) + 3 }); drawMarker(x, y, color, shape, r); };
+                H.label = (L) => {
+                    const i = H.labels.findIndex(o => o.id && o.id === L.id);
+                    const entry = { level: 'value', side: 'right', a: 1, ...L, step: H.stepIdx };
+                    if (i >= 0) H.labels[i] = entry; else H.labels.push(entry);
+                };
+                H.tag = (L) => H.label({ ...L, level: 'tag' });
+                // Geometry drawn straight onto the canvas registers itself here so
+                // labels keep clear of it: a segment, a polyline, or an elliptical arc
+                // (canvas angles, approximated by short chords)
+                H.seg = (x1, y1, x2, y2) => { if (H.ctx.__animSegs) H.ctx.__animSegs.push([x1, y1, x2, y2]); };
+                H.polyline = (P) => { for (let i = 0; i < P.length - 1; i++) H.seg(P[i][0], P[i][1], P[i + 1][0], P[i + 1][1]); };
+                H.arcSegs = (cx, cy, rx, ry, a0, a1, n) => {
+                    const k = n || 24, P = [];
+                    for (let i = 0; i <= k; i++) { const a = a0 + (a1 - a0) * i / k; P.push([cx + rx * Math.cos(a), cy + ry * Math.sin(a)]); }
+                    H.polyline(P);
+                };
+                // a point-like obstacle (e.g. a cross or a dot drawn without haloMarker)
+                H.obstacle = (x, y, r) => { if (H.ctx.__animObs) H.ctx.__animObs.push({ x, y, r }); };
+                H.axisMarks = []; H.rows = [];
+                H.axisX = (m) => { if (!H.axisMarks.some(o => o.id === m.id)) H.axisMarks.push({ ...m, axis: 'x', step: H.stepIdx }); };
+                H.axisY = (m) => { if (!H.axisMarks.some(o => o.id === m.id)) H.axisMarks.push({ ...m, axis: 'y', step: H.stepIdx }); };
+                H.read = (r) => {
+                    const i = H.rows.findIndex(o => o.id === r.id);
+                    const entry = { a: 1, ...r, step: H.stepIdx };
+                    if (i >= 0) H.rows[i] = entry; else H.rows.push(entry);
+                };
                 try {
-                    for (let i = 0; i < curveAnim.idx; i++) curveAnim.steps[i].draw(H, 1, true);
+                    // keep all step drawing inside the plot
+                    if (curveAnim.layout) { H.ctx.save(); H.ctx.beginPath(); H.ctx.rect(H.area.left, H.area.top, H.area.right - H.area.left, H.area.bottom - H.area.top); H.ctx.clip(); }
+                    for (let i = 0; i < curveAnim.idx; i++) {
+                        H.stepIdx = i;
+                        // earlier steps step back so the current one reads first
+                        if (curveAnim.layout) H.ctx.globalAlpha = 0.4;
+                        curveAnim.steps[i].draw(H, 1, true);
+                        H.ctx.globalAlpha = 1;
+                    }
+                    H.stepIdx = curveAnim.idx;
                     curveAnim.steps[curveAnim.idx].draw(H, Math.max(0, Math.min(1, curveAnim.t)), false);
+                    if (curveAnim.layout) H.ctx.restore();
+                    if (curveAnim.layout) drawAnimAnnotations(H, curve, curveAnim.idx, curveAnim.method);
+                    else if (H.labels.length) layoutAnimLabels(H, curve, curveAnim.idx);
                 } catch (err) {
                     console.warn('method animation draw failed', err);
                 }
+                delete H.ctx.__animSegs; delete H.ctx.__animObs;
             }
         };
 
@@ -10899,7 +11423,7 @@
                 if (dp != null) speedPoint = dp;
                 else if (trSpeedLogH_fd !== null) speedPoint = trSpeedLogH_fd;
             } else {
-                // Fixed Density (default)
+                // Fixed Density (the default is Delta-X, the main tab's method)
                 if (trSpeedLogH_fd !== null) speedPoint = trSpeedLogH_fd;
             }
             if (speedPoint == null || !isFinite(speedPoint)) {
@@ -10941,6 +11465,12 @@
             } else {
                 ({ dmin: paperDmin, dmax: paperDmax } = modelPaper());
             }
+
+            // Paper b+f for the ISO 6846 anchors, as on the Paper tab: the unexposed patch
+            // when the user entered one (measured paper only), else the lightest density.
+            // S is b+f + pct × (Dmax − b+f), the paper tab's PAPER_S_FRACTION at 90%.
+            const trPaperBf = (useMeasuredPaper && paperBaseFogInput() !== null) ? paperBaseFogInput() : paperDmin;
+            const trPaperS = (pct) => trPaperBf + (pct / 100) * (paperDmax - trPaperBf);
 
             // Inverse paper logistic: given a target print density, find the paper log E
             const inversePaper = (targetD) => modelPaperLogE(targetD, targetLerVal, paperDmin, paperDmax);
@@ -11118,8 +11648,7 @@
                 // Highlight: highest neg density → paper Dmin + 0.04 (just above base+fog)
                 const anchorNegD = anchorD_at_highlight;
                 // ISO T: the unexposed b+f when the user entered one, as on the paper tab
-                const paperBf = useMeasuredPaper ? paperBaseFogInput() : null;
-                const targetPrintD = (paperBf !== null ? paperBf : paperDmin) + PAPER_T_OFFSET;
+                const targetPrintD = trPaperBf + PAPER_T_OFFSET;
 
                 if (useMeasuredPaper) {
                     const d_anchor = inverseMeasuredPaper(targetPrintD);
@@ -11132,10 +11661,10 @@
                     enlargerConstant = logE_for_anchor + anchorNegD + paperExpOffset;
                 }
             } else {
-                // Shadow: actual shadow neg density → %Dmax on paper
+                // Shadow: actual shadow neg density → %Dmax on paper (ISO 6846 S, net of b+f)
                 // Pin the shadow end of the scene to the target print density
                 const anchorNegD = anchorD_at_shadow;
-                const targetPrintD = (anchorPct / 100) * paperDmax;
+                const targetPrintD = trPaperS(anchorPct);
 
                 if (useMeasuredPaper) {
                     const d_anchor = inverseMeasuredPaper(targetPrintD);
@@ -11299,13 +11828,14 @@
             // Anchored at the paper endpoints (shadow → Dmin), NOT at the actual
             // reproduction curve, so it never moves with film/paper exposure shifts.
             // The shadow end is the user's edge of black: Anchor %Dmax when the paper is
-            // anchored at the shadow, else Holm's 90% of Dmax (Holm 1994 p.643: edge-of-black
-            // density "less than or equal to 90%" of Dmax). The aim starts there too, so a
-            // print anchored at 80% is judged against an aim that also starts at 80%.
+            // anchored at the shadow, else 90% (Holm 1994 p.643: edge-of-black density
+            // "less than or equal to 90%" of Dmax). Both are taken of the net density above
+            // paper b+f, as ISO 6846 S on the Paper tab (trPaperS). The aim starts there too,
+            // so a print anchored at 80% is judged against an aim that also starts at 80%.
             // It is RANGE-NORMALISED: slope (shadow D − Dmin)/LSLR, e.g. 0.86 for a 2.20
             // scene at 90%, not the 45° facsimile line of slope 1.00 (Todd & Zakia p.93;
             // Mees & James Fig. 22.1), which no paper can hold over a full scene range.
-            const sceneShadowTarget = (paperAnchorMode === 'shadow' ? anchorPct / 100 : 0.90) * paperDmax;
+            const sceneShadowTarget = trPaperS(paperAnchorMode === 'shadow' ? anchorPct : PAPER_S_FRACTION * 100);
             const sceneHighlightTarget = paperDmin;
             const q4Ideal = [
                 { x: shadowReflectance, y: sceneShadowTarget },
@@ -11831,10 +12361,11 @@
             // Q2 Film
             const q2Info = [];
             q2Info.push(curveName);
-            q2Info.push(`CI:${ci.toFixed(2)}` + (curveGamma ? `  G:${curveGamma.toFixed(2)}` : ''));
+            q2Info.push(`CI:${ci.toFixed(2)}` + (curveGamma ? `  γ:${curveGamma.toFixed(2)}` : ''));
             if (curveGBar) q2Info.push(`β:${curveGBar.toFixed(2)}`);
             if (formatMinSec(curveTime)) q2Info.push(`Time:${formatMinSec(curveTime)}`);
-            if (curveEFS) q2Info.push(`EFS:${Math.round(curveEFS)}`);
+            // the criterion behind the EFS: the curve's own (Jones past ΔD 1.70), else the series'
+            if (curveEFS) q2Info.push(`EFS (${SPEED_METHOD_SHORT[curveObj ? curveObj.speedMethodUsed : currentEffectiveSpeedMethod] || 'ΔX'}):${Math.round(curveEFS)}`);
             // Adams sets Zone I four stops under the meter reading and rates the film so
             // that Zone I gives 0.10 over b+f (The Negative pp.88, 240–242): with the meter
             // at Hg = 8/S that is 0.5/H(0.10) = 0.625 × the fixed-density EI.
@@ -11954,7 +12485,7 @@
             // Q4 Tone Reproduction
             // Show per-stop gradient from shadow to highlight
             const q4Info = [];
-            q4Info.push(`SBR:${sceneStops.toFixed(1)} stops`);
+            q4Info.push(`Stops:${sceneStops.toFixed(1)}`);
             q4Info.push(`LSLR:${sceneLslr.toFixed(2)}`);
             q4Info.push(`Film DR:${filmDR.toFixed(2)}`);
             q4Info.push(`Paper LER:${actualPaperLer.toFixed(2)}`);
@@ -12007,9 +12538,13 @@
                 }
                 prevPd = pd;
             }
+            // Avg / Mid in the step table's units (dD per log L): the red trace is drawn
+            // ÷ the scene-line slope, so its averages are scaled back (Benskin: the
+            // midtone figure must match the S→H table)
             const ga = trChartQ4._gradientAxis;
             if (ga && ga.avg !== undefined) {
-                q4Info.push(`Red trace ÷ line slope · Avg:${ga.avg.toFixed(2)}` + (ga.avgMid !== undefined ? `  Mid:${ga.avgMid.toFixed(2)}` : ''));
+                q4Info.push(`Avg:${(ga.avg * idealSlope).toFixed(2)}` + (ga.avgMid !== undefined ? `  Mid:${(ga.avgMid * idealSlope).toFixed(2)}` : '')
+                    + ' (dD per log L)');
             }
             if (showMetered && meteredPrintD !== null) {
                 const meteredIdealD = sceneLineY(meteredR);
@@ -12367,9 +12902,12 @@
 
                 const trendData = trend.line;
 
+                // speed plots: the other methods' EIs beside the active method's EFS
+                const methodSeries = analysisMethodSeries(curvesData, currentAnalysisPlot, currentEffectiveSpeedMethod);
                 const datasets = [
                     {
                         type: 'scatter', data: data,
+                        label: methodSeries.length ? `EFS (${SPEED_METHOD_SHORT[currentEffectiveSpeedMethod] || 'FD'})` : undefined,
                         backgroundColor: '#1d1d1f', borderColor: '#1d1d1f',
                         radius: 4, hoverRadius: 5, pointStyle: 'circle', order: 2
                     }
@@ -12382,6 +12920,7 @@
                         fill: false, order: 1
                     });
                 }
+                datasets.push(...analysisMethodDatasets(methodSeries, currentAnalysisPlot, 100, 3));
 
                 analysisChart = new Chart(canvas, {
                     data: { datasets },
@@ -12390,7 +12929,8 @@
                         responsive: true, maintainAspectRatio: false, animation: false,
                         interaction: { mode: 'nearest', intersect: false },
                         plugins: {
-                            legend: { display: false },
+                            legend: { display: methodSeries.length > 0, position: 'bottom',
+                                      labels: { usePointStyle: true, boxWidth: 7, font: { size: 11 }, color: '#424245', filter: (item) => !!item.text } },
                             tooltip: { enabled: false },
                             title: {
                                 display: true, text: plotDef.title,
@@ -12546,6 +13086,7 @@
             btzsFileInput.addEventListener('change', importBTZS);
             targetLerInput.addEventListener('input', () => { updateChartAndCalculations(); parsePaperCurves(); });
             flareLogHInput.addEventListener('input', updateChartDebounced);
+            flareNormalInput.addEventListener('input', updateChartDebounced);
             flareModelSelect.addEventListener('change', updateChartAndCalculations);
             document.getElementById('lensQualitySelect').addEventListener('change', updateChartAndCalculations);
             // Processing conditions are printed under the aims table
@@ -12554,7 +13095,6 @@
             isoMethodRadios.forEach(radio => radio.addEventListener('change', toggleIsoMethodUI));
             targetIsoInput.addEventListener('input', updateChartDebounced);
             speedMethodSelect.addEventListener('change', updateChartAndCalculations);
-            normalLslrInput.addEventListener('input', updateChartDebounced);
             document.getElementById('targetCiInput').addEventListener('input', updateChartDebounced);
             // Axis as it was before the user's edit (see remapGammaWindows). Taken when the
             // control is entered, so restores and imports in between never count as an edit.
@@ -12591,7 +13131,6 @@
             document.getElementById('zoneTableMethod').addEventListener('change', () => {
                 const method = document.getElementById('zoneTableMethod').value;
                 document.getElementById('targetCiContainer').classList.toggle('hidden', method !== 'target_ci');
-                document.getElementById('normalLslrContainer').classList.toggle('hidden', method !== 'scene_first');
                 updateChartAndCalculations();
             });
 
@@ -12708,10 +13247,10 @@
             const formatTrailingZeros = (input) => {
                 input.addEventListener('blur', () => padTwoDecimals(input));
             };
-            formatTrailingZeros(document.getElementById('normalLslrInput'));
             formatTrailingZeros(document.getElementById('targetCiInput'));
             formatTrailingZeros(targetLerInput);
             formatTrailingZeros(flareLogHInput);
+            formatTrailingZeros(flareNormalInput);
 
             // Info tips: one shared popover shows the hidden .info-body of the (i) under the
             // pointer or keyboard focus. Clicks on a tip never reach a surrounding label or
@@ -12765,12 +13304,12 @@
                 { id: 'lensQualitySelect', type: 'select' },
                 { id: 'targetLer', type: 'number' },
                 { id: 'flareLogH', type: 'number' },
+                { id: 'flareNormalLslr', type: 'number' },
                 { id: 'logHModeSelect', type: 'select' },
                 { id: 'customLogHInput', type: 'text' },
                 { id: 'speedMethodSelect', type: 'select' },
                 { id: 'targetIsoInput', type: 'number' },
                 { id: 'zoneTableMethod', type: 'select' },
-                { id: 'normalLslrInput', type: 'number' },
                 { id: 'targetCiInput', type: 'number' },
                 { id: 'xAxisStep', type: 'number' },
                 { id: 'yAxisStep', type: 'number' },
@@ -12850,6 +13389,9 @@
                 // Lens tiers were renamed from quality to element count; without this a
                 // saved session would set a value no <option> has and blank the select.
                 if (state.lensQualitySelect !== undefined) state.lensQualitySelect = lensTierOf(state.lensQualitySelect) || 'medium';
+                // Saved before the two Normal fields were merged: a Scene-First Normal carries over
+                if (state.flareNormalLslr === undefined && state.zoneTableMethod === 'scene_first' && state.normalLslrInput !== undefined)
+                    state.flareNormalLslr = state.normalLslrInput;
                 settingsMap.forEach(s => {
                     const el = document.getElementById(s.id);
                     if (!el || state[s.id] === undefined) return;
@@ -12865,7 +13407,6 @@
                 // Sync visibility
                 const method = document.getElementById('zoneTableMethod').value;
                 document.getElementById('targetCiContainer').classList.toggle('hidden', method !== 'target_ci');
-                document.getElementById('normalLslrContainer').classList.toggle('hidden', method !== 'scene_first');
                 toggleLogH_UI();
                 document.getElementById('paperCustomStepsContainer').classList.toggle('hidden',
                     document.getElementById('paperStepMode').value !== 'custom');
@@ -12888,7 +13429,7 @@
             document.getElementById('trInterpInfo').style.display =
                 (trUsePaperChecked && trPaperModeVal === 'interpolated') ? '' : 'none';
             // Format trailing zeros after load
-            ['normalLslrInput', 'targetCiInput', 'targetLer', 'flareLogH'].forEach(id => padTwoDecimals(document.getElementById(id)));
+            ['targetCiInput', 'targetLer', 'flareLogH', 'flareNormalLslr'].forEach(id => padTwoDecimals(document.getElementById(id)));
 
             // Auto-save on any input/change
             document.body.addEventListener('input', saveState);
