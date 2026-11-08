@@ -768,6 +768,39 @@
         }
         .ti-toggle:focus-visible { border-radius: 6px; }
         .ti-lines.collapsed { display: none; }
+        /* --- Tone reproduction animation: focus mode + side panel --- */
+        body.tr-anim-focus { overflow: hidden; height: 100vh; }
+        body.tr-anim-focus .topbar, body.tr-anim-focus .app-sidebar { display: none !important; }
+        body.tr-anim-focus .app-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+        body.tr-anim-focus .app-main { padding: 12px 16px 0; }
+        body.tr-anim-focus .app-content > * { display: none !important; }
+        body.tr-anim-focus .app-content > #panelToneReproChart { display: block !important; }
+        body.tr-anim-focus #trStatusMsg, body.tr-anim-focus .tr-info-panel { display: none !important; }
+        body.tr-anim-focus .tr-layout { flex-wrap: nowrap; align-items: center; height: calc(100vh - 24px); }
+        body.tr-anim-focus .tr-frame { width: min(calc(100vh - 56px), calc(100vw - 32px - 380px - 24px)); }
+        @media (max-width: 900px) {
+            body.tr-anim-focus { overflow: auto; height: auto; }
+            body.tr-anim-focus .tr-layout { flex-wrap: wrap; height: auto; }
+            body.tr-anim-focus .tr-frame { width: 100%; }
+            body.tr-anim-focus #trAnimPanel { flex: 1 1 100%; max-height: none; }
+        }
+        #trAnimPanel { display: none; }
+        body.tr-anim-focus #trAnimPanel {
+            display: flex; flex-direction: column; gap: 10px;
+            flex: 0 0 380px; max-height: calc(100vh - 24px); overflow-y: auto;
+            padding: 14px; border: 1px solid #e3e3e7; border-radius: 14px;
+            background: rgba(251,251,253,0.97); box-shadow: 0 6px 28px rgba(0,0,0,0.10);
+        }
+        #traPic { width: 100%; display: block; border-radius: 8px; background: #f2f2f5; }
+        #traWedges { width: 100%; display: block; }
+        .tra-note { font-size: 11px; line-height: 1.35; color: #86868b; margin-bottom: -4px; }
+        .tra-legend { display: flex; align-items: center; gap: 12px; font-size: 11px; color: #6e6e73; }
+        .tra-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; opacity: .75; }
+        .tra-legend .tra-map { margin-left: auto; padding: 5px 10px; font-size: 11px; }
+        .ca-btn.tra-on, .ca-btn.tra-on:hover { background: #1d1d1f; color: #fff; }
+        .tra-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .tra-open { width: 100%; padding: 9px 14px; font-size: 12.5px; font-weight: 500; }
+
         .tr-frame .tr-grid-wrapper {
             aspect-ratio: 1 / 1;
             height: auto;
@@ -1398,7 +1431,33 @@
                         </div>
                     </div>
 
+                    <div class="tr-anim-panel" id="trAnimPanel">
+                        <div class="tra-note" id="traNote"></div>
+                        <canvas id="traPic"></canvas>
+                        <div class="tra-legend">
+                            <span><i style="background:rgb(94,92,230)"></i>compressed</span>
+                            <span><i style="background:rgb(255,149,0)"></i>stretched</span>
+                            <button type="button" class="ca-btn tra-map" id="traMap" title="Tint the picture where this stage compresses or stretches its tones">Contrast map</button>
+                        </div>
+                        <canvas id="traWedges"></canvas>
+                        <div class="tra-controls">
+                            <button type="button" class="ca-btn" id="traRestart" title="Restart">&#8635;</button>
+                            <button type="button" class="ca-btn" id="traPrev" title="Previous stage">&#9664;&#9664;</button>
+                            <button type="button" class="ca-btn" id="traPlay" title="Play">&#9654;</button>
+                            <button type="button" class="ca-btn" id="traNext" title="Next stage">&#9654;&#9654;</button>
+                            <div id="traDots" style="display:flex; gap:5px; align-items:center; margin:0 4px;"></div>
+                            <select class="ca-speed" id="traSpeed" title="Playback speed">
+                                <option value="0.5">0.5&times;</option>
+                                <option value="1" selected>1&times;</option>
+                                <option value="2">2&times;</option>
+                            </select>
+                        </div>
+                        <div class="tra-controls">
+                            <button type="button" class="ca-btn ca-btn-close" id="traClose" title="Exit animation (Esc)">Exit &#10005;</button>
+                        </div>
+                    </div>
                     <div class="tr-info-panel">
+                        <button type="button" class="secondary-btn tra-open" id="trAnimOpen" title="Play the scene-to-print tonal transfer with step wedges and a picture">&#9654; Animate</button>
                         <div class="tr-info-block"><div class="ti-title ti-toggle collapsed" onclick="toggleCollapsible(this)">Q1 · Camera / Flare</div><div class="ti-lines collapsed" id="trInfoQ1"></div></div>
                         <div class="tr-info-block"><div class="ti-title ti-toggle collapsed" onclick="toggleCollapsible(this)">Q2 · Film</div><div class="ti-lines collapsed" id="trInfoQ2"></div></div>
                         <div class="tr-info-block"><div class="ti-title ti-toggle collapsed" onclick="toggleCollapsible(this)">Q3 · Paper</div><div class="ti-lines collapsed" id="trInfoQ3"></div></div>
@@ -1461,9 +1520,8 @@
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-1 text-sm">
                     <div>
                         <label class="font-medium text-xs" style="color:var(--text-muted);">Flare Model<span class="info-tip" tabindex="0" role="button" aria-label="More information"><span id="lerHint" class="info-body"></span></span></label>
-                        <select id="flareModelSelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" title="Benskin, What is Normal (pp.3–4). Fixed: the same flare for every scene (strongest pushes and pulls). Variable: flare rises 0.10 log per stop of scene range from the Flare value at the Normal LSLR. Practical: Benskin's equation between the two, 0.05 log per 0.30 of scene range from the same start, and his recommendation.">
+                        <select id="flareModelSelect" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" title="Benskin, What is Normal (pp.3–4). Fixed: the same flare for every scene (strongest pushes and pulls). Practical: flare follows the scene range, starting from the Flare value at the Normal LSLR and rising 0.05 log per 0.30 of scene range (Benskin's recommendation).">
                             <option value="fixed">Fixed flare</option>
-                            <option value="variable">Variable flare</option>
                             <option value="practical" selected>Practical flare</option>
                         </select>
                     </div>
@@ -1482,11 +1540,11 @@
                     <div class="col-span-2 sm:col-span-1 grid grid-cols-2 gap-2">
                         <div>
                             <label class="font-medium text-xs whitespace-nowrap" style="color:var(--text-muted);">Flare (log H)</label>
-                            <input type="number" id="flareLogH" step="0.01" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" value="0.40" title="Average camera flare at the shadow, as a log flare factor. 0.40 (factor 2.5) is Benskin's and Nelson's normal for small format, 0.30 for large format; Benskin formerly used 0.34 (CI 0.56, Kodak's diffusion aim), Holm 0.30 (factor 2). The variable and practical models start from this value at the Normal LSLR.">
+                            <input type="number" id="flareLogH" step="0.01" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" value="0.40" title="Average camera flare at the shadow, as a log flare factor. 0.40 (factor 2.5) is Benskin's and Nelson's normal for small format, 0.30 for large format; Benskin formerly used 0.34 (CI 0.56, Kodak's diffusion aim), Holm 0.30 (factor 2). Used by the fixed model. The practical model starts from Benskin's 0.40 at the Normal LSLR, so the field is greyed out there.">
                         </div>
                         <div>
                             <label class="font-medium text-xs whitespace-nowrap" style="color:var(--text-muted);">Normal (LSLR)</label>
-                            <input type="number" id="flareNormalLslr" step="0.05" min="0.50" max="4.00" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" value="2.20" title="The scene LSLR at which the flare equals the Flare value: the pivot of the variable and practical models. Benskin's normal is 2.20 (2.10 is the Zone System habit). Not used by the fixed model.">
+                            <input type="number" id="flareNormalLslr" step="0.05" min="0.50" max="4.00" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1" value="2.20" title="The scene LSLR at which the flare equals the Flare value: the pivot of the practical model. Benskin's normal is 2.20 (2.10 is the Zone System habit). Not used by the fixed model.">
                         </div>
                     </div>
                 </div>
@@ -1520,8 +1578,8 @@
                 <div id="speedFallbackNote"></div>
                 </div>
 
-                <h3 class="section-heading mt-6 collapsible collapsed" onclick="toggleCollapsible(this)">Exposure &amp; Scene</h3>
-                <div class="collapsible-content collapsed">
+                <h3 class="section-heading mt-6 collapsible" onclick="toggleCollapsible(this)">Exposure &amp; Scene</h3>
+                <div class="collapsible-content">
                 <div class="overflow-x-auto">
                     <table class="min-w-full border-collapse text-sm">
                         <thead>
@@ -3440,11 +3498,12 @@
         // Benskin, "What is Normal" pp.1–4: normal = scene LSLR 2.20 with average
         // flare 0.40 → film range 1.80 → CI 0.58 at paper LER 1.05 (formerly flare
         // 0.34 → CI 0.56, still Kodak's and Stroebel's diffusion aim; Holm 1994 uses
-        // flare factor 2 ≈ 0.30). Benskin's three models, all as equations in the
-        // scene LSLR L, with F = the Flare input at the Normal LSLR N (both fields):
+        // flare factor 2 ≈ 0.30). Two models, as equations in the scene LSLR L, with
+        // F = the Flare input at the Normal LSLR N (both fields):
         //   fixed     — F for every scene range
-        //   variable  — F + 0.10 log per stop of scene range (0.60 at 2.80 … 0.10 at 1.30)
-        //   practical — F + 0.05 log per 0.30 of scene range, his split between the two.
+        //   practical — F + 0.05 log per 0.30 of scene range, Benskin's split between
+        //               fixed flare and his variable model (0.10 per stop). The variable
+        //               model itself is not offered: practical is his recommendation.
         //               "The PFM is an equation, not a fixed table": at F 0.40, N 2.20,
         //               LER 1.05 it gives his table, CI 0.46 / 0.51 / 0.58 / 0.68 / 0.81
         //               at L 2.80 … 1.60 and 1.00 at 1.30 (his table rounds that one to 1.02)
@@ -3452,13 +3511,14 @@
         // is × the lens factor. CI = LER/(L − flare) at any paper LER.
         // Flare is modelled as a constant log flare factor at the shadow (Jones &
         // Condit; What is Normal p.3), not as a fixed % of white (Hunt) — the
-        // variable and practical models carry the rise of flare with scene range.
+        // practical model carries the rise of flare with scene range.
         const FLARE_TABLE_LSLR = [1.30, 2.80];  // N+3 … N−2 of Benskin's tables (Normal 2.20): the range he tabulated
         const FLARE_NORMAL_DEFAULT = 2.20;      // Benskin's normal scene LSLR, the pivot N of both linear models
-        const FLARE_SLOPE = { variable: 0.10 / 0.301, practical: 0.05 / 0.30 }; // log flare per log of scene range
-        const FLARE_FLOOR = 0.10;               // "flare cannot equal zero": the variable model's +3 value
+        const FLARE_SLOPE = { practical: 0.05 / 0.30 }; // log flare per log of scene range
+        const FLARE_FLOOR = 0.10;               // "flare cannot equal zero" (Benskin)
+        const PRACTICAL_START_FLARE = 0.40;     // Benskin's average flare at the Normal LSLR; the Flare field is greyed out in practical
         const FLARE_RANGE_TOL = 0.03;           // log H (~1/10 stop): N−2 of a CI 0.58 normal is 2.82, not a real excursion
-        const FLARE_MODEL_LABEL = { fixed: 'Fixed flare', variable: 'Variable flare', practical: 'Practical flare' };
+        const FLARE_MODEL_LABEL = { fixed: 'Fixed flare', practical: 'Practical flare' };
 
         // Current flare-model settings. ler is the density range the negative must have:
         // the Paper LER field, which the user sets for their own enlarger and paper.
@@ -3466,10 +3526,11 @@
         const flareModelSettings = () => {
             const flare = parseFloat(flareLogHInput.value);
             const normal = parseFloat(flareNormalInput.value);
+            const model = flareModelSelect.value;
             return {
-                model: flareModelSelect.value,
+                model,
                 ler: filmTargetLer(),
-                flare: Number.isFinite(flare) ? flare : 0.40,
+                flare: model === 'practical' ? PRACTICAL_START_FLARE : (Number.isFinite(flare) ? flare : 0.40),
                 normal: Number.isFinite(normal) && normal > 0 ? normal : FLARE_NORMAL_DEFAULT,
                 lensK: lensFlareFactor()
             };
@@ -3478,7 +3539,7 @@
         const outsideFlareTable = (lslr) =>
             lslr < FLARE_TABLE_LSLR[0] - FLARE_RANGE_TOL || lslr > FLARE_TABLE_LSLR[1] + FLARE_RANGE_TOL;
 
-        // Lens-scaled flare of a linear model (variable, practical) at scene LSLR L:
+        // Lens-scaled flare of the practical model at scene LSLR L:
         // K · max(floor, F + s·(L − N)). The floor is 0.10, or F itself when F is lower,
         // so a flare input under 0.10 is never raised.
         const linearFlareFloor = (m) => Math.min(FLARE_FLOOR, m.flare);
@@ -3525,6 +3586,24 @@
             return r ? r.lslr / 0.301 : null;
         };
 
+        // Flare field: editable for Fixed; greyed out at Benskin's 0.40 for Practical.
+        // The user's fixed value waits in data-fixed-value meanwhile (saved and exported).
+        const syncFlareField = () => {
+            const practical = flareModelSelect.value === 'practical';
+            const shown = PRACTICAL_START_FLARE.toFixed(2);
+            if (practical) {
+                // Entering practical, or a loaded file wrote its fixed value into the greyed field
+                if (!flareLogHInput.disabled || flareLogHInput.value !== shown) flareLogHInput.dataset.fixedValue = flareLogHInput.value;
+                flareLogHInput.value = shown;
+            } else if (!practical && flareLogHInput.disabled && flareLogHInput.dataset.fixedValue !== undefined) {
+                flareLogHInput.value = flareLogHInput.dataset.fixedValue;
+            }
+            flareLogHInput.disabled = practical;
+            flareLogHInput.parentElement.classList.toggle('opacity-50', practical);
+        };
+        const fixedFlareValue = () => flareLogHInput.disabled && flareLogHInput.dataset.fixedValue !== undefined
+            ? flareLogHInput.dataset.fixedValue : flareLogHInput.value;
+
         // Density range the negative should have = the Paper LER field. Users with a
         // condenser enlarger enter the lower value their setup needs there.
         const filmTargetLer = () => parseFloat(targetLerInput.value);
@@ -3535,8 +3614,7 @@
             if (el) {
                 const at = `${m.flare.toFixed(2)} at a ${m.normal.toFixed(2)} scene`;
                 el.textContent = ({ fixed: `Fixed flare: ${m.flare.toFixed(2)} log H for every scene range. The Normal (LSLR) field is not used.`,
-                         variable: `Variable flare (Benskin): ${at}, 0.10 log more per stop of scene range, never below 0.10.`,
-                         practical: `Practical flare (Benskin's equation, between fixed and variable): ${at}, 0.05 log more per 0.30 of scene range, never below 0.10. At 0.40 / 2.20 it gives his table: CI 0.58 for a 2.20 scene at LER 1.05.` })[m.model]
+                         practical: `Practical flare (Benskin): ${at}, 0.05 log more per 0.30 of scene range, never below 0.10. At 0.40 / 2.20 it gives his table: CI 0.58 for a 2.20 scene at LER 1.05.` })[m.model]
                     + ' Flare and Normal are the camera flare at the shadow (log H) and the scene LSLR it applies to; the lens setting multiplies the flare. Every aim is CI = LER ÷ (LSLR − flare).';
             }
             const th = document.getElementById('effFlareHeader');
@@ -4961,8 +5039,9 @@
                 isoMethod: optionOr(g.isoMethod, ['standard', 'iso6_interpolated'], 'standard'),
                 speedMethod: optionOr(g.speedMethod, ['fractionalGradient', 'deltaX', 'fixedDensity'], 'deltaX'),
                 targetIso: numberInputText(g.targetIso ?? '400'),
-                flare: { model: optionOr(g.flareModel, ['fixed', 'variable', 'practical'], 'fixed'), ler: paperLer,
-                         flare: Number.isFinite(flare) ? flare : 0.40,
+                flare: { model: optionOr(g.flareModel === 'variable' ? 'practical' : g.flareModel, ['fixed', 'practical'], 'fixed'), ler: paperLer,
+                         flare: optionOr(g.flareModel === 'variable' ? 'practical' : g.flareModel, ['fixed', 'practical'], 'fixed') === 'practical'
+                             ? PRACTICAL_START_FLARE : (Number.isFinite(flare) ? flare : 0.40),
                          normal: flareNormal > 0 ? flareNormal : FLARE_NORMAL_DEFAULT, lensK: lensFlareFactor(lensTier || undefined) },
                 paperLer,
                 // development-aims normal (page defaults: Scene-First at LSLR 2.20, CI 0.58)
@@ -5010,9 +5089,12 @@
             const targetLer = fm.ler; // the density range the negative needs
             const flareModel = fm.model;
 
-            // Flare drives every model; the Normal pivot only the variable and practical ones
+            // Fixed uses the Flare field; practical uses the Normal pivot and starts
+            // from Benskin's 0.40 there, so its Flare field is greyed out showing 0.40.
+            // The fixed value is kept and comes back when Fixed is chosen again.
             flareNormalInput.disabled = flareModel === 'fixed';
             flareNormalInput.parentElement.classList.toggle('opacity-50', flareModel === 'fixed');
+            syncFlareField();
             updateLerHint();
 
             // Read the cards; all the arithmetic happens in computeFilmSeries
@@ -6488,7 +6570,7 @@
 
             writePlainTextSection('Log Scene Luminance Range (LSLR)', [
                 'LSLR is the log range of scene luminance that a given film and development combination is suited for. It is based on the film\'s Contrast Index (CI), the target printing paper (LER), and camera flare.',
-                'LSLR = LER / CI + flare. Higher CI (more development) captures a narrower scene range, while lower CI captures wider scenes. Benskin ("What is Normal") gives three flare models, used here as equations in the scene LSLR with the Flare value F at the Normal LSLR N: Fixed flare uses F for every scene range; Variable flare adds 0.10 log of flare per stop of scene range (never below 0.10); Practical flare, his recommendation, splits the difference with 0.05 log per 0.30 of scene range (never below 0.10). At F 0.40, N 2.20 and LER 1.05 the practical equation reproduces his table (CI 0.46 / 0.51 / 0.58 / 0.68 / 0.81 / 1.00 from LSLR 2.80 to 1.30). The required CI is LER / (LSLR - flare) at any paper LER; scene ranges outside his tabulated 1.30-2.80 are marked.',
+                'LSLR = LER / CI + flare. Higher CI (more development) captures a narrower scene range, while lower CI captures wider scenes. Two flare models from Benskin ("What is Normal"), used here as equations in the scene LSLR with the Flare value F at the Normal LSLR N: Fixed flare uses F for every scene range; Practical flare, his recommendation, adds 0.05 log of flare per 0.30 of scene range (never below 0.10). At F 0.40, N 2.20 and LER 1.05 the practical equation reproduces his table (CI 0.46 / 0.51 / 0.58 / 0.68 / 0.81 / 1.00 from LSLR 2.80 to 1.30). The required CI is LER / (LSLR - flare) at any paper LER; scene ranges outside his tabulated 1.30-2.80 are marked.',
                 'The lens setting multiplies the flare part of every model (x0.75 / x1.00 / x1.40, a heuristic of this tool). This report used: ' + (FLARE_MODEL_LABEL[flareModelSelect.value] || flareModelSelect.value) + ', flare ' + flareModelSettings().flare.toFixed(2) + (flareModelSelect.value === 'fixed' ? '' : ' at Normal LSLR ' + flareModelSettings().normal.toFixed(2)) + ', lens x' + lensFlareFactor().toFixed(2) + ', paper LER ' + targetLerInput.value + '.'
             ]);
 
@@ -7063,7 +7145,7 @@
                     flareModel: document.getElementById('flareModelSelect').value,
                     targetLer: document.getElementById('targetLer').value,
                     lensQualitySelect: document.getElementById('lensQualitySelect').value,
-                    flareLogH: document.getElementById('flareLogH').value,
+                    flareLogH: fixedFlareValue(),
                     flareNormalLslr: flareNormalInput.value,
                     isoMethod: document.querySelector('input[name="isoMethod"]:checked').value,
                     targetIso: document.getElementById('targetIsoInput').value,
@@ -8595,6 +8677,8 @@
                         customLogH: 'customLogHInput'
                     };
 
+                    // The variable flare model was retired: its files use the practical one
+                    if (data.globals.flareModel === 'variable') data.globals.flareModel = 'practical';
                     Object.keys(data.globals).forEach(key => {
                         const elId = globalKeyMap[key] || key;
                         const el = document.getElementById(elId);
@@ -9954,8 +10038,7 @@
             };
 
             const modelTxt = ({
-                practical: 'Benskin\'s practical model (' + fmS.flare.toFixed(2) + ' log H at a ' + fmS.normal.toFixed(2) + ' scene, 0.05 more per 0.30 of range)',
-                variable: 'Benskin\'s variable model (' + fmS.flare.toFixed(2) + ' log H at a ' + fmS.normal.toFixed(2) + ' scene, 0.10 more per stop of range)'
+                practical: 'Benskin\'s practical model (' + fmS.flare.toFixed(2) + ' log H at a ' + fmS.normal.toFixed(2) + ' scene, 0.05 more per 0.30 of range)'
             })[flareModel] || ('the fixed model (' + fmS.flare.toFixed(2) + ' log H)');
             return { layout: true, steps: [
                 { dur: 1500, draw: sLer, caption: 'Start at the paper, not the film. Your enlarging paper can hold a <b>log exposure range of ' + targetLer.toFixed(2) + '</b>. That is a fixed density window the negative has to fit into.' },
@@ -10542,6 +10625,8 @@
 
                         // Draw the endpoint dot only — the static value boxes are replaced
                         // by the live hover trace, which reads all four curves on demand.
+                        // The tone animation draws a clean diagram without them.
+                        if (trAnim) return;
                         ctx.save();
                         ctx.beginPath();
                         ctx.arc(px, py, 3.5, 0, Math.PI * 2);
@@ -10750,6 +10835,7 @@
             const overlay = document.getElementById('trHoverOverlay');
             const wrapper = overlay ? overlay.parentElement : null;
             if (!overlay || !wrapper || !trHoverCtx || !trChartQ1) return;
+            if (trAnim) return; // the animation owns the overlay
             const ctxH = trHoverCtx;
 
             // Clamp r to the scene range
@@ -10866,6 +10952,548 @@
                 g.clearRect(0, 0, overlay.width, overlay.height);
             }
         };
+
+        // --- Tone reproduction animation ---
+        // Plays the scene → print chain stage by stage. A step wedge, about one stop
+        // per step, travels through the four curves on the overlay, and the panel
+        // beside the diagram shows the same tones after each stage: step wedge,
+        // continuous wedge and a picture. Every tone goes through the same closures
+        // the hover trace uses (trHoverCtx), so the animation always shows the diagram.
+        let trAnim = null;
+        const TR_ANIM_STAGE_MS = 3400;
+        const TR_ANIM_STAGES = [
+            { title: 'Scene', note: 'Scene tones, one stop apart, from highlight to shadow' },
+            { title: 'Q1 · Camera / Flare', note: 'Q1 · Lens flare turns scene luminance into film exposure' },
+            { title: 'Q2 · Film', note: 'Q2 · The film turns exposure into negative density' },
+            { title: 'Q3 · Paper', note: 'Q3 · The paper turns negative density into print density' },
+            { title: 'Q4 · Reproduction', note: 'Q4 · Print against scene, tone by tone' }
+        ];
+        const traClamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+        const traSmooth = (a, b, v) => { const x = traClamp((v - a) / (b - a)); return x * x * (3 - 2 * x); };
+        // Density → 8-bit sRGB grey, with paper white (D 0) as screen white
+        const traDensityByte = (D) => {
+            const lin = traClamp(Math.pow(10, -D));
+            const v = lin <= 0.0031308 ? 12.92 * lin : 1.055 * Math.pow(lin, 1 / 2.4) - 0.055;
+            return Math.round(v * 255);
+        };
+
+        // Built-in still life: three glossy spheres (white, grey, black) on a table in
+        // front of a wall, lit from the upper left. Returns log luminance per pixel.
+        const traStillLife = (W, H) => {
+            const out = new Float32Array(W * H);
+            const R = H * 0.19, cy = H * 0.60, tableY = H * 0.62;
+            const balls = [
+                { cx: W * 0.24, a: 0.88 }, { cx: W * 0.50, a: 0.18 }, { cx: W * 0.76, a: 0.035 }
+            ];
+            const L = [-0.55, -0.6, 0.58], ln = Math.hypot(...L);
+            const Lx = L[0] / ln, Ly = L[1] / ln, Lz = L[2] / ln;
+            const Hx = Lx, Hy = Ly, Hz = Lz + 1, hn = Math.hypot(Hx, Hy, Hz);
+            for (let y = 0; y < H; y++) {
+                for (let x = 0; x < W; x++) {
+                    const u = x / W, v = y / H;
+                    let lum;
+                    if (y < tableY) {
+                        // Wall: window light falling off to the right and downwards
+                        lum = 0.62 * (0.12 + 0.88 * Math.pow(1 - u, 1.6)) * (0.75 + 0.25 * (1 - v));
+                    } else {
+                        // Table top: brighter towards the light, with soft cast shadows
+                        lum = 0.30 * (0.25 + 0.75 * Math.pow(1 - u, 1.2)) * (0.8 + 0.2 * (v - 0.62) / 0.38);
+                        let shade = 1;
+                        balls.forEach(b => {
+                            const sx = (x - (b.cx + R * 1.05)) / (R * 1.45), sy = (y - (cy + R * 0.92)) / (R * 0.30);
+                            const d = Math.hypot(sx, sy);
+                            shade *= 0.10 + 0.90 * traSmooth(0.55, 1.15, d);
+                            const cxd = (x - b.cx) / (R * 0.75), cyd = (y - (cy + R * 0.98)) / (R * 0.09);
+                            shade *= 0.25 + 0.75 * traSmooth(0.3, 1.0, Math.hypot(cxd, cyd));
+                        });
+                        lum *= shade;
+                    }
+                    for (const b of balls) {
+                        const nx = (x - b.cx) / R, ny = (y - cy) / R, rr = nx * nx + ny * ny;
+                        if (rr > 1) continue;
+                        const nz = Math.sqrt(1 - rr);
+                        const lam = Math.max(0, nx * Lx + ny * Ly + nz * Lz);
+                        const spec = Math.pow(Math.max(0, (nx * Hx + ny * Hy + nz * Hz) / hn), 80);
+                        // Fill light from the table bounces into the lower half
+                        const bounce = 0.05 * Math.max(0, ny) + 0.025;
+                        lum = b.a * (0.95 * lam + bounce) + 0.55 * spec;
+                        // Soft edge against the background
+                        if (rr > 0.97) lum = lum * 0.6 + (y < tableY ? 0.1 : 0.05) * 0.4;
+                        break;
+                    }
+                    out[y * W + x] = Math.log10(Math.max(lum, 1e-5));
+                }
+            }
+            return out;
+        };
+
+        // Log luminances → 0..255 tone index over the scene range, brightest 0.3 %
+        // at the highlight and darkest 0.3 % at the shadow
+        const traIndexFromLog = (logL, W, H) => {
+            const sorted = Float32Array.from(logL).sort();
+            const lo = sorted[Math.floor(sorted.length * 0.003)];
+            const hi = sorted[Math.floor(sorted.length * 0.997)];
+            const span = Math.max(hi - lo, 1e-3);
+            const idx = new Uint8Array(W * H);
+            for (let i = 0; i < idx.length; i++) idx[i] = Math.round(255 * traClamp((hi - logL[i]) / span));
+            return { W, H, idx };
+        };
+
+        // Walk one scene tone through the chain (same steps as the hover trace)
+        const traChain = (c, r) => {
+            const lh = c.calcQ1Y(r);
+            const nd = trInterpolate(lh, 'y', 'x', c.q2Points, false);
+            if (nd === null) return null;
+            const pd = c.getPrintDensity(nd);
+            // Film-plane tone relative to the flared highlight
+            return { r, lh, nd, pd, fd: c.calcQ1Y(c.highlightReflectance) - lh };
+        };
+        const traStageDensity = (ch, k) => [ch.r, ch.fd, ch.nd, ch.pd][Math.min(k, 3)];
+
+        // Tone gain colour: compressed (gain < 1) indigo, stretched (gain > 1) orange,
+        // stronger the further from 1; null when the tone spacing barely changes
+        const TRA_COMPRESS = [94, 92, 230], TRA_STRETCH = [255, 149, 0];
+        const traGainTint = (g) => {
+            const l = Math.log2(Math.max(g, 1e-3));
+            if (!isFinite(l) || Math.abs(l) < 0.07) return null;
+            return { rgb: l < 0 ? TRA_COMPRESS : TRA_STRETCH, m: Math.min(1, Math.abs(l) / 1.3) };
+        };
+        const traGainCss = (g, alpha) => {
+            const t = traGainTint(g);
+            return t ? `rgba(${t.rgb.join(',')},${(alpha * (0.3 + 0.7 * t.m)).toFixed(3)})` : `rgba(0,0,0,${(alpha * 0.18).toFixed(3)})`;
+        };
+
+        // Rebuild everything that depends on the diagram: steps, tone LUTs, pictures,
+        // and where each stage stretches or compresses the tone scale
+        const traBuild = () => {
+            const c = trHoverCtx;
+            trAnim.ctxRef = c;
+            trAnim.data = null;
+            if (!c) return;
+            const lo = c.highlightReflectance, hi = c.shadowReflectance, range = hi - lo;
+            const n = Math.max(2, Math.round(range / 0.30103) + 1);
+            const steps = [];
+            for (let i = 0; i < n; i++) {
+                const ch = traChain(c, lo + range * i / (n - 1));
+                if (!ch) return;
+                steps.push(ch);
+            }
+            const chains = [];
+            for (let j = 0; j < 256; j++) {
+                const ch = traChain(c, lo + range * j / 255);
+                if (!ch) return;
+                chains.push(ch);
+            }
+            const lut = [0, 1, 2, 3].map(k => chains.map(ch => traDensityByte(traStageDensity(ch, k))));
+            // Position of a tone on each stage's own scale: log units away from the
+            // highlight (the negative counts down from its densest tone)
+            const posOf = (ch, k) => Math.abs(traStageDensity(ch, k) - traStageDensity(chains[0], k));
+            const pos = [0, 1, 2, 3].map(k => steps.map(ch => posOf(ch, k)));
+            const posLut = [0, 1, 2, 3].map(k => chains.map(ch => posOf(ch, k)));
+            // Patch edges: halfway between neighbouring tones, so a patch is as wide
+            // as the tone spacing around it on that stage's scale
+            const bounds = pos.map(p => {
+                const b = [p[0] - (p[1] - p[0]) / 2];
+                for (let i = 1; i < n; i++) b.push((p[i - 1] + p[i]) / 2);
+                b.push(p[n - 1] + (p[n - 1] - p[n - 2]) / 2);
+                const off = b[0];
+                return b.map(v => v - off);
+            });
+            const maxExtent = Math.max(...bounds.map(b => b[n]));
+            // Local gain per LUT tone: stage k against stage k-1 (k 1..3), print
+            // against scene (k 4), from a centred difference
+            const gainLut = [null];
+            for (let k = 1; k <= 4; k++) {
+                const out = posLut[Math.min(k, 3)], inn = posLut[k === 4 ? 0 : k - 1], h = 6;
+                gainLut.push(chains.map((_, j) => {
+                    const a = Math.max(0, j - h), b = Math.min(255, j + h);
+                    const din = inn[b] - inn[a];
+                    return din > 1e-6 ? (out[b] - out[a]) / din : 1;
+                }));
+            }
+            const pic = trAnim.picture;
+            const makePic = (tab, gain) => {
+                const cv = document.createElement('canvas'); cv.width = pic.W; cv.height = pic.H;
+                const g = cv.getContext('2d'), im = g.createImageData(pic.W, pic.H);
+                const tints = gain ? gain.map(traGainTint) : null;
+                for (let i = 0; i < pic.idx.length; i++) {
+                    const j = pic.idx[i], v = tab[j];
+                    let r = v, gg = v, b = v;
+                    const t = tints && tints[j];
+                    if (t) {
+                        const a = 0.14 + 0.42 * t.m;
+                        r = v * (1 - a) + t.rgb[0] * a; gg = v * (1 - a) + t.rgb[1] * a; b = v * (1 - a) + t.rgb[2] * a;
+                    }
+                    im.data[i * 4] = r; im.data[i * 4 + 1] = gg; im.data[i * 4 + 2] = b; im.data[i * 4 + 3] = 255;
+                }
+                g.putImageData(im, 0, 0);
+                return cv;
+            };
+            const pics = lut.map(tab => makePic(tab, null));
+            // Contrast map per stage: what that stage's curve did; Q4 = print vs scene
+            const mapPics = [pics[0], makePic(lut[1], gainLut[1]), makePic(lut[2], gainLut[2]), makePic(lut[3], gainLut[3]), makePic(lut[3], gainLut[4])];
+            trAnim.data = { steps, lut, pics, mapPics, pos, bounds, maxExtent, posLut, gainLut };
+        };
+
+        // Path of step tone ch through quadrant stage k (1..4), in overlay pixels;
+        // the middle point sits on that quadrant's curve
+        const traPath = (k, ch, toOv, c) => {
+            const { sceneMax, axisLogHMax } = c;
+            if (k === 1) return [toOv(trChartQ1, ch.r, axisLogHMax), toOv(trChartQ1, ch.r, ch.lh), toOv(trChartQ1, sceneMax, ch.lh)];
+            if (k === 2) return [toOv(trChartQ2, 0, ch.lh), toOv(trChartQ2, ch.nd, ch.lh), toOv(trChartQ2, ch.nd, axisLogHMax)];
+            if (k === 3) return [toOv(trChartQ3, ch.nd, 0), toOv(trChartQ3, ch.nd, ch.pd), toOv(trChartQ3, 0, ch.pd)];
+            return [toOv(trChartQ4, sceneMax, ch.pd), toOv(trChartQ4, ch.r, ch.pd), toOv(trChartQ4, ch.r, 0)];
+        };
+
+        // How far step i of n has travelled in the current stage (0..1), highlight first
+        const traRayProgress = (t, i, n) => traClamp((traClamp(t / 0.82) - 0.32 * i / Math.max(1, n - 1)) / 0.68);
+
+        const traDrawOverlay = () => {
+            const overlay = document.getElementById('trHoverOverlay');
+            const wrapper = overlay ? overlay.parentElement : null;
+            if (!overlay || !wrapper || !trChartQ1) return;
+            const wRect = wrapper.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            if (overlay.width !== Math.round(wRect.width * dpr) || overlay.height !== Math.round(wRect.height * dpr)) {
+                overlay.width = Math.round(wRect.width * dpr);
+                overlay.height = Math.round(wRect.height * dpr);
+            }
+            const g = overlay.getContext('2d');
+            g.setTransform(dpr, 0, 0, dpr, 0, 0);
+            g.clearRect(0, 0, wRect.width, wRect.height);
+            const d = trAnim.data, c = trAnim.ctxRef;
+            if (!d) return;
+            const toOv = (chart, xv, yv) => {
+                const cr = chart.canvas.getBoundingClientRect();
+                return { x: cr.left - wRect.left + chart.scales.x.getPixelForValue(xv),
+                         y: cr.top - wRect.top + chart.scales.y.getPixelForValue(yv) };
+            };
+            const accent = '#0a84ff', n = d.steps.length, s = trAnim.stage, t = trAnim.t;
+            // Partial polyline: the first `frac` of its pixel length
+            const partial = (pts, frac) => {
+                const lens = [];
+                let total = 0;
+                for (let j = 1; j < pts.length; j++) { const l = Math.hypot(pts[j].x - pts[j - 1].x, pts[j].y - pts[j - 1].y); lens.push(l); total += l; }
+                let left = frac * total;
+                g.beginPath(); g.moveTo(pts[0].x, pts[0].y);
+                for (let j = 1; j < pts.length && left > 0; j++) {
+                    const f = Math.min(1, left / (lens[j - 1] || 1));
+                    g.lineTo(pts[j - 1].x + (pts[j].x - pts[j - 1].x) * f, pts[j - 1].y + (pts[j].y - pts[j - 1].y) * f);
+                    left -= lens[j - 1];
+                }
+                g.stroke();
+            };
+            g.save();
+            g.lineCap = 'round';
+            // Gain bands: the gaps between neighbouring rays on the way into a
+            // quadrant (grey) and on the way out (tinted by how much its curve squeezed
+            // or spread them). In Q4 the print side is the outgoing one. Bands stay
+            // once drawn, so the last stage shows the whole transfer.
+            const prog = (k, i) => k < s ? 1 : traRayProgress(t, i, n);
+            for (let k = 1; k <= s; k++) {
+                const io = { 1: ['r', 'lh'], 2: ['lh', 'nd'], 3: ['nd', 'pd'], 4: ['r', 'pd'] }[k];
+                const outSeg = k === 4 ? [0, 1] : [1, 2], inSeg = k === 4 ? [1, 2] : [0, 1];
+                const paths = d.steps.map(ch => traPath(k, ch, toOv, c));
+                for (let i = 0; i < n - 1; i++) {
+                    const a = traSmooth(0.9, 1, Math.min(prog(k, i), prog(k, i + 1)));
+                    if (a <= 0) continue;
+                    const A = d.steps[i], B = d.steps[i + 1];
+                    const din = Math.abs(B[io[0]] - A[io[0]]);
+                    const gain = din > 1e-6 ? Math.abs(B[io[1]] - A[io[1]]) / din : 1;
+                    const quad = (seg, fill) => {
+                        const P = paths[i], Q = paths[i + 1];
+                        g.globalAlpha = a;
+                        g.beginPath();
+                        g.moveTo(P[seg[0]].x, P[seg[0]].y); g.lineTo(P[seg[1]].x, P[seg[1]].y);
+                        g.lineTo(Q[seg[1]].x, Q[seg[1]].y); g.lineTo(Q[seg[0]].x, Q[seg[0]].y);
+                        g.closePath(); g.fillStyle = fill; g.fill();
+                    };
+                    quad(inSeg, 'rgba(0,0,0,0.035)');
+                    quad(outSeg, traGainCss(gain, 0.42));
+                }
+            }
+            // Rays. The scene stage drops each tone from the Q4 scene line onto the
+            // scene axis; every later stage carries on from where the last one ended.
+            // Finished rays stay on screen. No markers: the lines alone carry it.
+            for (let k = 0; k <= Math.min(s, 4); k++) {
+                d.steps.forEach((ch, i) => {
+                    const pts = k === 0
+                        ? [toOv(trChartQ4, ch.r, c.sceneLineY(ch.r)), toOv(trChartQ1, ch.r, c.axisLogHMax)]
+                        : traPath(k, ch, toOv, c);
+                    const p = prog(k, i);
+                    if (p <= 0) return;
+                    g.globalAlpha = k < s ? 0.6 : 0.9;
+                    g.strokeStyle = accent; g.lineWidth = k < s ? 1.1 : 1.4;
+                    partial(pts, p);
+                });
+            }
+            g.restore();
+        };
+
+        const traDrawPicture = () => {
+            const cv = document.getElementById('traPic');
+            const d = trAnim.data, pic = trAnim.picture;
+            const cssW = cv.clientWidth;
+            if (!cssW) return;
+            const cssH = Math.round(cssW * pic.H / pic.W);
+            const dpr = window.devicePixelRatio || 1;
+            if (cv.width !== Math.round(cssW * dpr) || cv.height !== Math.round(cssH * dpr)) {
+                cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); cv.style.height = cssH + 'px';
+            }
+            const g = cv.getContext('2d');
+            g.setTransform(dpr, 0, 0, dpr, 0, 0);
+            g.clearRect(0, 0, cssW, cssH);
+            if (!d) return;
+            g.imageSmoothingQuality = 'high';
+            const s = trAnim.stage, t = trAnim.t;
+            const P = trAnim.showMap ? d.mapPics : d.pics;
+            if (s < 4) {
+                const a = traSmooth(0.1, 0.7, t);
+                if (s > 0) { g.globalAlpha = 1; g.drawImage(P[s - 1], 0, 0, cssW, cssH); }
+                g.globalAlpha = s === 0 ? traSmooth(0, 0.5, t) : a;
+                g.drawImage(P[s], 0, 0, cssW, cssH);
+                g.globalAlpha = 1;
+            } else {
+                // Scene above a divider, print below; the divider slides up to the
+                // middle, then follows the user's drag
+                const split = cssH * (trAnim.split !== null ? trAnim.split : 1 - 0.5 * traSmooth(0, 0.6, t));
+                g.drawImage(trAnim.showMap ? d.mapPics[4] : d.pics[3], 0, 0, cssW, cssH);
+                g.save();
+                g.beginPath(); g.rect(0, 0, cssW, split); g.clip();
+                g.drawImage(d.pics[0], 0, 0, cssW, cssH);
+                g.restore();
+                g.fillStyle = '#fff'; g.fillRect(0, split - 1, cssW, 2);
+                // Grip in the middle of the line
+                g.fillStyle = 'rgba(255,255,255,0.95)';
+                g.beginPath(); g.roundRect(cssW / 2 - 18, split - 7, 36, 14, 7); g.fill();
+                g.strokeStyle = '#86868b'; g.lineWidth = 1.2;
+                [-5, 0, 5].forEach(dx => { g.beginPath(); g.moveTo(cssW / 2 + dx, split - 3); g.lineTo(cssW / 2 + dx, split + 3); g.stroke(); });
+                const pill = (txt, y) => {
+                    g.font = "600 11px -apple-system, 'SF Pro Text', sans-serif";
+                    const w = g.measureText(txt).width + 14;
+                    g.fillStyle = 'rgba(255,255,255,0.9)';
+                    g.beginPath(); g.roundRect(8, y, w, 20, 10); g.fill();
+                    g.fillStyle = '#1d1d1f'; g.textAlign = 'left'; g.textBaseline = 'middle';
+                    g.fillText(txt, 15, y + 10.5);
+                };
+                if (split > 34) pill('Scene', 8);
+                if (cssH - split > 34) pill('Print', cssH - 28);
+            }
+        };
+
+        // Tone flow: each stage's tones on one shared log scale, so a stretched part
+        // of the scale gets wider and a compressed part narrower. Ribbons carry each
+        // tone from row to row, tinted by how much that stage spread or squeezed it.
+        const TRA_ROW = 27, TRA_RIB = 24;
+        const traDrawWedges = () => {
+            const cv = document.getElementById('traWedges');
+            const cssW = cv.clientWidth;
+            if (!cssW) return;
+            const rowsH = 4 * TRA_ROW + 3 * TRA_RIB, gainY = rowsH + 12, cssH = gainY + 12;
+            const dpr = window.devicePixelRatio || 1;
+            if (cv.width !== Math.round(cssW * dpr) || cv.height !== Math.round(cssH * dpr)) {
+                cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); cv.style.height = cssH + 'px';
+            }
+            const g = cv.getContext('2d');
+            g.setTransform(dpr, 0, 0, dpr, 0, 0);
+            g.clearRect(0, 0, cssW, cssH);
+            const d = trAnim.data;
+            if (!d) return;
+            const s = trAnim.stage, t = trAnim.t, n = d.steps.length;
+            const x0 = 0, bw = cssW, sc = bw / d.maxExtent;
+            const rowY = (k) => k * (TRA_ROW + TRA_RIB);
+            const reveal = (k, i) => k < s ? 1 : k > s ? 0 : traSmooth(0.25, 0.6, traRayProgress(t, i, n));
+            for (let k = 0; k < 4; k++) {
+                const y = rowY(k), b = d.bounds[k];
+                if (k > s) continue;
+                // Ribbons from the row above: one per tone, tinted by its width change
+                if (k > 0) {
+                    const ba = d.bounds[k - 1], yt = rowY(k - 1) + TRA_ROW + 1, yb = y - 1;
+                    for (let i = 0; i < n; i++) {
+                        const a = reveal(k, i);
+                        if (a <= 0) continue;
+                        const wa = ba[i + 1] - ba[i], wb = b[i + 1] - b[i];
+                        g.globalAlpha = a;
+                        g.beginPath();
+                        g.moveTo(x0 + ba[i] * sc, yt); g.lineTo(x0 + ba[i + 1] * sc, yt);
+                        g.lineTo(x0 + b[i + 1] * sc, yb); g.lineTo(x0 + b[i] * sc, yb);
+                        g.closePath();
+                        g.fillStyle = traGainCss(wa > 1e-6 ? wb / wa : 1, 0.5); g.fill();
+                        g.strokeStyle = 'rgba(0,0,0,0.10)'; g.lineWidth = 0.75; g.stroke();
+                    }
+                    g.globalAlpha = 1;
+                }
+                // Step patches, as wide as the tone spacing on this stage's scale
+                const ph = 18, cy = y + ph + 2, chh = 7;
+                for (let i = 0; i < n; i++) {
+                    const a = reveal(k, i);
+                    if (a <= 0) continue;
+                    const v = traDensityByte(traStageDensity(d.steps[i], k));
+                    const px = x0 + b[i] * sc, pw = Math.max(0.5, (b[i + 1] - b[i]) * sc);
+                    g.globalAlpha = a;
+                    g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(px, y, pw, ph);
+                    g.strokeStyle = 'rgba(0,0,0,0.16)'; g.lineWidth = 1; g.strokeRect(px + 0.5, y + 0.5, Math.max(0, pw - 1), ph - 1);
+                }
+                g.globalAlpha = 1;
+                // Continuous wedge on the same scale: its gradient bunches up where
+                // tones are compressed and spreads out where they are stretched
+                const cx0 = x0, cw = b[n] * sc, off = d.pos[k][0] - (d.pos[k][1] - d.pos[k][0]) / 2;
+                const grad = g.createLinearGradient(cx0, 0, cx0 + cw, 0);
+                let last = 0;
+                for (let j = 0; j <= 255; j += 5) {
+                    const f = traClamp((d.posLut[k][j] - off) / b[n]);
+                    last = Math.max(last, f);
+                    const v = d.lut[k][j];
+                    grad.addColorStop(last, `rgb(${v},${v},${v})`);
+                }
+                const vEnd = d.lut[k][255];
+                grad.addColorStop(1, `rgb(${vEnd},${vEnd},${vEnd})`);
+                const wipe = k < s ? 1 : traSmooth(0.05, 0.8, t);
+                g.fillStyle = grad; g.fillRect(cx0, cy, cw * wipe, chh);
+                g.strokeStyle = 'rgba(0,0,0,0.14)'; g.strokeRect(cx0 + 0.5, cy + 0.5, cw - 1, chh - 1);
+            }
+            // Q4: each print tone against the same scene tone, colour only
+            if (s === 4) {
+                const a = traSmooth(0.3, 0.8, t);
+                g.globalAlpha = a;
+                const cw = bw / n;
+                for (let i = 0; i < n; i++) {
+                    const ws = d.bounds[0][i + 1] - d.bounds[0][i], wp = d.bounds[3][i + 1] - d.bounds[3][i];
+                    const gain = ws > 1e-6 ? wp / ws : 1;
+                    g.fillStyle = traGainCss(gain, 0.55);
+                    g.beginPath(); g.roundRect(x0 + i * cw + 1, gainY, cw - 2, 12, 4); g.fill();
+                }
+                g.globalAlpha = 1;
+            }
+        };
+
+        const traRenderBar = () => {
+            if (!trAnim) return;
+            document.getElementById('traNote').textContent = TR_ANIM_STAGES[trAnim.stage].note;
+            const atEnd = trAnim.stage === TR_ANIM_STAGES.length - 1;
+            const picEl = document.getElementById('traPic');
+            picEl.style.cursor = atEnd ? 'ns-resize' : '';
+            picEl.style.touchAction = atEnd ? 'none' : '';
+            const mapBtn = document.getElementById('traMap');
+            mapBtn.classList.toggle('tra-on', !!trAnim.showMap);
+            const play = document.getElementById('traPlay');
+            play.innerHTML = trAnim.playing ? '&#10074;&#10074;' : '&#9654;';
+            play.title = trAnim.playing ? 'Pause' : 'Play';
+            const dots = document.getElementById('traDots');
+            dots.innerHTML = TR_ANIM_STAGES.map((st, i) =>
+                `<button type="button" class="ca-dot${i === trAnim.stage ? ' ca-dot-on' : ''}${i < trAnim.stage ? ' ca-dot-done' : ''}" data-idx="${i}" title="${escapeHtml(st.title)}"></button>`).join('');
+            dots.querySelectorAll('.ca-dot').forEach(b => b.addEventListener('click', () => traGoto(parseInt(b.dataset.idx, 10), true)));
+        };
+
+        const traFrame = (now) => {
+            if (!trAnim) return;
+            trAnim.raf = requestAnimationFrame(traFrame);
+            const dt = trAnim.last === null ? 0 : now - trAnim.last;
+            trAnim.last = now;
+            let barChanged = false;
+            if (trAnim.ctxRef !== trHoverCtx) { traBuild(); barChanged = true; trAnim.dirty = true; }
+            if (trAnim.playing && trAnim.data) {
+                trAnim.t += dt * trAnim.speed / TR_ANIM_STAGE_MS;
+                if (trAnim.t >= 1) {
+                    if (trAnim.stage < TR_ANIM_STAGES.length - 1) { trAnim.stage++; trAnim.t = 0; }
+                    else { trAnim.t = 1; trAnim.playing = false; }
+                    barChanged = true;
+                }
+                trAnim.dirty = true;
+            }
+            // Charts re-layout under the overlay (resize, focus mode settling): repaint
+            const sig = ['trHoverOverlay', 'traPic', 'traWedges'].map(id => document.getElementById(id).clientWidth).join() +
+                ',' + document.getElementById('trHoverOverlay').clientHeight;
+            if (sig !== trAnim.sig) { trAnim.sig = sig; trAnim.dirty = true; }
+            if (barChanged) traRenderBar();
+            if (!trAnim.dirty) return;
+            trAnim.dirty = false;
+            traDrawOverlay();
+            traDrawPicture();
+            traDrawWedges();
+        };
+
+        const traGoto = (stage, atEnd) => {
+            if (!trAnim) return;
+            trAnim.stage = traClamp(stage, 0, TR_ANIM_STAGES.length - 1);
+            trAnim.t = atEnd ? 1 : 0;
+            trAnim.playing = !atEnd;
+            trAnim.dirty = true;
+            traRenderBar();
+        };
+
+        const startTrAnim = () => {
+            if (!trHoverCtx) { showInfoToast('Choose a source curve that can be drawn first.'); return; }
+            if (trAnim) return;
+            clearTrHoverTrace();
+            trAnim = { stage: 0, t: 0, playing: true, speed: parseFloat(document.getElementById('traSpeed').value) || 1,
+                       last: null, raf: null, ctxRef: null, data: null, dirty: true, sig: '', showMap: false, split: null, dragging: false,
+                       picture: traIndexFromLog(traStillLife(480, 320), 480, 320) };
+            document.body.classList.add('tr-anim-focus');
+            traShowStopTraces(false);
+            window.scrollTo(0, 0);
+            traRenderBar();
+            trAnim.raf = requestAnimationFrame(traFrame);
+        };
+
+        const traShowStopTraces = (show) => {
+            [trChartQ1, trChartQ2, trChartQ3, trChartQ4].forEach(ch => {
+                if (!ch) return;
+                ch.data.datasets.forEach(ds => { if (ds && ds._trTrace) ds.hidden = !show; });
+                ch.update('none');
+            });
+        };
+
+        const stopTrAnim = () => {
+            if (!trAnim) return;
+            cancelAnimationFrame(trAnim.raf);
+            trAnim = null;
+            document.body.classList.remove('tr-anim-focus');
+            traShowStopTraces(true);
+            clearTrHoverTrace();
+        };
+
+        document.getElementById('trAnimOpen').addEventListener('click', startTrAnim);
+        document.getElementById('traClose').addEventListener('click', stopTrAnim);
+        document.getElementById('traRestart').addEventListener('click', () => { if (trAnim) trAnim.split = null; traGoto(0, false); });
+        document.getElementById('traPrev').addEventListener('click', () => {
+            if (!trAnim) return;
+            // Mid-stage: back to the start of this stage; at its start: the previous one
+            traGoto(trAnim.t > 0.05 ? trAnim.stage : trAnim.stage - 1, true);
+        });
+        document.getElementById('traNext').addEventListener('click', () => trAnim && traGoto(trAnim.stage + 1, true));
+        document.getElementById('traPlay').addEventListener('click', () => {
+            if (!trAnim) return;
+            if (!trAnim.playing && trAnim.stage === TR_ANIM_STAGES.length - 1 && trAnim.t >= 1) { traGoto(0, false); return; }
+            if (!trAnim.playing && trAnim.t >= 1 && trAnim.stage < TR_ANIM_STAGES.length - 1) { trAnim.stage++; trAnim.t = 0; }
+            trAnim.playing = !trAnim.playing;
+            trAnim.last = null;
+            trAnim.dirty = true;
+            traRenderBar();
+        });
+        document.getElementById('traSpeed').addEventListener('change', (e) => { if (trAnim) trAnim.speed = parseFloat(e.target.value) || 1; });
+        document.getElementById('traMap').addEventListener('click', () => {
+            if (!trAnim) return;
+            trAnim.showMap = !trAnim.showMap;
+            trAnim.dirty = true;
+            traRenderBar();
+        });
+        // Q4 picture: drag the scene/print line up and down
+        const traPicEl = document.getElementById('traPic');
+        const traSetSplit = (e) => {
+            const rect = traPicEl.getBoundingClientRect();
+            trAnim.split = traClamp((e.clientY - rect.top) / rect.height);
+            trAnim.dirty = true;
+        };
+        traPicEl.addEventListener('pointerdown', (e) => {
+            if (!trAnim || trAnim.stage !== TR_ANIM_STAGES.length - 1) return;
+            trAnim.dragging = true;
+            traPicEl.setPointerCapture(e.pointerId);
+            traSetSplit(e);
+        });
+        traPicEl.addEventListener('pointermove', (e) => { if (trAnim && trAnim.dragging) traSetSplit(e); });
+        ['pointerup', 'pointercancel'].forEach(ev => traPicEl.addEventListener(ev, () => { if (trAnim) trAnim.dragging = false; }));
+        document.addEventListener('keydown', (e) => { if (trAnim && e.key === 'Escape') stopTrAnim(); });
 
         // Generic interpolation with optional linear extrapolation (used throughout TR)
         const trInterpolate = (val, knownKey, unknownKey, data, extrapolate = false) => {
@@ -11150,7 +11778,7 @@
                 { id: 'trQ4', q: 'q4', chart: () => trChartQ4 }
             ];
             const onTrMove = (e) => {
-                if (!trHoverCtx) return;
+                if (!trHoverCtx || trAnim) return;
                 let handled = false;
                 for (const cm of cellMap) {
                     const chart = cm.chart();
@@ -11171,7 +11799,7 @@
             };
             if (wrapper) {
                 wrapper.addEventListener('mousemove', onTrMove);
-                wrapper.addEventListener('mouseleave', clearTrHoverTrace);
+                wrapper.addEventListener('mouseleave', () => { if (!trAnim) clearTrHoverTrace(); });
             }
         };
 
@@ -12166,10 +12794,13 @@
             }
 
             // --- Update chart datasets ---
+            // Stop traces: the tone animation hides these and draws its own
+            const stopTraces = new Set([q1Trace, q2Trace, q3Trace, q4Trace, q1Key, q2Key, q3Key, q4Key, q4HelpLines, q4HelpKey]);
             const setDS = (chart, idx, data, color, dash, width) => {
                 chart.data.datasets[idx] = {
                     data: data, borderColor: color, borderWidth: width || (dash ? 1 : 2),
-                    borderDash: dash ? [3, 3] : [], pointRadius: 0, tension: 0
+                    borderDash: dash ? [3, 3] : [], pointRadius: 0, tension: 0,
+                    _trTrace: stopTraces.has(data), hidden: stopTraces.has(data) && !!trAnim
                 };
             };
             const setPtsDS = (chart, idx, pts) => {
@@ -13379,6 +14010,7 @@
                 const checkedRadio = document.querySelector('input[name="isoMethod"]:checked');
                 if (checkedRadio) state._isoMethod = checkedRadio.value;
                 state._trSceneManual = !trSceneFollowsSource;
+                state.flareLogH = fixedFlareValue();
                 try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
             };
 
@@ -13389,6 +14021,8 @@
                 // Lens tiers were renamed from quality to element count; without this a
                 // saved session would set a value no <option> has and blank the select.
                 if (state.lensQualitySelect !== undefined) state.lensQualitySelect = lensTierOf(state.lensQualitySelect) || 'medium';
+                // The variable flare model was retired: such sessions use the practical one
+                if (state.flareModelSelect === 'variable') state.flareModelSelect = 'practical';
                 // Saved before the two Normal fields were merged: a Scene-First Normal carries over
                 if (state.flareNormalLslr === undefined && state.zoneTableMethod === 'scene_first' && state.normalLslrInput !== undefined)
                     state.flareNormalLslr = state.normalLslrInput;
